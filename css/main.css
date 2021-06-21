@@ -1,16 +1,22 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 0px 100px;
+    margin: 0 100px;
+}
+a {
+    color: #e83d3d;
 }
 .headLine {
     font-size: 32px;
-    margin-bottom: 20px;
+    padding: 20px 0 10px 0;
+    color: gray;
+    text-align: center;
 }
 .abstract {
-    margin: 0px 200px;
+    margin: 0 200px;
     border: 1px solid black;
     padding: 10px;
     line-height: 22px;
+    text-align: justify;
 }
 .normal {
     margin-top: 20px;
