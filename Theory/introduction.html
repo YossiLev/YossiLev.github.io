@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Introduction</title>
+    <style>
+        .optionalParagraph > .optionalClosing {
+            display: none;
+        }
+
+        .optionalParagraph.optionalStatusClosed > .optionalClosing {
+            display: block;
+        }
+
+        .optionalParagraph.optionalStatusClosed > .optionalOpening {
+            display: none;
+        }
+    </style>
+    <script>
+    window.onload = () => {
+        let vs = document.getElementsByClassName("optionalCloser")
+        for (let item in vs) {
+            console.log(vs[item]);
+            if (vs[item].style) {
+                vs[item].style.color = "red";
+            }
+            vs[item].onclick = (e) => {
+                let par = e.target.closest(".optionalParagraph");
+                par.classList.add("optionalStatusClosed");
+            }
+        }
+        vs = document.getElementsByClassName("optionalClosing")
+        for (let item in vs) {
+            console.log(vs[item]);
+            vs[item].onclick = (e) => {
+                let par = e.target.closest(".optionalParagraph");
+                par.classList.remove("optionalStatusClosed");
+            }
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="normal">
+        The current theory that dominates the world of physics provides a lot of correct predictions.
+    </div>
+    <div class="optionalParagraph">
+        <div class="optionalClosing">when closed</div>
+        <div class="optionalOpening">
+            open content <span class="optionalCloser">close here</span>
+        </div>
+    </div>
+</body>
+</html>
