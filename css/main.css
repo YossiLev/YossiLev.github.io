@@ -6,6 +6,10 @@ body {
 a {
     color: #e83d3d;
 }
+.header {
+    background-color: lightgray;
+    text-align: center;
+}
 .headLine {
     font-size: 32px;
     padding: 20px 0 10px 0;
@@ -13,12 +17,11 @@ a {
     text-align: center;
 }
 .abstract {
-    margin: 0 200px;
+    margin: 0 50px;
     border: 1px solid black;
     padding: 10px;
     line-height: 22px;
     text-align: justify;
-    min-width: 800px;
 }
 .normal {
     margin-top: 20px;
@@ -33,4 +36,16 @@ a {
 .listItem::before {
     content: "♥";
     color: blue;
+}
+
+.optionalParagraph > .optionalClosing {
+    display: none;
+}
+
+.optionalParagraph.optionalStatusClosed > .optionalClosing {
+    display: block;
+}
+
+.optionalParagraph.optionalStatusClosed > .optionalOpening {
+    display: none;
 }
