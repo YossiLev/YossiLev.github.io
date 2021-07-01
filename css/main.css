@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    max-width: 800px;
+    max-width: 600px;
     margin: 0 auto;
 }
 a {
@@ -16,6 +16,18 @@ a {
     color: gray;
     text-align: center;
 }
+.headLine2 {
+    font-size: 24px;
+    padding: 10px 0 4px 0;
+    color: gray;
+    text-align: left;
+}
+.headLine3 {
+     font-size: 20px;
+     padding: 8px 0 0 0;
+     color: gray;
+     text-align: left;
+}
 .abstract {
     margin: 0 50px;
     border: 1px solid black;
@@ -24,7 +36,7 @@ a {
     text-align: justify;
 }
 .normal {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 .list {
     margin-top: 8px;
@@ -37,11 +49,16 @@ a {
     content: "♥";
     color: blue;
 }
-
+.optionalParagraph {
+    margin-top: 20px;
+}
 .optionalParagraph > .optionalClosing {
     display: none;
 }
-
+.optionalParagraph > .optionalClosing::after {
+    content: " ← touch to open";
+    color: red;
+}
 .optionalParagraph.optionalStatusClosed > .optionalClosing {
     display: block;
 }
