@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>GL Demo</title>
+<script type="text/javascript" src="../js/glWorld.js"></script>
+<script type="text/javascript" src="../js/glObj.js"></script>
+<script type="text/javascript" src="../js/glMat.js"></script>
+<style>
+.objBut {
+	display: inline-block;
+	padding: 3px 8px;
+	margin: 2px;
+	background-color: #55ff77;
+	border: 2px solid black;
+	border-radius:4px;
+	text-transform: uppercase;
+	font-size: 32px;
+	font-family: Arial serif;
+	cursor: pointer;
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Opera and Firefox */	
+}
+</style>	
+</head>
+<body>
+	<canvas width = "800" height = "800" id = "my_Canvas"></canvas>
+	<div id = 'objBut'></div>
+	<script>
+		
+		/*============= Creating a canvas ======================*/
+		let canvas = document.getElementById('my_Canvas');
+		
+		/*============= Create world ======================*/
+		let world = new glWorld();
+		
+		world.addToRoot('rc', glBuild.cube(0.2, [0.3, 0, 0, 0, 0, 0], [1, 0, 0]));
+		world.addToRoot('gc', glBuild.cube(0.15, [0.0, 0.3, 0, 0, 0, 0], [0, 1, 0]));
+		world.addToRoot('bc', glBuild.cube(0.25, [0.0, -0.3, 0, 0, 0, 0], [0, 0, 1]));
+		world.addToRoot('oc', glBuild.cube(0.15, [0.0, -0.3, 0.3, 0, 0, 0], [1, 0.5, 0]));
+		world.addToRoot('blkc', glBuild.cube(0.02, [0.0, 0.0, 0, 0, 0, 0], [0, 0, 0]));
+		world.addToRoot('tr1', glBuild.torus(0.4, [0.0, 0.0, 0.6, 0, 0, 0], [1, 1, 0]));
+		let pa = world.addToRoot('tr2', glBuild.torus(1.4, [0.0, 0.0, -0.6, 0, 45, 0], [1, 0, 0.5]));
+		pa.attach('gc2', glBuild.cube(0.25, [0.0, 0.0, 0, 0, 30, 0], [0, 0, 0]))
+		world.addToRoot('dir', glBuild.diracLines(0.4, [0.0, 0.0, 0.6, 0, 0, 0], [1, 1, 0]));
+		world.addToRoot('E-field', glBuild.electricField(0.4, [0.0, 0.0, 0.0, 0, 0, 0]));
+		world.addToRoot('M-field', glBuild.magneticField(0.4, 0.01, [0.0, 0.0, 0.0, 0, 0, 0]));
+		
+		world.addToRoot('plain', glBuild.plain(0.4, 0.01, [0.0, 0.0, 0.0, 0, 0, 0]));
+			
+		world.prepare(canvas)
+		
+		buildShowButtons(world.getNames())
+		
+		world.startAnimation();
+		
+		function buildShowButtons(names) {
+			document.getElementById('objBut').innerHTML = names.map(n => 
+			'<div class="objBut" onclick="world.toggleByName(\'' + n + '\')">' + n + '</div>').join('')
+		}
+	</script>
+</body>
+</html> 
