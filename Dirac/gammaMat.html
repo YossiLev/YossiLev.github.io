@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Dirac Gamma Matrices</title>
+	<link rel="stylesheet" href="../css/main.css">
+	<link rel="stylesheet" href="../css/menus.css">
+	<script src="../js/main.js"></script>
+	<script type="text/javascript" src="../js/Complex.js"></script>
+<script>
+let dim = 4
+let globalMat = 0;
+let globalMatm = 0;
+let globalMatmm = 0;
+
+document.addEventListener('DOMContentLoaded', () => { buildLayout(4) });
+
+function buildLayout(d) {
+	dim = d
+	document.getElementById('tab1').innerHTML = buildSingleTable(1)
+	document.getElementById('tab2').innerHTML = buildSingleTable(2)
+	document.getElementById('tab3').innerHTML = buildSingleTable(3)
+}	
+
+function copyMat(t1, t2) {
+	putTable(t1, getTable(t2))
+}
+
+function mult(t1, t2, t) {
+	putTable(t, multTables(getTable(t1), getTable(t2)))
+}
+
+function getTable(t) {
+	let tab = []
+	for (let r = 0; r < dim; r++) {
+		let row = [];
+		for (let c = 0; c < dim; c++) {
+			row.push(getVal(t, r, c))
+		}
+		tab.push(row)
+	}
+	
+	return tab
+}
+
+function putTable(t, tab) {
+	for (let r = 0; r < dim; r++) {
+		for (let c = 0; c < dim; c++) {
+			putVal(t, r, c, tab[r][c])
+		}
+	}
+}
+function comMat(t1, t2, t) {
+	putTable(t, comTables(getTable(t1), getTable(t2)))
+}
+function antiComMat(t1, t2, t) {
+	putTable(t, antiComTables(getTable(t1), getTable(t2)))
+}
+
+function multTables(t1, t2) {
+	let tab = []
+	for (let r = 0; r < dim; r++) {
+		let row = [];
+		for (let c = 0; c < dim; c++) {
+			let val = []
+			for (let i = 0; i < dim; i++) {
+				val.push(multComplex(t1[r][i], t2[i][c]))
+			}
+			
+			row.push(sumComplexdim(val))
+		}
+		tab.push(row)
+	}
+	
+	return tab
+}
+
+function addTables(t1, t2, s) {
+	let tab = []
+	for (let r = 0; r < dim; r++) {
+		let row = [];
+		for (let c = 0; c < dim; c++) {
+			row.push(addComplexS(t1[r][c], t2[r][c], s))
+		}
+		tab.push(row)
+	}
+	
+	return tab
+}
+
+function comTables(t1, t2) {
+	let tm1 = multTables(t1, t2)
+	let tm2 = multTables(t2, t1)
+	
+	return (addTables(tm1, tm2, - 1))
+}
+
+function antiComTables(t1, t2) {
+	let tm1 = multTables(t1, t2)
+	let tm2 = multTables(t2, t1)
+	
+	return (addTables(tm1, tm2, 1))
+}
+
+function diracRepMat(g) {
+
+	let tab = zeroMat()
+	
+	switch (g) {
+	case 0: tab[0][0] = getComplex(1, 0); tab[1][1] = getComplex(1, 0); tab[2][2] = getComplex(- 1, 0); tab[3][3] = getComplex(- 1, 0); break
+	case 1: tab[0][3] = getComplex(1, 0); tab[1][2] = getComplex(1, 0); tab[2][1] = getComplex(- 1, 0); tab[3][0] = getComplex(- 1, 0); break
+	case 2: tab[0][3] = getComplex(0, - 1); tab[1][2] = getComplex(0, 1); tab[2][1] = getComplex(0, 1); tab[3][0] = getComplex(0, - 1); break
+	case 3: tab[0][2] = getComplex(1, 0); tab[1][3] = getComplex(-1, 0); tab[2][0] = getComplex(- 1, 0); tab[3][1] = getComplex(1, 0); break
+	case 5: tab[0][2] = getComplex(1, 0); tab[1][3] = getComplex(1, 0); tab[2][0] = getComplex(1, 0); tab[3][1] = getComplex(1, 0); break
+	}
+	
+	return tab
+}
+
+function zeroMat() {
+	let tab = []
+	for (let r = 0; r < dim; r++) {
+		let row = [];
+		for (let c = 0; c < dim; c++) {
+			row.push(getComplex(0, 0))
+		}
+		tab.push(row)
+	}
+
+	return tab;
+}
+function imaginMat(t) {
+	for (let r = 0; r < dim; r++) {
+		for (let c = 0; c < dim; c++) {
+			let val = getVal(t, r, c)
+			putVal(t, r, c, getComplex(- val.i, val.r))
+		}
+	}
+}
+function unitMat() {
+	let tab = zeroMat()
+	for (let r = 0; r < dim; r++) {
+		tab[r][r] = getComplex(1, 0);
+	}
+
+	return tab;
+}
+function weylRepMat(g) {
+
+	let tab = zeroMat();
+	switch (g) {
+	case 0: tab[0][2] = getComplex(1, 0); tab[1][3] = getComplex(1, 0); tab[2][0] = getComplex(1, 0); tab[3][1] = getComplex(1, 0); break;
+	case 1: tab[0][3] = getComplex(1, 0); tab[1][2] = getComplex(1, 0); tab[2][1] = getComplex(- 1, 0); tab[3][0] = getComplex(- 1, 0); break;
+	case 2: tab[0][3] = getComplex(0, - 1); tab[1][2] = getComplex(0, 1); tab[2][1] = getComplex(0, 1); tab[3][0] = getComplex(0, - 1); break;
+	case 3: tab[0][2] = getComplex(1, 0); tab[1][3] = getComplex(- 1, 0); tab[2][0] = getComplex(- 1, 0); tab[3][1] = getComplex(1, 0); break;
+	case 5: tab[0][0] = getComplex(- 1, 0); tab[1][1] = getComplex(- 1, 0); tab[2][2] = getComplex(1, 0); tab[3][3] = getComplex(1, 0); break;
+	}
+	return tab;
+}
+function su3RepMat(g) {
+
+	let tab = zeroMat();
+	switch (g + 1) {
+	case 1: tab[0][1] = getComplex(1, 0); tab[1][0] = getComplex(1, 0); break;
+	case 2: tab[0][1] = getComplex(0, -1); tab[1][0] = getComplex(0, 1); break;
+	case 3: tab[0][0] = getComplex(1, 0); tab[1][1] = getComplex(- 1, 0); break;
+	case 4: tab[0][2] = getComplex(1, 0); tab[2][0] = getComplex(1, 0); break;
+	case 5: tab[0][2] = getComplex(0, -1); tab[2][0] = getComplex(0, 1); break;
+	case 6: tab[1][2] = getComplex(1, 0); tab[2][1] = getComplex(1, 0); break;
+	case 7: tab[1][2] = getComplex(0, -1); tab[2][1] = getComplex(0, 1); break;
+	case 8: let p = 1 / Math.sqrt(3); tab[0][0] = getComplex(p, 0); tab[1][1] = getComplex(p, 0); tab[2][2] = getComplex(- 2 * p, 0); break;
+	}
+	
+	return tab;
+}
+
+function getComplex(r, i) {
+	return {r: r, i : i};
+}
+
+function addComplexS(c1, c2, s) {
+	return {r: c1.r + s * c2.r,
+			i: c1.i + s * c2.i};
+}
+
+function multComplex(c1, c2) {
+	return {r: c1.r * c2.r - c1.i * c2.i,
+			i: c1.r * c2.i + c1.i * c2.r}
+}
+
+function sumComplexdim(vec) {
+	let re = 0;
+	let im = 0;
+	for (let i = 0; i < dim; i++) {
+		re += vec[i].r
+		im += vec[i].i
+	}
+	return {r: re, i: im}
+}
+
+function getVal(t, r, c) {
+	let id = 'r-' + t + '-' + r + '-' + c;
+	let valStr = document.getElementById(id).value;
+	let valR = 0;
+	if (valStr.length > 0) {
+		valR = parseFloat(valStr)
+	}
+	id = 'i-' + t + '-' + r + '-' + c;
+	valStr = document.getElementById(id).value;
+	let valI= 0;
+	if (valStr.length > 0) {
+		valI = parseFloat(valStr)
+	}
+	
+	return {r: valR, i: valI};
+}
+function putVal(t, r, c, v) {
+	let id = 'r-' + t + '-' + r + '-' + c;
+	document.getElementById(id).value = v.r;
+	id = 'i-' + t + '-' + r + '-' + c;
+	document.getElementById(id).value = v.i;
+}
+
+function buildMat(tt) {
+	let tab = [];
+	
+	switch (tt) {
+		case 0: tab = zeroMat(); break;
+		case 1: tab = unitMat(); break;
+		case 10: tab = diracRepMat(0); break;
+		case 11: tab = diracRepMat(1); break;
+		case 12: tab = diracRepMat(2); break;
+		case 13: tab = diracRepMat(3); break;
+		case 15: tab = diracRepMat(5); break;
+		case 20: tab = weylRepMat(0); break;
+		case 21: tab = weylRepMat(1); break;
+		case 22: tab = weylRepMat(2); break;
+		case 23: tab = weylRepMat(3); break;
+		case 25: tab = weylRepMat(5); break;
+		case 30: tab = su3RepMat(0); break;
+		case 31: tab = su3RepMat(1); break;
+		case 32: tab = su3RepMat(2); break;
+		case 33: tab = su3RepMat(3); break;
+		case 34: tab = su3RepMat(4); break;
+		case 35: tab = su3RepMat(5); break;
+		case 36: tab = su3RepMat(6); break;
+		case 37: tab = su3RepMat(7); break;
+	}
+
+	return tab
+}
+
+function initMat(tt, t) {
+	
+	return putTable(t, buildMat(tt))
+}
+
+function buildMatOperation(m1p, m2p, operation) {
+	let m1 = buildMat(m1p);
+	let m2 = buildMat(m2p);
+	
+	switch (operation) {
+	case 'AntiCom': return antiComTables(m1, m2);
+	case 'Com': return comTables(m1, m2);
+	case 'Mult': return multTables(m1, m2);
+	}
+	
+	return antiComTables(m1, m2)
+} 
+
+function buildMatMultiTable(matMode, operation) {
+	let s = '<table class="multiTabFrame"><tr><td>' + operation + '</td>';
+	for (let j = 0; j < 4; j++) {
+		s += '<td>' + buildSingleTableShow('kc', buildMat(matMode + j), '0') + '</td>';
+	}
+	s += '</tr><tr>';
+	
+	for (let i = 0; i < 4; i++) {
+		s += '<td>' + buildSingleTableShow('kl', buildMat(matMode + i), '0') + '</td>';
+		for (let j = 0; j < 4; j++) {
+			s += '<td>' + buildSingleTableShow('kl', buildMatOperation(matMode + j, matMode + i, operation), '0') + '</td>';
+		}
+		s += '</tr>';
+	}
+	
+	s += '</table>';
+	
+	document.getElementById('tabMulti').innerHTML = s;
+}
+
+function openMenu(event, menuElement) {
+	closeContext();
+	//menuElement.style.left = `${event.clientX}px`;
+	//menuElement.style.top = `${event.clientY}px`;
+	const rect = event.target.getBoundingClientRect();
+	menuElement.style.left = `${rect.x}px`;
+	menuElement.style.top = `${rect.y + rect.height}px`;
+	menuElement.style.visibility = "visible";
+}
+function menuSet(e, t) {
+	globalMat = t;
+	globalMatm = (globalMat % 3) + 1;
+	globalMatmm = (globalMatm % 3) + 1;
+	openMenu(e, document.getElementById('contextMenuSet'));
+}
+function menuCalc(e, t) {
+	globalMat = t;
+	globalMatm = (globalMat % 3) + 1
+	globalMatmm = (globalMatm % 3) + 1
+	openMenu(e, document.getElementById('contextMenuCalc'))
+}
+function closeContext() {
+	const x = document.getElementsByClassName('contextMenu');
+	for (let i = 0; i < x.length; i++) {
+		x.item(i).style.visibility = "hidden";
+	}
+}
+function buildSingleTable(t) {
+	let s = "<div class='tab'>";
+	for (let r = 0; r < dim; r++) {
+		s += buildSingleRow(t, r)
+	}
+	
+	let a = (t % 3) + 1
+	let b = (a % 3) + 1
+	
+	s += '</div>'
+	s += '<div>'
+	s += '<div class="menuHeader" onclick="menuSet(event, ' + t + ');">Set &#9660;</div>'
+	s += '<div class="menuHeader" onclick="menuCalc(event, ' + t + ');">Calc &#9660;</div>'
+	s += '<div class="mini-but" onclick="showMat(' + t + ');">Show</div>'
+	s += '</div><div>'
+
+	if (dim === 3) {
+		s += '<div class="mini-but" onclick="initMat(30, ' + t + ');">S0</div>'
+		s += '<div class="mini-but" onclick="initMat(31, ' + t + ');">S1</div>'
+		s += '<div class="mini-but" onclick="initMat(32, ' + t + ');">S2</div>'
+		s += '<div class="mini-but" onclick="initMat(33, ' + t + ');">S3</div>'
+		s += '</div><div>'
+		s += '<div class="mini-but" onclick="initMat(34, ' + t + ');">S4</div>'
+		s += '<div class="mini-but" onclick="initMat(35, ' + t + ');">S5</div>'
+		s += '<div class="mini-but" onclick="initMat(36, ' + t + ');">S6</div>'
+		s += '<div class="mini-but" onclick="initMat(37, ' + t + ');">S7</div>'
+	}
+	s += '</div></div>'
+	
+	return s
+}
+function buildSingleNum(t, r, c) {
+	let id = "-" + t + '-' + r + "-" + c
+	return '<div class="tcell inNum"><input id="r' + id + '" class="rNum" type="number" placeholder="0">+<input id="i' + id + '" class="iNum" type="number">i</div>'
+}
+
+function showMat(t) {
+	document.getElementById('tab4').innerHTML = buildSingleTableShow(4, getTable(t), '')
+}
+
+function buildSingleTableShow(t, tab, mode) {
+	let s = "<div class='tab'>";
+	for (let r = 0; r < dim; r++) {
+		s += buildSingleRowShow(t, r, tab, mode)
+	}
+
+	s += '</div>'
+
+	return s
+}
+
+function buildSingleRow(t, r) {
+	let s = "<div class='trow'>";
+	for (let c = 0; c < dim; c++) {
+		s += buildSingleNum(t, r, c)
+	}
+	return s + '</div>'
+}
+function buildSingleRowShow(t, r, tab, mode) {
+	let s = "<div class='trow'>";
+	for (let c = 0; c < dim; c++) {
+		s += buildSingleNumShow(t, r, c, tab[r][c], mode)
+	}
+	return s + '</div>'
+}
+function toNumberString(n) {
+	let val = ''
+	if (n < 0) {
+		n = - n
+		val = '-';
+	}
+	let nr = Math.round(n)
+	let f = Math.abs(n - nr)
+	if (f < 0.01) {
+		return val + nr.toString();
+	}
+	return val + n.toPrecision(3);
+}
+function buildSingleNumShow(t, r, c, v, mode) {
+	let id = "-" + t + '-' + r + "-" + c
+	let val = ''
+	if (v.r !== 0) {
+		val += toNumberString(v.r);
+	}
+	if (v.i !== 0) {
+		if (v.i < 0) {
+			val += '-'
+		} else if (val.length > 0)  {
+			val += '+'
+		}
+		if (Math.abs(v.i) !== 1) {
+			val += toNumberString(Math.abs(v.i));
+		}
+		val += 'i'
+	}
+	return '<div class="tscell' + mode + '"><div id="s' + id + '" >' + val + '</div></div>'
+}
+
+</script>
+<style>
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance:textfield;
+}
+.tab {
+	display:table;
+}
+.trow {
+	display:table-row;
+}
+.tcell {
+	display:table-cell;
+}
+.tscell {
+	display:table-cell;
+	width:144px;
+	height:144px;
+	font-size:48px;
+	font-weight: bold;
+	font-family: Arial serif;
+	border: 3px solid black;
+	text-align: center;
+	vertical-align: middle;
+}
+.tscell0 {
+	display:table-cell;
+	width:36px;
+	height:36px;
+	font-size:12px;
+	font-weight: bold;
+	font-family: Arial serif;
+	border: 1px solid black;
+	text-align: center;
+	vertical-align: middle;
+}
+.iNum {
+	width: 20px;
+	border:none;
+	border-bottom:1px solid gray;
+}
+.rNum {
+	width: 20px;
+	margin-left:10px;
+	border:none;
+}
+.inNum {
+	padding:10px;
+}
+.mini-but {
+	display: inline-block;
+	background-color: #7fff7f;
+	margin:1px;
+	padding:2px;
+	border:1px solid black;
+	border-radius:4px;
+}
+table.multiTabFrame td {
+	margin: 16px;
+}
+body {
+	max-width:1300px;
+}
+</style>
+
+</head>
+<body>
+<div>
+</div>
+<div id="contextMenuSet" class="contextMenu" onclick="closeContext();">
+	<div onclick="initMat(0, globalMat)" class="menuBut">Zero mat</div>
+	<div onclick="initMat(1, globalMat)" class="menuBut">Unit Mat</div>
+	<div class="menuSeparator"></div>
+	<div onclick="initMat(10, globalMat)" class="menuBut">Dirac - Gamma 0</div>
+	<div onclick="initMat(11, globalMat)" class="menuBut">Dirac - Gamma 1</div>
+	<div onclick="initMat(12, globalMat)" class="menuBut">Dirac - Gamma 2</div>
+	<div onclick="initMat(13, globalMat)" class="menuBut">Dirac - Gamma 3</div>
+	<div onclick="initMat(15, globalMat)" class="menuBut">Dirac - Gamma 5</div>
+	<div class="menuSeparator"></div>
+	<div onclick="initMat(20, globalMat)" class="menuBut">Dirac - Weyl 0</div>
+	<div onclick="initMat(21, globalMat)" class="menuBut">Dirac - Weyl 1</div>
+	<div onclick="initMat(22, globalMat)" class="menuBut">Dirac - Weyl 2</div>
+	<div onclick="initMat(23, globalMat)" class="menuBut">Dirac - Weyl 3</div>
+	<div onclick="initMat(25, globalMat)" class="menuBut">Dirac - Weyl 5</div>
+</div>
+<div id="contextMenuCalc" class="contextMenu" onclick="closeContext();">
+	<div onclick="mult(globalMatm, globalMatmm, globalMat)" class="menuBut">Mult</div>
+	<div onclick="copyMat(globalMat, globalMatmm)" class="menuBut">Copy</div>
+	<div onclick="imaginMat(globalMat)" class="menuBut">Imaginary</div>
+	<div class="menuSeparator"></div>
+	<div onclick="comMat(globalMatm, globalMatmm, globalMat)" class="menuBut">Commutator</div>
+	<div onclick="antiComMat(globalMatm, globalMatmm, globalMat)" class="menuBut">Anti Comm</div>
+</div>
+	<div class='trow'>
+		<div id='tab1' class='tcell'></div>
+		<div id='tab2' class='tcell' style='padding-left:60px;'></div>
+		<div id='tab3' class='tcell' style='padding-left:60px;'></div>
+	</div>
+
+	<div id='tab4' style='padding-left:60px;'></div>
+	<div class="mini-but" onclick="buildMatMultiTable(10, 'AntiCom');">DIRAC AntiCommute</div>
+	<div class="mini-but" onclick="buildMatMultiTable(10, 'Com');">DIRAC Commute</div>
+	<div class="mini-but" onclick="buildMatMultiTable(10, 'Mult');">DIRAC Multiply</div>
+	<div class="mini-but" onclick="buildMatMultiTable(20, 'AntiCom');">Weyl AntiCommute</div>
+	<div class="mini-but" onclick="buildMatMultiTable(20, 'Com');">Weyl Commute</div>
+	<div class="mini-but" onclick="buildMatMultiTable(20, 'Mult');">Weyl Multiply</div>
+	<div id='tabMulti' style='padding-left:60px;'></div>
+
+</body>
+</html>
