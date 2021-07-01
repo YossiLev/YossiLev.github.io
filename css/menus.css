@@ -1,0 +1,76 @@
+.but {
+    font-size: 20px;
+    font-family: Arial, serif;
+    padding: 4px 6px;
+    display: inline-block;
+    background-color: #328904;
+    border:1px solid black;
+    color: white;
+    font-weight: bold;
+    margin: 4px;
+    border-radius: 6px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.menuBut {
+    font-size: 14px;
+    font-family: Arial, serif;
+    padding: 4px 6px;
+}
+.menuBut:hover {
+    background-color: lightgray;
+}
+.mode {
+    font-size: 20px;
+    font-family: Arial, serif;
+    padding: 8px 16px;
+    display: inline-block;
+    background-color: #6f716e;
+    border:1px solid black;
+    color: white;
+    font-weight: bold;
+    margin: -2px;
+    border-radius: 4px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.modeSelect {
+    color: black;
+    background-color: antiquewhite;
+}
+.option {
+    background-color: #71706e;
+}
+.optionOn {
+    background-color: #7ce82e;
+}
+.menuHeader {
+    display: inline-block;
+    background-color: #eaeaea;
+    padding: 4px;
+    margin: 0 4px;
+    border: 1px solid lightgray;
+}
+.contextMenu {
+     position: fixed;
+     top: 100px;
+     left: 100px;
+     background-color: #eaeaea;
+     visibility: hidden;
+     z-index: 100;
+     padding: 4px;
+     border-radius: 3px;
+     box-shadow: 2px 2px 7px grey;
+     border: 1px solid lightgray;
+ }
+.menuSeparator {
+    background-color: darkgray;
+    height: 1px;
+    margin: 5px;
+}
