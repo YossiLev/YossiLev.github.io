@@ -9,10 +9,6 @@ addHeader = () => {
 optionalOpenClose = () => {
     let vs = document.getElementsByClassName("optionalCloser")
     for (let item in vs) {
-        console.log(vs[item]);
-        if (vs[item].style) {
-            vs[item].style.color = "red";
-        }
         vs[item].onclick = (e) => {
             let par = e.target.closest(".optionalParagraph");
             par.classList.add("optionalStatusClosed");

@@ -2,6 +2,9 @@ body {
     font-family: Arial, sans-serif;
     max-width: 600px;
     margin: 0 auto;
+    font-family: Verdana;
+    color: #464646;
+    margin-bottom: 1000px;
 }
 a {
     color: #e83d3d;
@@ -13,19 +16,19 @@ a {
 .headLine {
     font-size: 32px;
     padding: 20px 0 10px 0;
-    color: gray;
+    color: #202020;
     text-align: center;
 }
 .headLine2 {
     font-size: 24px;
     padding: 10px 0 4px 0;
-    color: gray;
+    color: #202020;
     text-align: left;
 }
 .headLine3 {
      font-size: 20px;
      padding: 8px 0 0 0;
-     color: gray;
+     color: #202020;
      text-align: left;
 }
 .abstract {
@@ -36,7 +39,7 @@ a {
     text-align: justify;
 }
 .normal {
-    margin-top: 10px;
+    margin-top: 4px;
 }
 .list {
     margin-top: 8px;
@@ -49,6 +52,17 @@ a {
     content: "♥";
     color: blue;
 }
+.optionalOpening {
+    border-left: 2px solid #808080;
+    border-right: 2px solid #808080;
+    padding: 0 10px;
+}
+.optionalParagraph.optionalStatusClosed > div > .optionalCloser {
+    visibility: hidden;
+}
+.optionalCloser {
+    color: #328904;
+}
 .optionalParagraph {
     margin-top: 20px;
 }
@@ -57,7 +71,7 @@ a {
 }
 .optionalParagraph > .optionalClosing::after {
     content: " ← touch to open";
-    color: red;
+    color: #7f1ed4;
 }
 .optionalParagraph.optionalStatusClosed > .optionalClosing {
     display: block;
