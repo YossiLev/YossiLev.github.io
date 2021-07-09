@@ -1,17 +1,18 @@
 body {
-    font-family: Arial, sans-serif;
-    max-width: 600px;
-    margin: 0 auto;
-    font-family: Verdana;
+    max-width: 900px;
+    font-family: 'Verdana', sans-serif;
     color: #464646;
-    margin-bottom: 1000px;
+    margin: 0 auto 1000px;
 }
 a {
-    color: #e83d3d;
+    color: #1976d2;
 }
 .header {
-    background-color: lightgray;
+    background-color: #1976d2;
     text-align: center;
+    padding:10px;
+    color: white;
+    font-size: 20px;
 }
 .headLine {
     font-size: 32px;
@@ -32,7 +33,7 @@ a {
      text-align: left;
 }
 .abstract {
-    margin: 0 50px;
+    margin: 0 50px 20px;
     border: 1px solid black;
     padding: 10px;
     line-height: 22px;
@@ -49,8 +50,33 @@ a {
     margin-left: 8px;
 }
 .listItem::before {
-    content: "♥";
-    color: blue;
+    content: "‣";
+    font-size: 30px;
+    line-height: 10px;
+    color: #2f2fdc;
+    position: relative;
+    top: 6px;
+}
+.normalImage {
+    width:400px;
+    cursor: zoom-in;
+}
+.extendedImage {
+    width: 100%;
+    position: fixed;
+    left: 0;
+    top:0;
+    cursor: zoom-out;
+}
+
+.insertImage {
+    float: right;
+    padding: 10px;
+    border: 1px solid gray;
+}
+.imageLabel {
+    text-align: center;
+    font-size: 10px;
 }
 .optionalOpening {
     border-left: 2px solid #808080;
@@ -61,7 +87,11 @@ a {
     visibility: hidden;
 }
 .optionalCloser {
-    color: #328904;
+    background-color: #328904;
+    color: white;
+    cursor: row-resize;
+    padding: 3px 7px;
+    border-radius: 4px;
 }
 .optionalParagraph {
     margin-top: 20px;
@@ -70,8 +100,12 @@ a {
     display: none;
 }
 .optionalParagraph > .optionalClosing::after {
-    content: " ← touch to open";
-    color: #7f1ed4;
+    content: " touch to open";
+    background-color: #7f1ed4;
+    color: white;
+    cursor: row-resize;
+    padding: 3px 7px;
+    border-radius: 4px;
 }
 .optionalParagraph.optionalStatusClosed > .optionalClosing {
     display: block;

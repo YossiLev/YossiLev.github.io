@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Knots playground</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="../css/menus.css">
 
     <style>
@@ -37,7 +38,7 @@
             font-family: Arial, sans-serif;
             font-size: 24px;
         }
-        .dname {
+        .dName {
             font-family: Arial, sans-serif;
             color: rgba(101, 100, 100, 0.95);
         }
@@ -50,6 +51,7 @@
 
         let options = new Map();
         let gblTrans = {sx : 0, sy: 0, z: 1.0, w: 1000, h: 500 }
+        let currentKnotIndex;
 
         const rad = 10;
         const rad2 = rad * rad;
@@ -355,7 +357,7 @@
                     `<div class="cnStorage" >`
                     + `<div onclick="uploadKnot(${ik})">`
                     + `<canvas id="canvasStorage${ik.toString()}" width="140" height="120"/></div>`
-                    + `<span class="dname" onclick="changeKnotName(${ik})">${k.name}</span>`
+                    + `<span class="dName" onclick="changeKnotName(${ik})">${k.name}</span>`
                     + `</div>`
                 )
                     .join('');
@@ -418,15 +420,6 @@
     </script>
 </head>
 <body onload="dr()">
-
-<!--
-<div id="modes">
-    <div id="mode0" class="mode but" onclick="setMode(0)">View</div>
-    <div id="mode1" class="mode but" onclick="setMode(1)">Draw</div>
-    <div id="mode2" class="mode but" onclick="setMode(2)">Crossings</div>
-    <div id="mode3" class="mode but" onclick="setMode(3)">Divide</div>
-</div>
--->
 
 <div id="options">
     <div id="optHideCircles" class="but option">Hide circles</div>
