@@ -9,9 +9,9 @@ a {
 }
 .header {
     background-color: #1976d2;
+    color: white;
     text-align: center;
     padding:10px;
-    color: white;
     font-size: 20px;
 }
 .headLine {
@@ -59,17 +59,18 @@ a {
 }
 .normalImage {
     width:400px;
-    cursor: zoom-in;
 }
-.extendedImage {
+.extendedImage .normalImage {
     width: 100%;
     position: fixed;
     left: 0;
     top:0;
     cursor: zoom-out;
+    background-color: white;
+    padding-bottom: 1000px;
 }
-
 .insertImage {
+    cursor: zoom-in;
     float: right;
     padding: 10px;
     border: 1px solid gray;
@@ -77,6 +78,24 @@ a {
 .imageLabel {
     text-align: center;
     font-size: 10px;
+}
+.extendedImage .imageLabel {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #1976d2;
+    color: white;
+    z-index: 100;
+    font-size: 32px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    display: inline-block;
+    width: fit-content;
+    max-width: 90%;
+}
+.matIcon {
+
 }
 .optionalOpening {
     border-left: 2px solid #808080;

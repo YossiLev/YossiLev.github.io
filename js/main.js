@@ -1,6 +1,10 @@
 addHeader = () => {
     const header = document.createElement("div");
-    header.innerHTML = '<a style="color: white; float:left;" href="/index.html"><i onclick="" class="material-icons">home</i></a> The site of new ideas';
+    header.innerHTML = '<a style="color: white; float:left;" href="/index.html"><i onclick="" class="material-icons">home</i></a>' +
+        'The site of new ideas' +
+        '<i style="float:right;" onclick="" class="material-icons">mail</i>' +
+        '<i style="float:right;" onclick="" class="material-icons">print</i>'
+    ;
     header.classList.add('header');
 
     const body = document.getElementsByTagName("BODY")[0];
@@ -27,11 +31,11 @@ optionalOpenClose = () => {
     }
 }
 zoomOnImages = () => {
-    let vs = document.getElementsByClassName("normalImage")
+    let vs = document.getElementsByClassName("insertImage")
     for (let item in vs) {
         if (vs.hasOwnProperty(item)) {
             vs[item].onclick = (e) => {
-                e.target.classList.toggle("extendedImage");
+                e.target.closest(".insertImage").classList.toggle("extendedImage");
             }
         }
     }
