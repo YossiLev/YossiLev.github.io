@@ -15,11 +15,25 @@ a {
     font-size: 20px;
 }
 .pager {
-     background-color: #1076c2;
-     color: white;
-     text-align: center;
-     padding:10px;
-     font-size: 20px;
+    position:sticky;
+    top: 0;
+    background-color: #046546;
+    color: white;
+    text-align: center;
+    padding:10px;
+    font-size: 20px;
+    z-index: 50;
+}
+.contentList {
+    background-color: #046546;
+    color: white;
+    padding: 20px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
 }
 .headLine {
     font-size: 32px;
