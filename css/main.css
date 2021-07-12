@@ -49,6 +49,9 @@ a {
     margin-top: 4px;
     margin-left: 8px;
 }
+.spreadList .listItem {
+    padding: 5px 0;
+}
 .listItem::before {
     content: "‣";
     font-size: 30px;
