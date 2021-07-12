@@ -41,10 +41,22 @@ a {
 }
 .normal {
     margin-top: 4px;
+    padding: 2px 0;
 }
 .highlight {
     padding: 8px 0;
     font-weight: bold;
+    text-align: center;
+}
+.equHolder {
+    width: 100%;
+    text-align: center;
+    padding: 20px 0;
+}
+.equLabel {
+    position: absolute;
+    float: right;
+    display: inline-block;
 }
 .list {
     margin-top: 8px;

@@ -40,8 +40,17 @@ zoomOnImages = () => {
         }
     }
 }
+equationsLabels = () => {
+    let vs = document.getElementsByClassName("equLabel")
+    for (let item in vs) {
+        if (vs.hasOwnProperty(item)) {
+            vs[item].innerText = vs[item].id;
+        }
+    }
+}
 window.onload = () => {
     addHeader();
     optionalOpenClose();
+    equationsLabels();
     zoomOnImages();
 }
