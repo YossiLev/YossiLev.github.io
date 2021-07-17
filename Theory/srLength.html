@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Special Relativity - Length Contraction</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16x16.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <script src="../js/main.js"></script>
+    <script src="../js/srLength.js"></script>
+    <script src="../js/tdObj.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="headLine">
+    <div class="appendHead"> - Length Contraction</div>
+</div>
+<div class="normal">
+    What is the <b>change in shape</b> of a trapped light object, when it’s on the move?
+    Instead of moving light and ether at rest, we will consider a stationary trajectory against ether wind.
+</div>
+<div class="normal">
+    Look at the following trajectory, of a circular light object, where there is no ether wind.
+    The motion of light is in the clockwise direction.
+    We divided the circle into four parts with different color, so for a clockwise motion we go from blue,
+    to green, to red, to yellow. <span data-canvas="speedEllipse" data-action="init" class="action">Click to see</span>
+    <div class="insertActivity">
+        <div><canvas class="activity" id="speedEllipse" width="400" height="350"/></div>
+        <div class="imageLabel">Activity #lencon1# - Speed circle</div>
+    </div>
+    We also added velocities of each part, where we joined the start of the velocity vectors so that all begin in the middle.
+    So the blue velocity lines, pointing left, belong to the blue section of the circle.
+    Each vector is tangent to the section of the circle it belongs to.
+    The size of each vector is the speed of light (ether at rest) so they all have the same length.
+    So the ends of all velocity vectors make a circle.
+</div>
+<div class="normal">
+    How do the velocities change under ether wind of speed V coming from right to left?
+    The vector V is just added to each velocity.
+    If we do not change the ends of the velocity vectors above, but only push the beginning of the vectors by –V,
+    we will get the correct velocities, as this is simple addition. Note that the velocity vectors,
+    as they start at the same point, still have their ends making a circle.
+</div>
+<div class="normal">
+    The question is what would the new trajectory, that fits the profile of the new velocities, look like?
+    If we assume that the change in velocity, i.e. the acceleration vector, is pointed all the time to the same point,
+    then the trajectory becomes an ellipse where the above special point is at one of its foci.
+    In addition, angular velocity is constant, so it is easy to fix the trajectory.
+    The result is that that particle is contracted in the direction of motion exactly as required.
+</div>
+<div class="normal">
+    This problem is very similar to the motion of planets around the sun
+    (the structure of the velocities is the same due to angular momentum conservation).
+    The reader is referred to a beautiful proof (see video [7]) that this results in an elliptic trajectory.
+</div>
+
+</body>
+</html>

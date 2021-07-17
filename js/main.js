@@ -33,20 +33,25 @@ const pages = [
     {display: "Definitions", page: "definitions"},
     {display: "Inventions", page: "inventions"},
 ];
+const appendixes = [
+    {display: "A", page: "abstract"},
+    {display: "B", page: "introduction"},
+    {display: "C", page: "postulates"},
+    {display: "D", page: "particles1"},
+    {display: "E", page: "srMechanics"},
+    {display: "F", page: "gr"},
+    {display: "G", page: "srLength"},
+];
 const goToPage = (pageIndex) => {
     console.log(`go to ${pages[pageIndex].display}`);
     const thisPage = window.location.href.match(/\/([a-zA-Z0-9]+)\.html/);
     window.location.href = window.location.href.replace(`/${thisPage[1]}.html`, `/${pages[pageIndex].page}.html`)
 }
 const removeContent = () => {
-    let vs = document.getElementsByClassName("contentList");
-    for (let item in vs) {
-        if (vs.hasOwnProperty(item)) {
-            vs[item].parentElement.removeChild(vs[item]);
-        }
-    }
+    getArrayByClass("contentList").forEach(el => {
+        el.parentElement.removeChild(el);
+    });
 }
-
 const displayContent = (pageIndex) => {
     const content = document.createElement("div");
     content.innerHTML = pages.map((p, ip) => {
@@ -61,10 +66,14 @@ const displayContent = (pageIndex) => {
     const body = document.getElementsByTagName("BODY")[0];
     body.insertBefore(content, body.firstChild);
 }
+getPageName = () => {
+    const thisPage = window.location.href.match(/\/([a-zA-Z0-9]+)\.html/);
+    return thisPage[1];
+}
 addPager = () => {
     if (window.location.href.includes('/Theory')) {
-        const thisPage = window.location.href.match(/\/([a-zA-Z0-9]+)\.html/);
-        const index = pages.findIndex(p => p.page === thisPage[1]);
+        const pageName = getPageName();
+        const index = pages.findIndex(p => p.page === pageName);
         const header = document.createElement("div");
         header.innerHTML =
             `<span onclick="displayContent(${index})" style="cursor: pointer;"><i class="material-icons" style="vertical-align: bottom;">list</i>Content list</span>` +
@@ -85,46 +94,66 @@ addHeader = () => {
     addMasthead();
 }
 optionalOpenClose = () => {
-    let vs = document.getElementsByClassName("optionalCloser")
-    for (let item in vs) {
-        if (vs.hasOwnProperty(item)) {
-            vs[item].onclick = (e) => {
-                let par = e.target.closest(".optionalParagraph");
-                par.classList.add("optionalStatusClosed");
-            }
+    getArrayByClass("optionalCloser").forEach(el => {
+        el.onclick = (e) => {
+            let par = e.target.closest(".optionalParagraph");
+            par.classList.add("optionalStatusClosed");
         }
-    }
-    vs = document.getElementsByClassName("optionalClosing")
-    for (let item in vs) {
-        if (vs.hasOwnProperty(item)) {
-            vs[item].onclick = (e) => {
-                let par = e.target.closest(".optionalParagraph");
-                par.classList.remove("optionalStatusClosed");
-            }
+    });
+    getArrayByClass("optionalClosing").forEach(el => {
+        el.onclick = (e) => {
+            let par = e.target.closest(".optionalParagraph");
+            par.classList.remove("optionalStatusClosed");
+        }
+    });
+}
+fillAppendixOrder = () => {
+    if (window.location.href.includes('/Theory')) {
+        const pageName = getPageName();
+        const appendixObj = appendixes.find(a => a.page === pageName)
+        if (appendixObj) {
+            const appendixLabel = appendixObj.display;
+            getArrayByClass("equLabel").forEach(el => {
+                el.innerHTML = `<u>Appendix ${appendixLabel}</u> ${el.innerHTML}`;
+            })
         }
     }
 }
 zoomOnImages = () => {
-    let vs = document.getElementsByClassName("insertImage")
-    for (let item in vs) {
-        if (vs.hasOwnProperty(item)) {
-            vs[item].onclick = (e) => {
-                e.target.closest(".insertImage").classList.toggle("extendedImage");
-            }
+    getArrayByClass("equLabel").forEach(el => {
+        el.onclick = (e) => {
+            e.target.closest(".insertImage").classList.toggle("extendedImage");
         }
-    }
+    });
 }
 equationsLabels = () => {
-    let vs = document.getElementsByClassName("equLabel")
+    getArrayByClass("equLabel").forEach(el => el.innerText = el.id);
+}
+getArrayByClass = (className) => {
+    let vs = document.getElementsByClassName(className);
+    let ar = [];
     for (let item in vs) {
         if (vs.hasOwnProperty(item)) {
-            vs[item].innerText = vs[item].id;
+            ar.push(vs[item]);
         }
     }
+    return ar;
 }
-window.onload = () => {
-    addHeader();
-    optionalOpenClose();
-    equationsLabels();
-    zoomOnImages();
+
+initActions = () => {
+    getArrayByClass("action").forEach(el => {
+        el.style.color = "blue";
+        el.style.textDecoration = "underline";
+        el.onclick = (e) => clickAction(e, document.getElementById(el.dataset.canvas), el.dataset.action)
+        el.onmousemove = (e) => clickAction(e, document.getElementById(el.dataset.canvas), el.dataset.action)
+    });
+}
+
+window.onloadFuncs = [addHeader, fillAppendixOrder, optionalOpenClose, equationsLabels, zoomOnImages, initActions];
+
+window.onload = function()
+{
+    for(let i in this.onloadFuncs) {
+        this.onloadFuncs[i]();
+    }
 }

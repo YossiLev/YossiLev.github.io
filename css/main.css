@@ -125,6 +125,12 @@ a {
     text-align: center;
     font-size: 10px;
 }
+.insertActivity {
+    float: right;
+    padding: 10px;
+    margin:10px;
+    border: 1px solid gray;
+}
 .extendedImage .imageLabel {
     position: fixed;
     bottom: 40px;
