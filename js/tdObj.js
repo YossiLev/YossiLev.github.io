@@ -30,6 +30,7 @@ class tdPos {
 
 const tdObjLine = 1;
 const tdObjArc = 2;
+const tdObjEllipse = 3;
 const tdObjRect = 4;
 
 class tdObj {
@@ -54,6 +55,11 @@ class tdObj {
                 ctx.arc(...this.pos.pos, ...this.params);
                 ctx.stroke();
                 break;
+            case tdObjEllipse:
+                ctx.beginPath();
+                ctx.ellipse(...this.pos.pos, ...this.params);
+                ctx.stroke();
+                break;
 
         }
     }
@@ -69,6 +75,19 @@ class tdObj {
     static buildArc(x, y, r, t1, t2) {
         return new tdObj(tdObjArc, [r, t1, t2], tdPos.PosXY(x, y));
     }
+    static buildEllipse(x, y, rx, ry, rot, t1 = 0, t2 = Math.PI * 2) {
+        return new tdObj(tdObjEllipse, [rx, ry, rot, t1, t2], tdPos.PosXY(x, y));
+    }
+}
+
+const tdAnimShift = 1;
+
+class tdAnimation {
+    constructor(name, typ, params) {
+        this.name = name;
+        this.typ = typ;
+        this.params = params;
+    }
 }
 
 class tdWorld {
@@ -77,6 +96,7 @@ class tdWorld {
     }
     clear() {
         this.objects = [];
+        this.animations = [];
     }
     clone(n, nn) {
         const oc = this.objects.find(o => o.name === n);
@@ -86,19 +106,24 @@ class tdWorld {
             this.objects.push(ocClone);
         }
     }
+    static setStyle(ctx, style) {
+        ctx.strokeStyle = style.color ? style.color : "black";
+        ctx.lineWidth = style.width ? style.width : 1;
+    }
     static drawObject(o, ctx) {
-        ctx.strokeStyle = o.col;
+        tdWorld.setStyle(ctx, o.style);
         o.obj.draw(ctx);
     }
     draw(ctx) {
         this.objects.forEach(o => tdWorld.drawObject(o, ctx));
     }
     drawC(ctx) {
-        ctx.clearRect(0, 0, 1000, 1000);
+        const can = ctx.canvas;
+        ctx.clearRect(0, 0, can.width, can.height);
         this.draw(ctx);
     }
-    push(o, col = "black", name = '', parent = null) {
-        this.objects.push({obj: o, col: col, name: name, parent: parent});
+    push(o, style = {}, name = '', parent = null) {
+        this.objects.push({obj: o, style: style, name: name, parent: parent});
     }
     shift(x, y) {
         this.objects.forEach(o => o.obj.shift(x, y));

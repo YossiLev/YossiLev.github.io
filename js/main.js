@@ -34,18 +34,24 @@ const pages = [
     {display: "Inventions", page: "inventions"},
 ];
 const appendixes = [
-    {display: "A", page: "abstract"},
-    {display: "B", page: "introduction"},
-    {display: "C", page: "postulates"},
-    {display: "D", page: "particles1"},
-    {display: "E", page: "srMechanics"},
-    {display: "F", page: "gr"},
-    {display: "G", page: "srLength"},
+    {label: "A", display: "Momentum, Energy, Mass", page: "massEnergy"},
+    {label: "B", display: "Central Drift", page: "centralDrift"},
+    {label: "C", display: "Photons", page: "noPhotons"},
+    {label: "D", display: "Gravitation & Time", page: "grDilation"},
+    {label: "E", display: "Light Orbits", page: "lightOrbit"},
+    {label: "F", display: "Torus Flow", page: "torusFlow"},
+    {label: "G", display: "Length Contraction", page: "srLength"},
 ];
 const goToPage = (pageIndex) => {
-    console.log(`go to ${pages[pageIndex].display}`);
+    if (pageIndex >= pages.length) {
+        return goToAppendix(pageIndex - pages.length)
+    }
     const thisPage = window.location.href.match(/\/([a-zA-Z0-9]+)\.html/);
     window.location.href = window.location.href.replace(`/${thisPage[1]}.html`, `/${pages[pageIndex].page}.html`)
+}
+const goToAppendix = (pageIndex) => {
+    const thisPage = window.location.href.match(/\/([a-zA-Z0-9]+)\.html/);
+    window.location.href = window.location.href.replace(`/${thisPage[1]}.html`, `/${appendixes[pageIndex].page}.html`)
 }
 const removeContent = () => {
     getArrayByClass("contentList").forEach(el => {
@@ -58,7 +64,12 @@ const displayContent = (pageIndex) => {
         return ip === pageIndex
             ? `<div style="color: yellow">${ip + 1}. ${p.display}</div>`
             : `<div style="cursor: pointer;" onclick="goToPage(${ip});">${ip + 1}. ${p.display}</div>`
-    }).join('');
+    }).concat('<div style="margin-top:5px; text-decoration: underline;">Appendices</div>').concat(...appendixes.map((p, ip) => {
+            return ip === (pageIndex - pages.length)
+                ? `<div style="color: yellow">${p.label} - ${p.display}</div>`
+                : `<div style="cursor: pointer;" onclick="goToAppendix(${ip});">${p.label} - ${p.display}</div>`
+        }
+    )).join('');
     content.classList.add('contentList');
     content.onclick = (e) => {
         removeContent();
@@ -73,15 +84,15 @@ getPageName = () => {
 addPager = () => {
     if (window.location.href.includes('/Theory')) {
         const pageName = getPageName();
-        const index = pages.findIndex(p => p.page === pageName);
+        const index = pages.concat(appendixes).findIndex(p => p.page === pageName);
         const header = document.createElement("div");
         header.innerHTML =
             `<span onclick="displayContent(${index})" style="cursor: pointer;"><i class="material-icons" style="vertical-align: bottom;">list</i>Content list</span>` +
             (index > 0
-                ? `<span onclick="goToPage(${index - 1})" style="cursor: pointer; float:left;"><i class="material-icons" style="vertical-align: bottom;">navigate_before</i>${pages[index - 1].display}</span>`
+                ? `<span onclick="goToPage(${index - 1})" style="cursor: pointer; float:left;"><i class="material-icons" style="vertical-align: bottom;">navigate_before</i>${index - 1 < pages.length ? pages[index - 1].display : appendixes[index - pages.length - 1].display}</span>`
                 : '') +
-            (index < pages.length - 1
-                ? `<span onclick="goToPage(${index + 1})" style="cursor: pointer; float:right;">${pages[index + 1].display}<i class="material-icons" style="vertical-align: bottom;">navigate_next</i></span>`
+            (index < pages.length + appendixes.length - 1
+                ? `<span onclick="goToPage(${index + 1})" style="cursor: pointer; float:right;">${index + 1 < pages.length ? pages[index + 1].display : appendixes[index - pages.length + 1].display}<i class="material-icons" style="vertical-align: bottom;">navigate_next</i></span>`
                 : '');
         header.classList.add('pager');
 
@@ -112,8 +123,11 @@ fillAppendixOrder = () => {
         const pageName = getPageName();
         const appendixObj = appendixes.find(a => a.page === pageName)
         if (appendixObj) {
-            const appendixLabel = appendixObj.display;
+            const appendixLabel = appendixObj.label;
             getArrayByClass("equLabel").forEach(el => {
+                el.innerHTML = `<u>Appendix ${appendixLabel}</u> ${el.innerHTML}`;
+            })
+            getArrayByClass("appendHead").forEach(el => {
                 el.innerHTML = `<u>Appendix ${appendixLabel}</u> ${el.innerHTML}`;
             })
         }
@@ -149,6 +163,20 @@ initActions = () => {
     });
 }
 
+embedVideo = (label) => {
+    const vidFrame = document.createElement("div");
+    vidFrame.classList.add('vidFrame');
+    vidFrame.onclick = (e) => {
+        const el = e.target.closest(".vidFrame");;
+        el.parentElement.removeChild(el);
+    }
+
+    const vid = document.createElement("div");
+    vid.innerHTML = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${label}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    vidFrame.appendChild(vid);
+    const body = document.getElementsByTagName("BODY")[0];
+    body.insertBefore(vidFrame, body.firstChild);
+}
 window.onloadFuncs = [addHeader, fillAppendixOrder, optionalOpenClose, equationsLabels, zoomOnImages, initActions];
 
 window.onload = function()

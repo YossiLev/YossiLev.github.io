@@ -16,13 +16,10 @@ const srLengthCanvasClick = (el, click) => {
 }
 
 const srLengthInit = () => {
-    let vs = document.getElementsByClassName("activity")
-    for (let item in vs) {
-        if (vs.hasOwnProperty(item)) {
-            srLengthCanvasClick(vs[item], 0)
-            vs[item].onclick = (e) => {e.preventDefault(); srLengthCanvasClick(vs[item], 1)};
-        }
-    }
+    getArrayByClass("equLabel").forEach(el => {
+        srLengthCanvasClick(el, 0)
+        el.onclick = (e) => {e.preventDefault(); srLengthCanvasClick(el, 1)};
+    });
 }
 
 const clickAction = (e, el, action) => {
@@ -31,31 +28,33 @@ const clickAction = (e, el, action) => {
 let speedEllipseWorld;
 const speedEllipseWorldInit = () => {
     let w = new tdWorld();
-    let x = 200;
+    let x = 170;
     let y = 200;
     let r = 100;
-    let n = 32;
+    let n = 16;
     const l = 50;
-    w.push(tdObj.buildArc(x, y, r, 0,  Math.PI * 2), "orange");
-    for (let i = 0; i < n; i++) {
-        const t = i / n * Math.PI * 2;
-        const tp = t - Math.PI / 2;
-        w.push(tdObj.buildLineRT(x + r * Math.cos(tp), y + r *  Math.sin(tp), l, t), "blue");
-    }
+    w.push(tdObj.buildArc(x, y, r, 0,  Math.PI * 2), {color: "orange", width: 5});
+    w.push(tdObj.buildEllipse(x + 350, y, r / 2, r, 0,  0,  Math.PI * 20), {color: "orange", width: 2});
+   // for (let i = 0; i < n; i++) {
+   //     const t = i / n * Math.PI * 2;
+   //     const tp = t - Math.PI / 2;
+   //     w.push(tdObj.buildLineRT(x + r * Math.cos(tp), y + r *  Math.sin(tp), l, t), {color: "blue"});
+   // }
     return w;
 }
 const clickAction_speedEllipse = (e, el, action) => {
-    console.log(e);
-    const ctx = el.getContext('2d');
-    switch (action) {
-        case "init":
-            speedEllipseWorld = speedEllipseWorldInit();
-            speedEllipseWorld.drawC(ctx);
-            break;
-        case "main":
-            speedEllipseWorld.shift(0, 8);
-            speedEllipseWorld.drawC(ctx);
-            break;
+    if (e.type === "click") {
+        const ctx = el.getContext('2d');
+        switch (action) {
+            case "init":
+                speedEllipseWorld = speedEllipseWorldInit();
+                speedEllipseWorld.drawC(ctx);
+                break;
+            case "main":
+                speedEllipseWorld.shift(0, 8);
+                speedEllipseWorld.drawC(ctx);
+                break;
+        }
     }
 }
 

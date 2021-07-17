@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Orbit of Light Around a Black Hole</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16x16.png">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <script src="../js/main.js"></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="headLine">
+  <div class="appendHead"> - Light Around a Black Hole</div>
+</div>
+<div class="normal">
+  The speed of light for a beam the eventually travels perpendicular to the ether motion (with ether speed U) is \(\sqrt{C^2-U^2}\).
+  We would like to understand the situation of a light beam that travels in a circular loop around a black hole,
+  with light motion perpendicular to the ether motion “falling” into the black hole
+  (we discuss here a Schwarzschild black hole only).
+</div>
+<div class="normal">
+  Near a black hole we can expect to get an event horizon at a distance \(R_s=\frac{2GM}{C^2}\).
+  Every light ray inside the event horizon is drifting into the center.
+  We would like to calculate the location where light rays are trapped in a circular orbit,
+  forever moving in a lateral direction relative to the radial speed of ether – this distance is \(R_p\).
+  The speed of the ether at this distance is \(U_p=\sqrt{\frac{2GM}{R_p}}\).
+  So the lateral speed of light there is calculated as \[C_p=\sqrt{C^2-U_p^2}=\sqrt{C^2-\frac{2GM}{R_p}}\]
+  The radial acceleration of the light should match the ether inward acceleration (that is
+  \(\frac{V^2}{R}=\frac{dU}{dt}=-\frac{d\frac{1}{2}U^2}{dR}\)). So in our case we get
+  \[\frac{c_p^2}{R_p}= -\frac{d\frac{1}{2}U_p^2}{dR}\]
+  and this gives us
+  \[\frac{C^2-U_p^2}{R_p} = -\frac{d\frac{GM}{R_p}}{dR}\]
+  \[\frac{\frac{2GM}{R_s}-\frac{2GM}{R_p}}{R_p} = \frac{GM}{R_p^2}\]
+  \[\frac{2GM}{R_s}-\frac{2GM}{R_p} = \frac{GM}{R_p}\]
+  \[\frac{2}{R_s} = \frac{3}{R_p}\quad \textrm{or} \quad  R_p=\frac{3}{2}R_s\]
+</div>
+<div class="normal">
+  Let's recap.
+</div>
+</body>
+</html>
