@@ -7,6 +7,12 @@ class Torus {
 	}
 }
 class glBuild {
+	static dataInit(pos, glMode, options = {}) {
+		return ({
+			vertices: [], colors: [], indices: [],
+			trMatrix: buildRelativeMat(pos), glMode: glMode, ...options
+		});
+	}
 	static cube(size, pos, col) {
 		let s = 0.5 * size
 		let data = {
@@ -25,69 +31,60 @@ class glBuild {
 			glMode: 0x0004 //gl.TRIANGLES, 
 		}
 			
-		let b = new glInfo(data);
-		
-		return b;
+		return new glInfo(data);
 	}
 	static torus(size, pos, col) {
 		let s = 0.5 * size
-		let data = {
-			vertices: [],
-			colors: [],
-			indices: [],
-			trMatrix: buildRelativeMat(pos),
-			glMode: 0x0004 //gl.TRIANGLES, 
-		}
+
+		let data = glBuild.dataInit(pos, 0x0004 /*gl.TRIANGLES */);
 
 		let eta = 2.9
 		let exp_eta = Math.exp(eta)
-		let nead_first_theta = true
+		let needFirstTheta = true
 		let last_psi = 0;
-		let last_theta = 0;
-		let prot = 0;
-		let last_prot = 0;
-		for (let itheta = -180; itheta < 181; itheta +=5) {
-			let theta = (Math.PI * itheta) / 180
-			if (nead_first_theta) {
-				nead_first_theta = false
-				last_theta = theta
+		let lastTheta = 0;
+		let pRot = 0;
+		let last_pRot = 0;
+		for (let iTheta = -180; iTheta < 181; iTheta +=5) {
+			let theta = (Math.PI * iTheta) / 180
+			if (needFirstTheta) {
+				needFirstTheta = false
+				lastTheta = theta
 				continue
 			}
 
-			let nead_first_psi = true
-			for (let ipsi = -180; ipsi < 181; ipsi +=5) {
-				let psi = (Math.PI * ipsi) / 180
+			let needFirstPsi = true
+			for (let iPsi = -180; iPsi < 181; iPsi +=5) {
+				let psi = (Math.PI * iPsi) / 180
 
-				if (ipsi < 0) {
-					prot = -psi * 0
+				if (iPsi < 0) {
+					pRot = -psi * 0.01;
 				} else {
-					prot = psi * 0
+					pRot = psi * 0.01;
 				}
 
-				if (nead_first_psi) {
-					nead_first_psi = false
+				if (needFirstPsi) {
+					needFirstPsi = false
 					last_psi = psi
-					last_prot = prot
+					last_pRot = pRot
 					continue
 				}
 
-				let ll = data.vertices.length / 4;
-				data.vertices.push(...Torus.p(s, exp_eta, theta + prot, psi))
-				data.vertices.push(...Torus.p(s, exp_eta, last_theta + prot, psi))
-				data.vertices.push(...Torus.p(s, exp_eta, last_theta + last_prot, last_psi))
-				data.vertices.push(...Torus.p(s, exp_eta, theta + last_prot, last_psi))
+				let ll = data.vertices.length / 3;
+				data.vertices.push(...Torus.p(s, exp_eta, theta + pRot, psi))
+				data.vertices.push(...Torus.p(s, exp_eta, lastTheta + pRot, psi))
+				data.vertices.push(...Torus.p(s, exp_eta, lastTheta + last_pRot, last_psi))
+				data.vertices.push(...Torus.p(s, exp_eta, theta + last_pRot, last_psi))
 				data.colors.push(...col, ...col, ...col, ...col)
 				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 1, ll + 3)
 
 				last_psi = psi
-				last_prot = prot
+				last_pRot = pRot
 			}
-			last_theta = theta
+			lastTheta = theta
 		}
 
-		let b = new glInfo(data);
-
-		return b;
+		return new glInfo(data);
 	}
 	static floor(n, size) {
 		let data = {
@@ -114,9 +111,7 @@ class glBuild {
 
 			}
 		}
-		let b = new glInfo(data);
-
-		return b;
+		return new glInfo(data);
 	}
 	static sineCurve(col) {
 		return glBuild.parametricCurve((p, t, r) => {
@@ -140,9 +135,9 @@ class glBuild {
 		let r = 0.025;
 
 		let last_p = 0;
-		let last_theta = 0;
+		let lastTheta = 0;
 
-		let need_first_p = true
+		let needFirstP = true
 		for (let ip = 0; ip <= n; ip++) {
 			const h = col[0];
 			col[0] = col[1];
@@ -150,37 +145,35 @@ class glBuild {
 			col[2] = h;
 
 			let p = ip / n;
-			if (need_first_p) {
-				need_first_p = false
+			if (needFirstP) {
+				needFirstP = false
 				last_p = p
 				continue
 			}
 
 			let need_first_theta = true
-			for (let itheta = -180; itheta < 181; itheta +=30) {
-				let theta = (Math.PI * itheta) / 180;
+			for (let iTheta = -180; iTheta < 181; iTheta +=30) {
+				let theta = (Math.PI * iTheta) / 180;
 				if (need_first_theta) {
 					need_first_theta = false;
-					last_theta = theta;
+					lastTheta = theta;
 					continue;
 				}
 
 				let ll = data.vertices.length / 3;
 				data.vertices.push(...func(p, theta, r));
-				data.vertices.push(...func(p, last_theta, r));
-				data.vertices.push(...func(last_p, last_theta, r));
+				data.vertices.push(...func(p, lastTheta, r));
+				data.vertices.push(...func(last_p, lastTheta, r));
 				data.vertices.push(...func(last_p, theta, r));
 				data.colors.push(...col, ...col, ...col, ...col);
 				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 3, ll + 1);
 
-				last_theta = theta;
+				lastTheta = theta;
 			}
 			last_p = p;
 		}
 
-		let b = new glInfo(data);
-
-		return b;
+		return new glInfo(data);
 	}
 
 	static addLine(data, p1, p2, c, w = 1) {
@@ -226,10 +219,8 @@ class glBuild {
 				}
 			}
 		}
-			
-		let b = new glInfo(data);
-		
-		return b;
+
+		return new glInfo(data);
 	}
 
 	static electricField(charge, pos, n) {
@@ -252,13 +243,11 @@ class glBuild {
 			}
 			glBuild.addLine(data, [0, 0, z], [0, 0, z + s], colE)
 		}
-			
-		let b = new glInfo(data);
-		
-		return b;
+
+		return new glInfo(data);
 	}
 	
-	static magneticField(charge, dipol, pos, n) {
+	static magneticField(charge, dipole, pos, n) {
 		let data = {
 			vertices: [],
 			colors: [],
@@ -274,8 +263,8 @@ class glBuild {
 		for (let x = 0.00; x < 1; x += 0.05) {
 			let x2 = x * x;
 			for (let z = - 1; z < 1; z += 0.05) {
-				let zmd = z - dipol;
-				let zpd = z + dipol;
+				let zmd = z - dipole;
+				let zpd = z + dipole;
 				let dUp2 = x2 + zmd * zmd;   
 				let dDown2 = x2 + zpd * zpd;   
 				let nUp = 1 / Math.sqrt(dUp2)
@@ -294,10 +283,8 @@ class glBuild {
 				glBuild.addLine(data, [x - 0.5 * sx, 0, z - 0.5 * sz], [x + 0.5 * sx, 0, z + 0.5 * sz], colB)
 			}
 		}
-			
-		let b = new glInfo(data);
-		
-		return b;
+
+		return new glInfo(data);
 	}
 	
 	
@@ -368,10 +355,8 @@ class glBuild {
 			//oldA1 = [...newA1];
 			//oldA2 = [...newA2];
 		}
-			
-		let b = new glInfo(data);
-		
-		return b;
+
+		return new glInfo(data);
 	}
 	
 	static emWaves2(pos, n) {
@@ -414,10 +399,8 @@ class glBuild {
 			oldE = newE;
 			oldB = newB
 		}
-			
-		let b = new glInfo(data);
-		
-		return b;
+
+		return new glInfo(data);
 	}
 	
 	static plain(size, pos, col) {
@@ -450,10 +433,8 @@ class glBuild {
 				data.indices.push(ll, ll + 1);
 			}
 		}
-		
-		let b = new glInfo(data);
-		
-		return b;
+
+		return new glInfo(data);
 	}
 }
 class glInfo {
