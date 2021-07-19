@@ -90,6 +90,17 @@ class tdAnimation {
     }
 }
 
+const tdUiButton = 1;
+const tdUiSlider = 2;
+
+class tdUI {
+    constructor(name, typ, params) {
+        this.name = name;
+        this.typ = typ;
+        this.params = params;
+    }
+}
+
 class tdWorld {
     constructor() {
         this.clear();

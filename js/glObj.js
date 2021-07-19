@@ -38,7 +38,7 @@ class glBuild {
 			trMatrix: buildRelativeMat(pos),
 			glMode: 0x0004 //gl.TRIANGLES, 
 		}
-		
+
 		let eta = 2.9
 		let exp_eta = Math.exp(eta)
 		let nead_first_theta = true
@@ -57,7 +57,7 @@ class glBuild {
 			let nead_first_psi = true
 			for (let ipsi = -180; ipsi < 181; ipsi +=5) {
 				let psi = (Math.PI * ipsi) / 180
-				
+
 				if (ipsi < 0) {
 					prot = -psi * 0
 				} else {
@@ -70,7 +70,7 @@ class glBuild {
 					last_prot = prot
 					continue
 				}
-			
+
 				let ll = data.vertices.length / 4;
 				data.vertices.push(...Torus.p(s, exp_eta, theta + prot, psi))
 				data.vertices.push(...Torus.p(s, exp_eta, last_theta + prot, psi))
@@ -78,18 +78,111 @@ class glBuild {
 				data.vertices.push(...Torus.p(s, exp_eta, theta + last_prot, last_psi))
 				data.colors.push(...col, ...col, ...col, ...col)
 				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 1, ll + 3)
-		
+
 				last_psi = psi
 				last_prot = prot
 			}
 			last_theta = theta
 		}
-			
+
 		let b = new glInfo(data);
-		
+
 		return b;
 	}
-	
+	static floor(n, size) {
+		let data = {
+			vertices: [],
+			colors: [],
+			indices: [],
+			trMatrix: buildRelativeMat([0, 0, 0, 0, 0, 0]),
+			glMode: 0x0004 //gl.TRIANGLES,
+		}
+		let cols = [[0, 0, 0], [1, 1, 1]]
+		for (let ix = -n; ix < n; ix++) {
+			let x = ix * size;
+			for (let iy = -n; iy < n; iy++) {
+				let y = iy * size;
+				let iCol = (ix + iy + 2 * n) % 2;
+
+				let ll = data.vertices.length / 3;
+				data.vertices.push(x, y, 0);
+				data.vertices.push(x + size, y, 0);
+				data.vertices.push(x + size, y + size, 0);
+				data.vertices.push(x, y + size, 0);
+				data.colors.push(...(cols[iCol]), ...(cols[iCol]), ...(cols[iCol]), ...(cols[iCol]));
+				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 3, ll + 1);
+
+			}
+		}
+		let b = new glInfo(data);
+
+		return b;
+	}
+	static sineCurve(col) {
+		return glBuild.parametricCurve((p, t, r) => {
+			const a = p * Math.PI * 2;
+			const mv = [a, 0, Math.sin(a)];
+			const nVec = normalizeVec3([1, 0, Math.cos(a)]);
+			const nVec2 = [0, 1, 0];
+			const nVec3 = multVec3(nVec, nVec2);
+			return mv.map((v, iv) => 0.1 *(v + nVec2[iv] * Math.sin(t) * r + nVec3[iv] * Math.cos(t) * r));
+		}, 50, col);
+	}
+	static parametricCurve(func, n, col) {
+		let data = {
+			vertices: [],
+			colors: [],
+			indices: [],
+			trMatrix: buildRelativeMat([0, 0, 0, 0, 0, 0]),
+			glMode: 0x0004 //gl.TRIANGLES,
+		}
+
+		let r = 0.025;
+
+		let last_p = 0;
+		let last_theta = 0;
+
+		let need_first_p = true
+		for (let ip = 0; ip <= n; ip++) {
+			const h = col[0];
+			col[0] = col[1];
+			col[1] = col[2];
+			col[2] = h;
+
+			let p = ip / n;
+			if (need_first_p) {
+				need_first_p = false
+				last_p = p
+				continue
+			}
+
+			let need_first_theta = true
+			for (let itheta = -180; itheta < 181; itheta +=30) {
+				let theta = (Math.PI * itheta) / 180;
+				if (need_first_theta) {
+					need_first_theta = false;
+					last_theta = theta;
+					continue;
+				}
+
+				let ll = data.vertices.length / 3;
+				data.vertices.push(...func(p, theta, r));
+				data.vertices.push(...func(p, last_theta, r));
+				data.vertices.push(...func(last_p, last_theta, r));
+				data.vertices.push(...func(last_p, theta, r));
+				data.colors.push(...col, ...col, ...col, ...col);
+				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 3, ll + 1);
+
+				last_theta = theta;
+			}
+			last_p = p;
+		}
+
+		let b = new glInfo(data);
+
+		return b;
+	}
+
 	static addLine(data, p1, p2, c, w = 1) {
 		let ll = data.vertices.length / 3
 		data.vertices.push(...p1, ...p2);

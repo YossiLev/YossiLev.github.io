@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Curvature of Gravitation</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16x16.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/menus.css">
+    <script src="../js/main.js"></script>
+    <script src="../js/tts.js"></script>
+    <script type="text/javascript" src="../js/glWorld.js"></script>
+    <script type="text/javascript" src="../js/glObj.js"></script>
+    <script type="text/javascript" src="../js/glMat.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body style="max-width:1300px">
+<div class="headLine">
+    The Curvature of Gravitation
+</div>
+<div class="normal" id="apples">
+    Apples fall to the ground, and planets orbit around the sun. Isaac Newton explained both findings, claiming that
+    each body with mass exerts an attraction force on every other mass, causing it other mass to change its speed.
+    The calculation of the attraction force between mass 1 and mass 2 is given by the formula
+</div>
+<div class="normal">
+    \[F=\frac{GM_1M_2}{R^2}\]
+</div>
+<div class="normal">
+    After introducing the theory of relativity, Albert Einstein tried the generalize the theory to include relative
+    accelerated motion. The result was a more general theory, to be later named "General Relativity". The theory gave
+    a new explanation to attractive forces of gravity, and became the new gravity theory. It suggested that
+    all the masses affect the "fabric of space-time" and bend/curve/distort it. In this space-time the motion of
+    all the stuff (massive objects but also light!)
+    is distorted as they follow the curved paths of the curved space-time. The new formula gives the
+    connection between "Energy-Momentum T", which is the new name for Mass, and the geometric distortion of space time,
+    now called "Einstein Curvature G". Both G and T are defined at each point of space, and at each moment of time.
+    The formula is ever so simple, but the simple shape is misleading.
+    \[G=T\]
+    In reality the formula is so complicated that we could never provide a solution for it (except in some simple cases).
+</div>
+<div class="normal">
+    But still, we remain with all masses curve space-time, and then masses move in space-time along the curve paths
+    that are the "straightest" curves available on the curved space-time. Only when there are not masses at all (\(T=0\)),
+    do we get no distortion (\(G=0\)), and then we call it zero-curvature of flat-space.
+</div>
+<div class="but" onclick='ttsHtmlSpeak("apples")'>ttt</div>
+
+<canvas width = "1300" height = "600" id = "my_Canvas"></canvas>
+<div id = 'objBut'></div>
+<script>
+
+    /*============= Creating a canvas ======================*/
+    let canvas = document.getElementById('my_Canvas');
+
+    /*============= Create world ======================*/
+    let world = new glWorld();
+
+    //world.addToRoot('rc', glBuild.cube(0.2, [0.3, 0, 0, 0, 0, 0], [1, 0, 0]));
+    //world.addToRoot('gc', glBuild.cube(0.15, [0.0, 0.0, 0, 0, 0, 0], [0, 1, 0]));
+    world.addToRoot('floor', glBuild.floor(4, 0.1));
+    world.addToRoot('sinex', glBuild.sineCurve([1, 0.7, 0]));
+    //world.addToRoot('bc', glBuild.cube(0.25, [0.0, -0.3, 0, 0, 0, 0], [0, 0, 1]));
+    //world.addToRoot('oc', glBuild.cube(0.15, [0.0, -0.3, 0.3, 0, 0, 0], [1, 0.5, 0]));
+    //world.addToRoot('blkc', glBuild.cube(0.02, [0.0, 0.0, 0, 0, 0, 0], [0, 0, 0]));
+    //world.addToRoot('tr1', glBuild.torus(0.4, [0.0, 0.0, 0.6, 0, 0, 0], [1, 1, 0]));
+    //let pa = world.addToRoot('tr2', glBuild.torus(1.4, [0.0, 0.0, -0.6, 0, 45, 0], [1, 0, 0.5]));
+    //pa.attach('gc2', glBuild.cube(0.25, [0.0, 0.0, 0, 0, 30, 0], [0, 0, 0]))
+    //world.addToRoot('dir', glBuild.diracLines(0.4, [0.0, 0.0, 0.6, 0, 0, 0], [1, 1, 0]));
+    //world.addToRoot('E-field', glBuild.electricField(0.4, [0.0, 0.0, 0.0, 0, 0, 0]));
+    //world.addToRoot('M-field', glBuild.magneticField(0.4, 0.01, [0.0, 0.0, 0.0, 0, 0, 0]));
+
+    //world.addToRoot('plain', glBuild.plain(0.4, 0.01, [0.0, 0.0, 0.0, 0, 0, 0]));
+
+    world.prepare(canvas)
+
+    buildShowButtons(world.getNames())
+
+    world.startAnimation();
+
+    function buildShowButtons(names) {
+        document.getElementById('objBut').innerHTML = names.map(n =>
+            '<div class="but" onclick="world.toggleByName(\'' + n + '\')">' + n + '</div>').join('')
+    }
+</script>
+<div class="normal">
+    The above formula mimics the gravitational “force” transforming “gravitational potential energy” into “kinetic energy”.
+    We should note that according to our theory,
+    the gravitated particle does not experience any force and does not change its energy.
+    It is more like sound waves in the windy air as the wind changes speed.
+</div>
+<div class="normal">
+    However, this is actually not Newton’s gravitation; it is closer to Einstein’s gravitation! Can you see why?
+</div>
+<div class="list spreadList">
+    <div class="listItem">
+        If a matter system with a clock, is simply drifting towards the main particle
+        (call this gravitating particle “earth” for convenience),
+        then the falling system is always at rest relative to the ether as it increases speed (free fall).
+        So clock rate does not change.
+        But a static object (a clock standing on the ground)
+        is actually moving through the flowing ether just to stay in place.
+        The circular paths of its particles become helix,
+        and internal cycle time becomes longer at exactly the right amount (see appendix D).
+        If another clock placed on a high tower, it will experience a slower ether wind,
+        so the effect of slowing down still appears, but less slow than the clock on the ground.
+        This is <b>time dilation</b> due to gravitation. In a flat world!
+    </div>
+    <div class="listItem">
+        Another feature of the flowing ether is that it slows down free light beams traveling perpendicular to the ether flow.
+        Similar to a boat crossing a flowing river losing some speed for resisting the river flow as it
+        makes its way to the other side.
+        With this, the new theory agrees with Einstein corrected calculation of light deviation due to gravity (see appendix).
+        Remember that the Newtonian calculation of gravitated light is wrong.
+    </div>
+</div>
+<div class="highlight">
+    Gravitation happens because masses suck the ether causing a drift towards them.
+</div>
+<div class="normal">
+    So, masses do not change the geometry of space-time; they create an inward ether wind.
+    The world manifold stands still and flat!
+</div>
+
+</body>
+</html>
