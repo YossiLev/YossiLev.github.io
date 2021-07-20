@@ -20,9 +20,13 @@ class glWorld {
 
 		return combi;
 	}
-	
+
 	getNames() {
 		return this.objects.map(ob => ob.name);
+	}
+
+	getObjectByName(name) {
+		return this.objects.find(ob => ob.name == name);
 	}
 
 	draw(gl, _Mmatrix, mo_matrix) {
@@ -195,7 +199,7 @@ class glWorld {
 				}
 				z = z / 10
 				zoomVecs(singleWorld.mo_matrix, Math.pow(b, z))
-				for (i = 0; i < z; i++) {
+				for (let i = 0; i < z; i++) {
 					singleWorld.ZOOM = singleWorld.ZOOM * b
 				}
 			}

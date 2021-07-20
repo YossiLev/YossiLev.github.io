@@ -111,6 +111,9 @@ function multScalarVec3(v1, v2) {
 function normVec3(v) {
 	return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
+function norm2Vec3(v) {
+	return v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+}
 function normalizeVec3(v) {
 	let n = normVec3(v)
 	return [v[0] / n, v[1] / n, v[2] / n]

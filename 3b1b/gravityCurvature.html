@@ -19,16 +19,16 @@
 <div class="headLine">
     The Curvature of Gravitation
 </div>
-<div class="normal" id="apples">
+<div class="normal tts" id="apples">
     Apples fall to the ground, and planets orbit around the sun. Isaac Newton explained both findings, claiming that
-    each body with mass exerts an attraction force on every other mass, causing it other mass to change its speed.
+    each body with mass exerts an attraction force on every other mass, causing the other mass to change its speed.
     The calculation of the attraction force between mass 1 and mass 2 is given by the formula
     <span style="visibility: hidden;">. F , equals G Mass 1 times Mass 2, divided by square of the distance between the masses</span>
 </div>
 <div class="normal">
     \[F=\frac{GM_1M_2}{R^2}\]
 </div>
-<div class="normal" id="newTheory">
+<div class="normal tts" id="newTheory">
     After introducing the theory of relativity, Albert Einstein tried the generalize the theory to include relative
     accelerated motion. The result was a more general theory, to be later named "General Relativity". The theory gave
     a new explanation to attractive forces of gravity, and became the new gravity theory. It suggested that
@@ -46,8 +46,6 @@
     that are the "straightest" curves available on the curved space-time. Only when there are not masses at all (\(T=0\)),
     do we get no distortion (\(G=0\)), and then we call it zero-curvature of flat-space.
 </div>
-<div class="but" onclick='ttsHtmlSpeak("apples")'>ttt</div>
-<div class="but" onclick='ttsHtmlSpeak("newTheory")'>ttt</div>
 
 <canvas width = "1300" height = "600" id = "my_Canvas"></canvas>
 <div id = 'objBut'></div>
@@ -62,11 +60,15 @@
     //world.addToRoot('rc', glBuild.cube(0.2, [0.3, 0, 0, 0, 0, 0], [1, 0, 0]));
     //world.addToRoot('gc', glBuild.cube(0.15, [0.0, 0.0, 0, 0, 0, 0], [0, 1, 0]));
     world.addToRoot('floor', glBuild.floor(4, 0.1));
-    world.addToRoot('sine', glBuild.sineCurve([1, 0.7, 0]));
+    //world.addToRoot('sine', glBuild.sineCurve([1, 0.7, 0]));
+    //world.addToRoot('another sine', glBuild.makeClone([0, 0.2, 0, 0, 0, 0], world.getObjectByName('sine')));
+    world.addToRoot('helix', glBuild.helixCurve(0.2, 0.2, 3, [0, 1, 0]));
+    world.addToRoot('helix', glBuild.helixCurve(0.4, 0.4, 1.5, [0, 1, 0]));
+
     //world.addToRoot('bc', glBuild.cube(0.25, [0.0, -0.3, 0, 0, 0, 0], [0, 0, 1]));
     //world.addToRoot('oc', glBuild.cube(0.15, [0.0, -0.3, 0.3, 0, 0, 0], [1, 0.5, 0]));
     //world.addToRoot('blkc', glBuild.cube(0.02, [0.0, 0.0, 0, 0, 0, 0], [0, 0, 0]));
-    world.addToRoot('tr1', glBuild.torus(0.4, [0.0, 0.0, 0.6, 0, 0, 0], [1, 1, 0]));
+    //world.addToRoot('tr1', glBuild.torus(0.4, [0.0, 0.0, 0.6, 0, 0, 0], [1, 1, 0]));
     //let pa = world.addToRoot('tr2', glBuild.torus(1.4, [0.0, 0.0, -0.6, 0, 45, 0], [1, 0, 0.5]));
     //pa.attach('gc2', glBuild.cube(0.25, [0.0, 0.0, 0, 0, 30, 0], [0, 0, 0]))
     //world.addToRoot('dir', glBuild.diracLines(0.4, [0.0, 0.0, 0.6, 0, 0, 0], [1, 1, 0]));

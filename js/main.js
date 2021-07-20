@@ -163,11 +163,24 @@ initActions = () => {
     });
 }
 
+addTts = () => {
+    getArrayByClass("tts").forEach(el => {
+        const tts = document.createElement("span");
+        tts.innerHTML = '<i class="material-icons" style="vertical-align: bottom;">volume_mute</i>';
+        tts.onclick = () => ttsElementSpeak(el);
+        tts.style.cursor = "pointer";
+        tts.style.float = "left";
+        tts.style.position = "relative";
+        tts.style.left = "0px";
+        el.parentNode.insertBefore(tts, el);
+    });
+}
+
 embedVideo = (label) => {
     const vidFrame = document.createElement("div");
     vidFrame.classList.add('vidFrame');
     vidFrame.onclick = (e) => {
-        const el = e.target.closest(".vidFrame");;
+        const el = e.target.closest(".vidFrame");
         el.parentElement.removeChild(el);
     }
 
@@ -177,7 +190,7 @@ embedVideo = (label) => {
     const body = document.getElementsByTagName("BODY")[0];
     body.insertBefore(vidFrame, body.firstChild);
 }
-window.onloadFuncs = [addHeader, fillAppendixOrder, optionalOpenClose, equationsLabels, zoomOnImages, initActions];
+window.onloadFuncs = [addHeader, fillAppendixOrder, optionalOpenClose, equationsLabels, zoomOnImages, initActions, addTts];
 
 window.onload = function()
 {

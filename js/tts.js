@@ -31,7 +31,11 @@ function ttsSpeak(message) {
     }
 }
 
+function ttsElementSpeak(el) {
+    ttsSpeak(el.textContent)
+}
 function ttsHtmlSpeak(id) {
+    console.log(id)
     ttsSpeak(document.getElementById(id).textContent)
 }
 function ttsPause() {
