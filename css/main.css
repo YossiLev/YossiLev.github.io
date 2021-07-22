@@ -70,6 +70,7 @@ a {
 .normal {
     margin-top: 4px;
     padding: 2px 0;
+    line-height: 1.5em;
 }
 .highlight {
     padding: 8px 0;
@@ -207,4 +208,25 @@ a {
     color: #1976d2;
     text-decoration: underline;
     cursor: pointer;
+}
+
+.canvasWebGl {
+    border: 1px solid blue;
+    box-shadow: inset 0 0 20px #000000;
+}
+.canvasWebGl:focus {
+    border: 1px solid red;
+    box-shadow: 0 0 20px #ffff80;
+}
+.animButton {
+    display: inline-block;
+    background-color: #202020;
+    color: #ffff80;
+    padding: 3px 5px;
+    margin: 1px;
+    border: 1px solid red;
+    border-radius: 3px;
+}
+.animButton::before {
+    content: "> ";
 }

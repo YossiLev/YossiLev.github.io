@@ -10,7 +10,9 @@ class glBuild {
 	static dataInit(pos, glMode, options = {}) {
 		return ({
 			vertices: [], colors: [], indices: [],
-			trMatrix: buildRelativeMat(pos), glMode: glMode, ...options
+			trMatrix: buildRelativeMat(pos),
+			glMode: glMode,
+			...options
 		});
 	}
 	static makeClone(pos, clone) {
@@ -90,13 +92,7 @@ class glBuild {
 		return new glInfo(data);
 	}
 	static floor(n, size) {
-		let data = {
-			vertices: [],
-			colors: [],
-			indices: [],
-			trMatrix: buildRelativeMat([0, 0, 0, 0, 0, 0]),
-			glMode: 0x0004 //gl.TRIANGLES,
-		}
+		let data = glBuild.dataInit([0, 0, 0, 0, 0, 0],0x0004 /*gl.TRIANGLES*/)
 		let cols = [[0, 0, 0], [1, 1, 1]]
 		for (let ix = -n; ix < n; ix++) {
 			let x = ix * size;
@@ -137,16 +133,16 @@ class glBuild {
 		return {pos: mv, norm1: nVec2, norm2: nVec3};
 	}
 
-	static helixCurve(d, r, n, col) {
+	static helixCurve(d, r, n, width, pos, col) {
 		const helixFunc = (pa) => [r * Math.cos(pa * n * Math.PI * 2), r * Math.sin(pa * n * Math.PI * 2), pa * n * d * d];
-		return glBuild.parametricCurve((p) => glBuild.curveFrame(helixFunc, p), 50 * n, col);
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(helixFunc, p), 50 * n, width, pos, col);
 	}
 
-	static sineCurve(col) {
+	static sineCurve(width, pos, col) {
 		const sineFunc = (pa) => [pa * Math.PI * 2, 0, Math.sin(pa * Math.PI * 2)];
-		return glBuild.parametricCurve((p) => glBuild.curveFrame(sineFunc, p), 50, col);
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(sineFunc, p), 50, width, pos, col);
 	}
-	static sineCurve2(col) {
+	static sineCurve2(width, pos, col) {
 		return glBuild.parametricCurve((p, t, r) => {
 			const a = p * Math.PI * 2;
 			const mv = [a, 0, Math.sin(a)];
@@ -154,18 +150,27 @@ class glBuild {
 			const nVec2 = [0, 1, 0];
 			const nVec3 = multVec3(nVec, nVec2);
 			return mv.map((v, iv) => 0.1 *(v + nVec2[iv] * Math.sin(t) * r + nVec3[iv] * Math.cos(t) * r));
-		}, 50, col);
+		}, 50, width, pos, col);
 	}
-	static parametricCurve(func, n, col) {
-		let data = {
-			vertices: [],
-			colors: [],
-			indices: [],
-			trMatrix: buildRelativeMat([0, 0, 0, 0, 0, 0]),
-			glMode: 0x0004 //gl.TRIANGLES,
-		}
+	static arc3dCurve(r, phi, t1, t2, width, pos, col) {
+		const arc3dFunc = (pa) => {
+			const t = t1 * pa + t2 * (1 - pa);
+			return [r * Math.cos(t) * Math.sin(phi), r * Math.cos(t) * Math.cos(phi), r * Math.sin(t)];
+		};
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(arc3dFunc, p), 250, width, pos, col);
+	}
+	static trefoilKnotCurve(width, pos, col) {
+		const trefoilKnotFunc = (pa) => {
+			const t = pa * Math.PI * 2;
+			return [0.2 * (Math.cos(t) + 2 * Math.cos(2 * t)), 0.2 * (Math.sin(t) - 2 * Math.sin(2 * t)), 0.2 * (2 * Math.sin(3 * t))];
+		};
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(trefoilKnotFunc, p), 250, width, pos, col);
+	}
 
-		let r = 0.01;
+	static parametricCurve(func, n, width, pos, col) {
+		let data = glBuild.dataInit(pos,0x0004 /*gl.TRIANGLES*/)
+
+		let r = width;
 
 		let last_p = 0;
 		let lastTheta = 0;
@@ -173,10 +178,6 @@ class glBuild {
 
 		let needFirstP = true
 		for (let ip = 0; ip <= n; ip++) {
-			const h = col[0];
-			col[0] = col[1];
-			col[1] = col[2];
-			col[2] = h;
 
 			let p = ip / n;
 			let fr = func(p);
@@ -221,6 +222,56 @@ class glBuild {
 
 		return new glInfo(data);
 	}
+	static flatSurface(r, pos, col) {
+		const flatSurfaceFunc = (xm, xn) => [r * (xm - 0.5), r * (xn - 0.5), 0];
+		return glBuild.parametricSurface(flatSurfaceFunc, 40, 40, pos, col);
+	}
+	static sineSurface(r, h, pos, col) {
+		const sineSurfaceFunc = (xm, xn) => [r * (xm - 0.5), r * (xn - 0.5), h * Math.sin(xm * Math.PI * 2) * Math.sin(xn * Math.PI * 2)];
+		return glBuild.parametricSurface(sineSurfaceFunc, 40, 40, pos, col);
+	}
+	static parametricSurface(func, m, n, pos, col) {
+		let data = glBuild.dataInit(pos,0x0004 /*gl.TRIANGLES*/);
+
+		let pm = 0;
+		let pn = 0;
+
+		let needFirstM = true
+		for (let im = 0; im <= m; im++) {
+			let xm = im / m;
+			if (needFirstM) {
+				needFirstM = false;
+				pm = xm;
+				continue;
+			}
+
+			let needFirstN = true
+			for (let iN = 0; iN <= n; iN++) {
+				let xn = iN / n;
+				if (needFirstN) {
+					needFirstN = false;
+					pn = xn;
+					continue;
+				}
+				let ll = data.vertices.length / 3;
+				data.vertices.push(...func(xm, xn));
+				data.vertices.push(...func(xm, pn));
+				data.vertices.push(...func(pm, pn));
+				data.vertices.push(...func(pm, xn));
+				if ((im + iN) % 2 === 1) {
+					data.colors.push(...col, ...col, ...col, ...col);
+				} else {
+					data.colors.push(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+				}
+				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 3, ll + 1);
+
+				pn = xn;
+			}
+			pm = xm;
+		}
+
+		return new glInfo(data);
+	}
 
 	static addLine(data, p1, p2, c, w = 1) {
 		let ll = data.vertices.length / 3
@@ -229,18 +280,16 @@ class glBuild {
 		data.indices.push(ll, ll + 1);
 		data.width = w;
 	}
-	
+	static addFrame() {
+		glBuild.addLine(data, [0, 0, 0], [2, 0, 0], [1, 0, 0], 6);
+		glBuild.addLine(data, [0, 0, 0], [0, 2, 0], [0, 1, 0], 6);
+		glBuild.addLine(data, [0, 0, 0], [0, 0, 2], [0, 0, 1], 6);
+	}
+
 	static diracLines(size, pos, col) {
 		let s = 0.5 * size
-		let data = {
-			vertices: [],
-			colors: [],
-			indices: [],
-			trMatrix: buildRelativeMat(pos),
-			glMode: 0x0001, //gl.LINES, 
-			cylSymmetry: 20,
-		}
-		
+		let data = glBuild.dataInit(pos,0x0001 /*gl.LINES*/, {cylSymmetry: 20});
+
 		let dx, dy, dz, dx1, dx2, dy1, dy2, r;
 		dz = 0;
 		let res = 0.04
@@ -258,7 +307,7 @@ class glBuild {
 						let ll = data.vertices.length
 						let zm = 2000 * r * r * r * r *  r
 						data.vertices.push(x, y, z, x + dx * zm, y + dy * zm, z + dz * zm);
-						data.colors.push(1, 0, 0,  0, 1, 0);
+						data.colors.push(...col,  0, 0, 0);
 						let ind = [ll, ll + 1]  
 						data.indices.push(...ind);						
 					}
@@ -270,14 +319,7 @@ class glBuild {
 	}
 
 	static electricField(charge, pos, n) {
-		let data = {
-			vertices: [],
-			colors: [],
-			indices: [],
-			trMatrix: buildRelativeMat(pos),
-			glMode: 0x0001, //gl.LINES, 
-			sphereSymmetry: 10,
-		}
+		let data = glBuild.dataInit(pos,0x0001 /*gl.LINES*/, {sphereSymmetry: 10});
 
 		let f = 0.6
 		let colE = [1, 0, 0];
@@ -294,14 +336,7 @@ class glBuild {
 	}
 	
 	static magneticField(charge, dipole, pos, n) {
-		let data = {
-			vertices: [],
-			colors: [],
-			indices: [],
-			trMatrix: buildRelativeMat(pos),
-			glMode: 0x0001, //gl.LINES, 
-			cylSymmetry: 50,
-		}
+		let data = glBuild.dataInit(pos,0x0001 /*gl.LINES*/, {cylSymmetry: 50});
 
 		let f = 0.6
 		let colB = [0, 0, 1];
@@ -335,20 +370,12 @@ class glBuild {
 	
 	
 	static emWaves(kVec, epsilonVec, pos, n) {
-		let data = {
-			vertices: [],
-			colors: [],
-			indices: [],
-			trMatrix: buildRelativeMat(pos),
-			glMode: 0x0001, //gl.LINES, 
-		}
+		let data = glBuild.dataInit(pos,0x0001 /*gl.LINES*/);
 
 		let f = 0.6
 		//glBuild.addLine(data, [0, 0, - 360  * Math.PI / 180.0 * n * f], [0, 0, 360  * Math.PI / 180.0 * n * f], [1, 0, 1])
-		glBuild.addLine(data, [0, 0, 0], [2, 0, 0], [1, 0, 0], 6)
-		glBuild.addLine(data, [0, 0, 0], [0, 2, 0], [0, 1, 0], 6)
-		glBuild.addLine(data, [0, 0, 0], [0, 0, 2], [0, 0, 1], 6)
-	
+		glBuild.addFrame();
+
 		let k = kVec; //[1, 0, 0, 1]
 		let pol = epsilonVec; //[Complex.bld(0, 0), Complex.bld(1, 0), Complex.bld(0, 1), Complex.bld(0, 0)];
 		
@@ -406,20 +433,12 @@ class glBuild {
 	}
 	
 	static emWaves2(pos, n) {
-		let data = {
-			vertices: [],
-			colors: [],
-			indices: [],
-			trMatrix: buildRelativeMat(pos),
-			glMode: 0x0001, //gl.LINES, 
-		}
+		let data = glBuild.dataInit(pos,0x0001 /*gl.LINES*/);
 
 		let f = 0.6
 		//glBuild.addLine(data, [0, 0, - 360  * Math.PI / 180.0 * n * f], [0, 0, 360  * Math.PI / 180.0 * n * f], [1, 0, 1])
-		glBuild.addLine(data, [0, 0, 0], [2, 0, 0], [1, 0, 0], 6)
-		glBuild.addLine(data, [0, 0, 0], [0, 2, 0], [0, 1, 0], 6)
-		glBuild.addLine(data, [0, 0, 0], [0, 0, 2], [0, 0, 1], 6)
-	
+		glBuild.addFrame();
+
 		let oldE = []
 		let oldB = []
 		let colE = [1, 0, 0]
@@ -450,13 +469,7 @@ class glBuild {
 	}
 	
 	static plain(size, pos, col) {
-		let data = {
-			vertices: [],
-			colors: [],
-			indices: [],
-			trMatrix: buildRelativeMat(pos),
-			glMode: 0x0005 //gl.TRIANGLE_STRIP, 
-		}
+		let data = glBuild.dataInit(pos,0x0005 /*gl.TRIANGLE_STRIP*/);
 
 		let y = 0;
 		let z, zd;
@@ -498,27 +511,27 @@ class glInfo {
 		this.cylSymmetry = data.cylSymmetry ? data.cylSymmetry : 1;
 		this.sphereSymmetry = data.sphereSymmetry ? data.sphereSymmetry : 1;
 	}
-	combine(combi) {
-		console.log('combi.vertices.length = ', combi.vertices.length)
-		console.log('combi.colors.length = ', combi.colors.length)
-		console.log('combi.indices.length = ', combi.indices.length)
-		this.startVertex = combi.vertices.length / 3
-		this.startIndex = combi.indices.length;
+	combine(comb) {
+		console.log('comb.vertices.length = ', comb.vertices.length)
+		console.log('comb.colors.length = ', comb.colors.length)
+		console.log('comb.indices.length = ', comb.indices.length)
+		this.startVertex = comb.vertices.length / 3
+		this.startIndex = comb.indices.length;
 		this.indices = this.indices.map(ind => ind + this.startVertex);
 		console.log('this.vertices.length = ', this.vertices.length)
 		console.log('this.colors.length = ', this.colors.length)
 		console.log('this.indices.length = ', this.indices.length)
-		let i = 0;
+		let i;
 		for (i = 0; i < this.vertices.length; i += 1) {
-			combi.vertices.push(this.vertices[i]);
+			comb.vertices.push(this.vertices[i]);
 		}
 		this.vertices = null;
 		for (i = 0; i < this.colors.length; i += 1) {
-			combi.colors.push(this.colors[i]);
+			comb.colors.push(this.colors[i]);
 		}
 		this.colors = null;
 		for (i = 0; i < this.indices.length; i += 1) {
-			combi.indices.push(this.indices[i]);
+			comb.indices.push(this.indices[i]);
 		}
 		this.indices = null;
 	}
@@ -534,15 +547,18 @@ class glObj {
 	show = () => {this.show = true};
 	hide = () => {this.show = false};
 	toggle = () => {this.show = !this.show};
-	combine(combi) {
+	combine(comb) {
 		console.log(this.name);
-		this.glPack.combine(combi);
-		this.children.forEach(ob => ob.glPack.combine(combi));
+		this.glPack.combine(comb);
+		this.children.forEach(ob => ob.glPack.combine(comb));
 	}
 	attach(name, glPack) {
 		let newObj = new glObj(name, glPack)
 		this.children.push(newObj);
 		return newObj;
+	}
+	transform(tr_mat) {
+		this.glPack.tr_matrix = multMat4x4(tr_mat, this.glPack.tr_matrix);
 	}
 	draw(gl, _Mmatrix, mo_matrix) {
 		if (this.show) {

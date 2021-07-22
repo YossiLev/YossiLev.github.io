@@ -1,10 +1,23 @@
 let singleWorld = null;
 
 class glWorld {
+	static allWorlds = [];
 	constructor(mo_matrix = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ]) {
 		this.objects = [];
-		this.mo_matrix = mo_matrix;		
+		this.mo_matrix = mo_matrix;
+		this.setFocus();
+		glWorld.allWorlds.push(this);
+	}
+	setFocus() {
 		singleWorld = this;
+	}
+	static setFocusByCanvas(canvas) {
+		console.log(canvas);
+		let iWorld = glWorld.allWorlds.findIndex(w => w.canvas === canvas);
+		console.log(iWorld);
+		if (iWorld >= 0) {
+			glWorld.allWorlds[iWorld].setFocus();
+		}
 	}
 	
 	addToRoot(name, glPack) {
@@ -14,19 +27,37 @@ class glWorld {
 		return newObj;
 	}
 	
-	getCombi() {
-		let combi = { vertices: [], colors: [], indices: []};
-		this.objects.forEach(ob => ob.combine(combi))
+	getComb() {
+		let comb = { vertices: [], colors: [], indices: []};
+		this.objects.forEach(ob => ob.combine(comb))
 
-		return combi;
+		return comb;
 	}
 
 	getNames() {
-		return this.objects.map(ob => ob.name);
+		return this.objects.map(ob => ob.name).filter(n => n.substr(0, 1) !== '@');
+	}
+	getAllNames() {
+		return this.objects.map(ob => ob.name)
 	}
 
 	getObjectByName(name) {
 		return this.objects.find(ob => ob.name == name);
+	}
+	transformObject(pos, name) {
+		this.objects.find(ob => ob.name == name).transform(buildRelativeMat(pos));
+	}
+	animateObject(pos, name, time) {
+		this.canvas.focus();
+		this.setFocus();
+		let stepTime = 0.0;
+		const animateTimer = setInterval(() => {
+			this.transformObject(pos, name);
+			stepTime += 0.02;
+			if (time <= stepTime) {
+				clearInterval(animateTimer);
+			}
+		}, 20)
 	}
 
 	draw(gl, _Mmatrix, mo_matrix) {
@@ -46,26 +77,26 @@ class glWorld {
 		this.gl.clearColor(0.8, 0.8, 0.8, 0.9);
 		this.gl.clearDepth(1.0);
 		this.gl.viewport(0.0, 0.0, canvas.width, canvas.height);
-		var ext = this.gl.getExtension('OES_element_index_uint');
+		const ext = this.gl.getExtension('OES_element_index_uint');
 		
 		console.log('prepare start');
-		let combi = this.getCombi();
+		let comb = this.getComb();
 		console.log('prepare end');
 		
 		// Create and store data into vertex buffer
 		let vertex_buffer = this.gl.createBuffer ();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertex_buffer);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(combi.vertices), this.gl.STATIC_DRAW);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(comb.vertices), this.gl.STATIC_DRAW);
 
 		// Create and store data into color buffer
 		let color_buffer = this.gl.createBuffer ();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, color_buffer);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(combi.colors), this.gl.STATIC_DRAW);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(comb.colors), this.gl.STATIC_DRAW);
 
 		// Create and store data into index buffer
 		let index_buffer = this.gl.createBuffer ();
 		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, index_buffer);
-		this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(combi.indices), this.gl.STATIC_DRAW);
+		this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(comb.indices), this.gl.STATIC_DRAW);
 
 		/*=================== SHADERS =================== */
 
@@ -122,14 +153,14 @@ class glWorld {
 		/*==================== MATRIX ====================== */
 
 		function get_projection(angle, a, zMin, zMax) {
-			var ang = Math.tan((angle*.5)*Math.PI/180);//angle*.5
+			const ang = Math.tan((angle*.5)*Math.PI/180);//angle*.5
 			//ang /= 4
 			let f = 0.1
 			return [
-			   0.5/ang, 0 , 0, 0,
-			   0, 0.5*a/ang, 0, 0,
-			   0, 0, -f*(zMax+zMin)/(zMax-zMin), -f,
-			   0, 0, f * (-2*zMax*zMin)/(zMax-zMin), 0 
+			   0.5 / ang, 0 , 0, 0,
+			   0, 0.5 * a / ang, 0, 0,
+			   0, 0, - f * (zMax + zMin) / (zMax - zMin), -f,
+			   0, 0, f * (- 2 * zMax * zMin) / (zMax - zMin), 0
 			   ];
 		}
 
@@ -147,63 +178,72 @@ class glWorld {
 		this.dX = 0
 		this.dY = 0;
 
-		var mouseDown = function(e) {
-			singleWorld.drag = true;
-			singleWorld.dragButton = e.buttons;
-			singleWorld.old_x = e.pageX, singleWorld.old_y = e.pageY;
-			e.preventDefault();
-			return false;
-		};
-
-		var mouseUp = function(e){
-			singleWorld.drag = false;
-		};
-
-		var mouseMove = function(e) {
-			if (!singleWorld.drag) return false;
-			singleWorld.dX = (e.pageX-singleWorld.old_x);//*2*Math.PI/singleWorld.canvas.width,
-			singleWorld.dY = (e.pageY-singleWorld.old_y);//*2*Math.PI/singleWorld.canvas.height;
-
-			if (singleWorld.dragButton == 1) { // left button
-				let rd = singleWorld.dY * singleWorld.dY + singleWorld.dX * singleWorld.dX
-				if (rd > 0.001) {
-					rd = 1.0 / Math.sqrt(rd)
-					let axis = [- singleWorld.dY * rd, - singleWorld.dX * rd, 0, 1.0]
-					let r = mat4FromAxisAngle(axis, 0.005 / rd)
-					singleWorld.mo_matrix = multMat4x4(r, singleWorld.mo_matrix)
-				}
-				//singleWorld.THETA+= singleWorld.dX;
-				//singleWorld.PHI+=singleWorld.dY;
+		const mouseDown = function(e) {
+			if (singleWorld && e.target === singleWorld.canvas) {
+				singleWorld.drag = true;
+				singleWorld.dragButton = e.buttons;
+				singleWorld.old_x = e.pageX, singleWorld.old_y = e.pageY;
+				//e.preventDefault();
+				return false;
 			}
-			
-			if (singleWorld.dragButton == 2) { // right button
-					let shift = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0.002 * singleWorld.dX, - 0.002 * singleWorld.dY,0,1 ];
+		};
+
+		const mouseUp = function(e){
+			if (singleWorld && e.target === singleWorld.canvas) {
+				singleWorld.drag = false;
+			}
+		};
+
+		const mouseMove = function(e) {
+			if (singleWorld && e.target === singleWorld.canvas) {
+				if (!singleWorld.drag) return false;
+				singleWorld.dX = (e.pageX - singleWorld.old_x);//*2*Math.PI/singleWorld.canvas.width,
+				singleWorld.dY = (e.pageY - singleWorld.old_y);//*2*Math.PI/singleWorld.canvas.height;
+
+				if (singleWorld.dragButton == 1) { // left button
+					let rd = singleWorld.dY * singleWorld.dY + singleWorld.dX * singleWorld.dX
+					if (rd > 0.001) {
+						rd = 1.0 / Math.sqrt(rd)
+						let axis = [-singleWorld.dY * rd, -singleWorld.dX * rd, 0, 1.0]
+						let r = mat4FromAxisAngle(axis, 0.005 / rd)
+						singleWorld.mo_matrix = multMat4x4(r, singleWorld.mo_matrix)
+					}
+					//singleWorld.THETA+= singleWorld.dX;
+					//singleWorld.PHI+=singleWorld.dY;
+				}
+
+				if (singleWorld.dragButton == 2) { // right button
+					let shift = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.002 * singleWorld.dX, -0.002 * singleWorld.dY, 0, 1];
 					singleWorld.proj_matrix = multMat4x4(shift, singleWorld.proj_matrix)
+				}
+
+				singleWorld.old_x = e.pageX;
+				singleWorld.old_y = e.pageY;
+				e.preventDefault();
 			}
-			
-			singleWorld.old_x = e.pageX;
-			singleWorld.old_y = e.pageY;
-			e.preventDefault();
 		};
 
-		var mouseWheel = function(e) {
-			e.wheel = e.deltaY ? -e.deltaY : e.wheelDelta / 40;
-			let z = e.deltaY;
-			if (z != 0) {
-				let b = 0;
-				if (z > 0) {
-					b = 1.003
-				} else {
-					b = 0.997
-					z = - z;
+		const mouseWheel = function(e) {
+			if (singleWorld && e.target === singleWorld.canvas) {
+
+				e.wheel = e.deltaY ? -e.deltaY : e.wheelDelta / 40;
+				let z = e.deltaY;
+				if (z != 0) {
+					let b = 0;
+					if (z > 0) {
+						b = 1.003
+					} else {
+						b = 0.997
+						z = -z;
+					}
+					z = z / 10
+					zoomVecs(singleWorld.mo_matrix, Math.pow(b, z))
+					for (let i = 0; i < z; i++) {
+						singleWorld.ZOOM = singleWorld.ZOOM * b
+					}
 				}
-				z = z / 10
-				zoomVecs(singleWorld.mo_matrix, Math.pow(b, z))
-				for (let i = 0; i < z; i++) {
-					singleWorld.ZOOM = singleWorld.ZOOM * b
-				}
+				e.preventDefault();
 			}
-			e.preventDefault();
 		};
 
 		canvas.addEventListener("mousedown", mouseDown, false);
@@ -236,7 +276,7 @@ class glWorld {
 		}
 		*/
 		
-		//var dt = time - this.time_old;
+		//let dt = time - this.time_old;
 
 		//if (!this.drag) {
 		//   this.dX *= this.AMORTIZATION, this.dY *= this.AMORTIZATION;

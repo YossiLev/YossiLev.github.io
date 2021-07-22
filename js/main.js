@@ -176,6 +176,11 @@ addTts = () => {
     });
 }
 
+webGlFocus = () => {
+    getArrayByClass("canvasWebGl").forEach(el => {
+        el.onfocus = ((e) => {console.log(e); glWorld.setFocusByCanvas(e.target)});
+    });
+}
 embedVideo = (label) => {
     const vidFrame = document.createElement("div");
     vidFrame.classList.add('vidFrame');
@@ -190,7 +195,7 @@ embedVideo = (label) => {
     const body = document.getElementsByTagName("BODY")[0];
     body.insertBefore(vidFrame, body.firstChild);
 }
-window.onloadFuncs = [addHeader, fillAppendixOrder, optionalOpenClose, equationsLabels, zoomOnImages, initActions, addTts];
+window.onloadFuncs = [addHeader, fillAppendixOrder, optionalOpenClose, equationsLabels, zoomOnImages, initActions, addTts, webGlFocus];
 
 window.onload = function()
 {

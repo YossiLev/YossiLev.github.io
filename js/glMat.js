@@ -9,23 +9,22 @@ function shiftMat3(m, s) {
 }
 
 function buildRelativeMat(pos) {
-	let ph = pos[3] * Math.PI / 180
-	let th = pos[4] * Math.PI / 180
-	let ps = pos[5] * Math.PI / 180
-	
-	let sph = Math.sin(ph)
-	let cph = Math.cos(ph)
-	let sth = Math.sin(th)
-	let cth = Math.cos(th)
-	let sps = Math.sin(ps)
-	let cps = Math.cos(ps)
+	const ph = pos[3] * Math.PI / 180
+	const th = pos[4] * Math.PI / 180
+	const ps = pos[5] * Math.PI / 180
 
-	let m = [ cth * cps,                     cth * sps,                   - sth      , 0, 
+	const sph = Math.sin(ph)
+	const cph = Math.cos(ph)
+	const sth = Math.sin(th)
+	const cth = Math.cos(th)
+	const sps = Math.sin(ps)
+	const cps = Math.cos(ps)
+
+	const m = [ cth * cps,                     cth * sps,                   - sth      , 0,
 			- cph * sps + sph * sth * cps,   cph * cps + sph * sth * sps,   sph * cth, 0, 
 			  sph * sps + cph * sth * cps, - sph * cps + cph * sth * sps,   cph * cth, 0, 
 			pos[0], pos[1], pos[2], 1]
-	
-			
+
 	return m
 }
 
@@ -53,9 +52,9 @@ function multMat4x4(m2, m1) {
 }
 
 function mat4FromAxisAngle(a, angle) {
-	let c = Math.cos(angle)
-	let s = Math.sin(angle)
-	let t = 1.0 - c
+	const c = Math.cos(angle)
+	const s = Math.sin(angle)
+	const t = 1.0 - c
 
 	let m =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 	m[0 * 4 + 0] = t * a[0] * a[0] + c
@@ -120,9 +119,9 @@ function normalizeVec3(v) {
 }				
 
 function rotateX(m, angle) {
-	var c = Math.cos(angle);
-	var s = Math.sin(angle);
-	var mv1 = m[1], mv5 = m[5], mv9 = m[9];
+	const c = Math.cos(angle);
+	const s = Math.sin(angle);
+	const mv1 = m[1], mv5 = m[5], mv9 = m[9];
 
 	m[1] = m[1]*c-m[2]*s;
 	m[5] = m[5]*c-m[6]*s;
@@ -134,9 +133,9 @@ function rotateX(m, angle) {
 }
 
 function rotateY(m, angle) {
-	var c = Math.cos(angle);
-	var s = Math.sin(angle);
-	var mv0 = m[0], mv4 = m[4], mv8 = m[8];
+	const c = Math.cos(angle);
+	const s = Math.sin(angle);
+	const mv0 = m[0], mv4 = m[4], mv8 = m[8];
 
 	m[0] = c*m[0]+s*m[2];
 	m[4] = c*m[4]+s*m[6];
