@@ -28,7 +28,7 @@ class glWorld {
 	}
 	
 	getComb() {
-		let comb = { vertices: [], colors: [], indices: []};
+		let comb = { vertices: [], normals: [], colors: [], indices: []};
 		this.objects.forEach(ob => ob.combine(comb))
 
 		return comb;
@@ -44,24 +44,32 @@ class glWorld {
 	getObjectByName(name) {
 		return this.objects.find(ob => ob.name == name);
 	}
-	transformObject(pos, name) {
-		this.objects.find(ob => ob.name == name).transform(buildRelativeMat(pos));
+	transformObject(operation, stepTime, pos, namesString) {
+		const names = namesString.split(',').map(n => n.trim());
+		switch (operation) {
+			case "move":
+				this.objects.filter(ob => names.includes(ob.name)).forEach(o => o.transform(buildRelativeMat(pos)));
+				break;
+			case "show":
+				this.objects.filter(ob => names.includes(ob.name)).forEach(o => o.showPart(stepTime));
+				break;
+		}
 	}
-	animateObject(pos, name, time) {
+	animateObject(operation, pos, name, time) {
 		this.canvas.focus();
 		this.setFocus();
 		let stepTime = 0.0;
 		const animateTimer = setInterval(() => {
-			this.transformObject(pos, name);
 			stepTime += 0.02;
+			this.transformObject(operation, stepTime / time, pos, name);
 			if (time <= stepTime) {
 				clearInterval(animateTimer);
 			}
 		}, 20)
 	}
 
-	draw(gl, _Mmatrix, mo_matrix) {
-		this.objects.forEach(ob => ob.draw(gl, _Mmatrix, mo_matrix))
+	drawAllObjects(gl, _Mmatrix, mo_matrix) {
+		this.objects.forEach(ob => ob.drawObject(gl, _Mmatrix, mo_matrix))
 	}
 	
 	toggleByName(name) {
@@ -82,19 +90,24 @@ class glWorld {
 		console.log('prepare start');
 		let comb = this.getComb();
 		console.log('prepare end');
-		
+
 		// Create and store data into vertex buffer
-		let vertex_buffer = this.gl.createBuffer ();
+		let vertex_buffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertex_buffer);
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(comb.vertices), this.gl.STATIC_DRAW);
 
+		// Create and store data into normal buffer
+		let normal_buffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, normal_buffer);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(comb.normals), this.gl.STATIC_DRAW);
+
 		// Create and store data into color buffer
-		let color_buffer = this.gl.createBuffer ();
+		let color_buffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, color_buffer);
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(comb.colors), this.gl.STATIC_DRAW);
 
 		// Create and store data into index buffer
-		let index_buffer = this.gl.createBuffer ();
+		let index_buffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, index_buffer);
 		this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(comb.indices), this.gl.STATIC_DRAW);
 
@@ -102,22 +115,28 @@ class glWorld {
 
 		let vertCode = [
 			'attribute vec3 position;',
+			'attribute vec3 normal;',
 			'uniform mat4 Pmatrix;',
 			'uniform mat4 Vmatrix;',
 			'uniform mat4 Mmatrix;',
 			'attribute vec3 color;',//the color of the point
-			'varying vec3 vColor;',
+			'varying vec4 vColor;',
+			'varying vec4 vNormal;',
 			'void main(void) { ',//pre-built function
-			   'gl_Position = Pmatrix*Vmatrix*Mmatrix*vec4(position, 1.);',
-			   'vColor = color;',
+				'gl_Position = Pmatrix*Vmatrix*Mmatrix*vec4(position, 1.);',
+				'vNormal = vec4(normal, 1.0);',
+				'vColor = vec4(color, 1.0);',
 			'}'
 		].join('');
 
 		let fragCode = [
 			'precision mediump float;',
-			'varying vec3 vColor;',
+			'varying vec4 vColor;',
+			'varying vec4 vNormal;',
 			'void main(void) {',
-			   'gl_FragColor = vec4(vColor, 1.);',
+				'vec4 vColorA = (vNormal[2] * 0.5 + 0.5) * vColor;',
+				'vColorA[3] = 1.0;',
+				'gl_FragColor = vColorA;',
 			'}'
 		].join('');
 
@@ -143,6 +162,11 @@ class glWorld {
 		let _position = this.gl.getAttribLocation(shaderprogram, "position");
 		this.gl.vertexAttribPointer(_position, 3, this.gl.FLOAT, false,0,0);
 		this.gl.enableVertexAttribArray(_position);
+
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, normal_buffer);
+		let _normal = this.gl.getAttribLocation(shaderprogram, "normal");
+		this.gl.vertexAttribPointer(_normal, 3, this.gl.FLOAT, false,0,0);
+		this.gl.enableVertexAttribArray(_normal);
 
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, color_buffer);
 		let _color = this.gl.getAttribLocation(shaderprogram, "color");
@@ -290,13 +314,13 @@ class glWorld {
 		this.gl.enable(this.gl.DEPTH_TEST);
 
 		// gl.depthFunc(gl.LEQUAL);
-
+		this.gl.clearColor(1,1,1, 1.0);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
 		this.gl.uniformMatrix4fv(this._Pmatrix, false, this.proj_matrix);
 		this.gl.uniformMatrix4fv(this._Vmatrix, false, this.view_matrix);
 
-		singleWorld.draw(this.gl, this._Mmatrix, this.mo_matrix);
+		singleWorld.drawAllObjects(this.gl, this._Mmatrix, this.mo_matrix);
 
 		window.requestAnimationFrame(animateG);
 	}

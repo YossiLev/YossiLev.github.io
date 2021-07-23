@@ -29,10 +29,10 @@
     \[F=\frac{GM_1M_2}{R^2}\]
 </div>
 <div class="normal tts" id="newTheory">
-    After Albert Einstein introduced the theory of relativity, he tried the generalize the theory to include
+    After Albert Einstein introduced the theory of relativity, then he tried the generalize the theory to include
     accelerated motion. The result was a more general theory, to be later named "General Relativity". The theory gave
     a new explanation to both accelerations and also the attractive forces of gravity, and became the new gravity theory.
-    t suggested that masses affect the "fabric of space-time" and bend (or curve or distort) it. In this space-time,
+    It suggested that masses affect the "fabric of space-time" and bend (or curve or distort) it. In this space-time,
     the motion of all the stuff (massive objects but also light!)
     is distorted so they follow the curved paths in the curved space-time. A new formula gives the
     connection between "Energy-Momentum T", which is the new name for Mass, and the geometric distortion of space time,
@@ -42,9 +42,9 @@
     In reality this equation is so complicated, that we could not solve it (except for some simple cases).
 </div>
 <div class="normal">
-    But still, we remain with all masses curve space-time, and then masses move in space-time along the curve paths
-    that are the "straightest" curves available on the curved space-time. Only when there are not masses at all (\(T=0\)),
-    do we get no distortion (\(G=0\)), and then we call it zero-curvature of flat-space.
+    But still, we remain with all masses curve space-time, and then masses move in space-time along the curved paths
+    that are the "straightest" curves available on the curved space-time. Only when there are no masses at all
+    (\(T=0\) everywhere), do we get no distortion (\(G=0\)), and then we call it zero-curvature, or flat-space.
 </div>
 <div class="normal">
     <b>One dimensional curved shapes, or curved lines</b> -
@@ -52,23 +52,31 @@
 </div>
 <div class="normal">
     <b>Two dimensional curved shapes, or curved surface</b> -
-    A curved surface is also something familiar. We can tell the difference between a curved surface anf a flat one by
+    A curved surface is also something familiar. We can tell the difference between a curved surface and a flat one by
     looking.
 </div>
 <canvas width="800" height="400" id="surface_Canvas" class="canvasWebGl" tabindex="0"></canvas>
 <div>
-    <div class="animButton" onclick="worldS.animateObject([0.002, 0, 0, 0, 0.5, 0], 'sineS', 1)">shift</div>
-    <div class="animButton" onclick="worldS.animateObject([-0.002, 0, 0, 0, 0.5, 0], 'sineS', 0.5)">shift back</div>
+    <div class="animButton" onclick="worldS.animateObject('move', [0.002, 0, 0, 0, 0.5, 0], 'sineS', 1)">shift</div>
+    <div class="animButton" onclick="worldS.animateObject('move', [-0.002, 0, 0, 0, 0.5, 0], 'sineS', 0.5)">shift back</div>
+    <div class="animButton" onclick="worldS.animateObject('show', [-0.002, 0, 0, 0, 0.5, 0], 'sineS, sph', 1)">reveal</div>
 </div>
 <div class="normal">
     We can imagine drawing a straight line on a flat surface, but could there be a straight line on a curved surface?
     The best way to handle this is to stand on a point of the surface and decide on which direction you want to go.
+    The make a tiny step in the direction you chose. Usually, you will find yourself no exactly on the surface but rather
+    a bit away. So now it is time to make a correction step and fall to the closest point of the surface.
 </div>
-
+</div>
+<canvas width="800" height="400" id="solar_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+<div>
+    <div class="animButton" onclick="worldSolar.animateObject('move', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
+</div>
 <canvas width="1300" height="600" id="my_Canvas" class="canvasWebGl" tabindex="0"></canvas>
 <div>
-    <div class="animButton" onclick="world.animateObject([0, 0, 0, 0, 2.5, 0], 'tr', 5)">shift</div>
-    <div class="animButton" onclick="world.animateObject([0.002, 0, 0, 0, 0.5, 0], 'tr', 0.5)">shift back</div>
+    <div class="animButton" onclick="world.animateObject('move', [0, 0, 0, 0, 2.5, 0], 'tr', 5)">shift</div>
+    <div class="animButton" onclick="world.animateObject('move', [0.002, 0, 0, 0, 0.5, 0], 'tr', 0.5)">shift back</div>
+    <div class="animButton" onclick="world.animateObject('show', [0.002, 0, 0, 0, 0.5, 0], 'tr, helix', 3)">reveal</div>
 </div>
 <div id="objBut"></div>
 
@@ -76,14 +84,21 @@
     let worldS = new glWorld();
     worldS.addToRoot('sineS', glBuild.sineSurface(0.25, 0.09, [-0.2, 0, 0, 0, 0, 0], [1, 0.8, 0.8]));
     worldS.addToRoot('flatS', glBuild.flatSurface(0.25, [0.2, 0, 0, 0, 0, 0], [0.8, 1, 0.8]));
+    worldS.addToRoot('sph', glBuild.sphere(0.1, 20, [0.0, 0, 0.2, 0, 0, 0], [0.9, 0.6, 0.2]));
     worldS.prepare(document.getElementById('surface_Canvas'))
     worldS.startAnimation();
+
+    let worldSolar = new glWorld();
+    worldSolar.addToRoot('sun', glBuild.sphere(0.02, 20, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.0]));
+    worldSolar.addToRoot('earth', glBuild.sphere(0.005, 20, [0.2, 0, 0.0, 0, 0, 0], [0.8, 0.8, 1.0]));
+    worldSolar.prepare(document.getElementById('solar_Canvas'))
+    worldSolar.startAnimation();
 
     let world = new glWorld();
     world.addToRoot('floor', glBuild.floor(4, 0.1));
     world.addToRoot('helix', glBuild.helixCurve(0.2, 0.2, 3, 0.005, [0, 0, 0, 0, 45, 0], [0, 1, 0]));
     world.addToRoot('helix2', glBuild.helixCurve(0.4, 0.4, 1.5, 0.005, [0.1, 0, 0, 0, 0, 0], [1, 1, 0]));
-    world.addToRoot('tr', glBuild.trefoilKnotCurve(0.03, [0, 0, 0, 0, 0, 0], [1, 0, 0.5]));
+    world.addToRoot('tr', glBuild.trefoilKnotCurve(0.03, [0, 0, 0.1, 0, 0, 0], [1, 0, 0.5]));
     world.addToRoot('sine', glBuild.sineCurve(0.05, [0, 0, 0, 0, 0, 0], [1, 0.7, 0]));
     //world.addToRoot('another sine', glBuild.makeClone([0, 0.2, 0, 0, 0, 0], world.getObjectByName('sine')));
 

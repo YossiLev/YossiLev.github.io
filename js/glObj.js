@@ -9,11 +9,16 @@ class Torus {
 class glBuild {
 	static dataInit(pos, glMode, options = {}) {
 		return ({
-			vertices: [], colors: [], indices: [],
+			vertices: [], normals: [], colors: [], indices: [],
 			trMatrix: buildRelativeMat(pos),
 			glMode: glMode,
 			...options
 		});
+	}
+	static dataPush(data, v, n, c) {
+		data.vertices.push(...v);
+		data.normals.push(...n);
+		data.colors.push(...c);
 	}
 	static makeClone(pos, clone) {
 		return new glInfo(glBuild.dataInit(pos, 0, {clone: clone}));
@@ -37,6 +42,59 @@ class glBuild {
 		}
 			
 		return new glInfo(data);
+	}
+	static sphere(r, n, pos, col) {
+		const vnSphereFunc = (r, p, t) => {
+			return [[r * Math.sin(p) * Math.cos(t), r * Math.cos(p) * Math.cos(t), r * Math.sin(t)],
+				[Math.sin(p) * Math.cos(t), Math.cos(p) * Math.cos(t), Math.sin(t)]]
+		}
+		let data = glBuild.dataInit(pos, 0x0004 /*gl.TRIANGLES */);
+
+		const dTheta = 10;
+		const dPhi = 10;
+
+		let needFirstTheta = true;
+		let lastPhi = 0;
+		let lastTheta = 0;
+		for (let iTheta = -90; iTheta < 91; iTheta += dTheta) {
+			let theta = (Math.PI * iTheta) / 180
+			if (needFirstTheta) {
+				needFirstTheta = false
+				lastTheta = theta
+				continue
+			}
+
+			let needFirstPhi = true
+			for (let iPhi = -180; iPhi < 181; iPhi += dPhi) {
+				let phi = (Math.PI * iPhi) / 180
+
+				if (needFirstPhi) {
+					needFirstPhi = false
+					lastPhi = phi
+					continue
+				}
+
+				let ll = data.vertices.length / 3;
+				glBuild.dataPush(data, ...vnSphereFunc(r, phi, theta), col);
+				glBuild.dataPush(data, ...vnSphereFunc(r, lastPhi, theta), col);
+				glBuild.dataPush(data, ...vnSphereFunc(r, lastPhi, lastTheta), col);
+				glBuild.dataPush(data, ...vnSphereFunc(r, phi, lastTheta), col);
+
+				//data.vertices.push(r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi) * Math.cos(theta), r * Math.sin(theta));
+				//data.vertices.push(r * Math.sin(lastPhi) * Math.cos(theta), r * Math.cos(lastPhi) * Math.cos(theta), r * Math.sin(theta));
+				//data.vertices.push(r * Math.sin(lastPhi) * Math.cos(lastTheta), r * Math.cos(lastPhi) * Math.cos(lastTheta), r * Math.sin(lastTheta));
+				//data.vertices.push(r * Math.sin(phi) * Math.cos(lastTheta), r * Math.cos(phi) * Math.cos(lastTheta), r * Math.sin(lastTheta));
+				//data.normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
+				//data.colors.push(...col, ...col, ...col, ...col)
+				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 1, ll + 3)
+
+				lastPhi = phi
+			}
+			lastTheta = theta
+		}
+
+		return new glInfo(data);
+
 	}
 	static torus(size, pos, col) {
 		let s = 0.5 * size
@@ -80,6 +138,7 @@ class glBuild {
 				data.vertices.push(...Torus.p(s, exp_eta, lastTheta + pRot, psi))
 				data.vertices.push(...Torus.p(s, exp_eta, lastTheta + last_pRot, last_psi))
 				data.vertices.push(...Torus.p(s, exp_eta, theta + last_pRot, last_psi))
+				data.normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
 				data.colors.push(...col, ...col, ...col, ...col)
 				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 1, ll + 3)
 
@@ -105,6 +164,7 @@ class glBuild {
 				data.vertices.push(x + size, y, 0);
 				data.vertices.push(x + size, y + size, 0);
 				data.vertices.push(x, y + size, 0);
+				data.normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
 				data.colors.push(...(cols[iCol]), ...(cols[iCol]), ...(cols[iCol]), ...(cols[iCol]));
 				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 3, ll + 1);
 
@@ -202,11 +262,14 @@ class glBuild {
 				const p0t1 = lastFr.pos.map((v, iv) => 0.1 *(v + lastFr.norm1[iv] * Math.sin(theta) * r + lastFr.norm2[iv] * Math.cos(theta) * r));
 				const p0t0 = lastFr.pos.map((v, iv) => 0.1 *(v + lastFr.norm1[iv] * Math.sin(lastTheta) * r + lastFr.norm2[iv] * Math.cos(lastTheta) * r));
 
+				const surfaceNormal = [0, 1, 2].map(iv => fr.norm1[iv] * Math.sin(theta) + fr.norm2[iv] * Math.cos(theta));
+
 				let ll = data.vertices.length / 3;
 				data.vertices.push(...p1t1);
 				data.vertices.push(...p1t0);
 				data.vertices.push(...p0t0);
 				data.vertices.push(...p0t1);
+				data.normals.push(...surfaceNormal, ...surfaceNormal, ...surfaceNormal, ...surfaceNormal);
 				if (iTheta > -180 + 30) {
 					data.colors.push(...col, ...col, ...col, ...col);
 				} else {
@@ -223,14 +286,16 @@ class glBuild {
 		return new glInfo(data);
 	}
 	static flatSurface(r, pos, col) {
-		const flatSurfaceFunc = (xm, xn) => [r * (xm - 0.5), r * (xn - 0.5), 0];
+		const flatSurfaceFunc = (xm, xn) => [[r * (xm - 0.5), r * (xn - 0.5), 0],[0, 0, 1]];
 		return glBuild.parametricSurface(flatSurfaceFunc, 40, 40, pos, col);
 	}
 	static sineSurface(r, h, pos, col) {
-		const sineSurfaceFunc = (xm, xn) => [r * (xm - 0.5), r * (xn - 0.5), h * Math.sin(xm * Math.PI * 2) * Math.sin(xn * Math.PI * 2)];
+		const sineSurfaceFunc = (xm, xn) => [
+			[r * (xm - 0.5), r * (xn - 0.5), h * Math.sin(xm * Math.PI * 2) * Math.sin(xn * Math.PI * 2)],
+			normalizeVec3([-Math.cos(xm * Math.PI * 2), -Math.cos(xn * Math.PI * 2), 1])];
 		return glBuild.parametricSurface(sineSurfaceFunc, 40, 40, pos, col);
 	}
-	static parametricSurface(func, m, n, pos, col) {
+	static parametricSurface(vnFunc, m, n, pos, col) {
 		let data = glBuild.dataInit(pos,0x0004 /*gl.TRIANGLES*/);
 
 		let pm = 0;
@@ -254,15 +319,12 @@ class glBuild {
 					continue;
 				}
 				let ll = data.vertices.length / 3;
-				data.vertices.push(...func(xm, xn));
-				data.vertices.push(...func(xm, pn));
-				data.vertices.push(...func(pm, pn));
-				data.vertices.push(...func(pm, xn));
-				if ((im + iN) % 2 === 1) {
-					data.colors.push(...col, ...col, ...col, ...col);
-				} else {
-					data.colors.push(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-				}
+				let colX = ((im + iN) % 2 === 1) ? [...col] : [0, 0, 0];
+				glBuild.dataPush(data, ...vnFunc(xm, xn), colX);
+				glBuild.dataPush(data, ...vnFunc(xm, pn), colX);
+				glBuild.dataPush(data, ...vnFunc(pm, pn), colX);
+				glBuild.dataPush(data, ...vnFunc(pm, xn), colX);
+
 				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 3, ll + 1);
 
 				pn = xn;
@@ -276,6 +338,7 @@ class glBuild {
 	static addLine(data, p1, p2, c, w = 1) {
 		let ll = data.vertices.length / 3
 		data.vertices.push(...p1, ...p2);
+		data.normals.push(0, 0, 1, 0, 0, 1);
 		data.colors.push(...c, ...c);
 		data.indices.push(ll, ll + 1);
 		data.width = w;
@@ -307,6 +370,7 @@ class glBuild {
 						let ll = data.vertices.length
 						let zm = 2000 * r * r * r * r *  r
 						data.vertices.push(x, y, z, x + dx * zm, y + dy * zm, z + dz * zm);
+						data.normals.push(0, 0, 1, 0, 0, 1);
 						data.colors.push(...col,  0, 0, 0);
 						let ind = [ll, ll + 1]  
 						data.indices.push(...ind);						
@@ -487,6 +551,7 @@ class glBuild {
 				zd = 10 * (x * x + (y + d) * (y + d));
 				data.vertices.push(x, y, z);
 				data.vertices.push(x, y + d, zd);
+				data.normals.push(0, 0, 1, 0, 0, 1);
 				data.colors.push(...col1, ...col2);
 				
 				data.indices.push(ll, ll + 1);
@@ -501,6 +566,7 @@ class glInfo {
 		this.clone = data.clone ? data.clone: null;
 		this.tr_matrix = data.trMatrix;
 		this.vertices = data.vertices;
+		this.normals = data.normals;
 		this.colors = data.colors;
 		this.indices = data.indices;
 		this.glMode = data.glMode;
@@ -521,18 +587,17 @@ class glInfo {
 		console.log('this.vertices.length = ', this.vertices.length)
 		console.log('this.colors.length = ', this.colors.length)
 		console.log('this.indices.length = ', this.indices.length)
-		let i;
-		for (i = 0; i < this.vertices.length; i += 1) {
-			comb.vertices.push(this.vertices[i]);
-		}
+
+		comb.vertices.push(...this.vertices);
 		this.vertices = null;
-		for (i = 0; i < this.colors.length; i += 1) {
-			comb.colors.push(this.colors[i]);
-		}
+
+		comb.normals.push(...this.normals);
+		this.normals = null;
+
+		comb.colors.push(...this.colors);
 		this.colors = null;
-		for (i = 0; i < this.indices.length; i += 1) {
-			comb.indices.push(this.indices[i]);
-		}
+
+		comb.indices.push(...this.indices);
 		this.indices = null;
 	}
 }
@@ -540,6 +605,7 @@ class glObj {
 	constructor(name, glPack) {
 		this.name = name;
 		this.show = true;
+		this.partial = 1;
 		this.children = [];
 		this.glPack = glPack;
 	}
@@ -560,49 +626,53 @@ class glObj {
 	transform(tr_mat) {
 		this.glPack.tr_matrix = multMat4x4(tr_mat, this.glPack.tr_matrix);
 	}
-	draw(gl, _Mmatrix, mo_matrix) {
+	showPart(part) {
+		this.partial = part;
+	}
+	drawObject(gl, _Mmatrix, mo_matrix) {
 		if (this.show) {
-			const drawObject = this.glPack.clone ? this.glPack.clone : this;
+			const useObject = this.glPack.clone ? this.glPack.clone : this;
 			let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix);
+			let nForDraw = Math.floor(this.partial * useObject.glPack.nIndices);
 			gl.uniformMatrix4fv(_Mmatrix, false, obj_matrix);
-			gl.drawElements(drawObject.glPack.glMode, drawObject.glPack.nIndices, gl.UNSIGNED_INT, 4 * drawObject.glPack.startIndex);
-			if (drawObject.glPack.cylSymmetry && drawObject.glPack.cylSymmetry > 1) {
-				let angle = Math.PI * 2 / drawObject.glPack.cylSymmetry;
+			gl.drawElements(useObject.glPack.glMode, nForDraw, gl.UNSIGNED_INT, 4 * useObject.glPack.startIndex);
+			if (useObject.glPack.cylSymmetry && useObject.glPack.cylSymmetry > 1) {
+				let angle = Math.PI * 2 / useObject.glPack.cylSymmetry;
 				let sa = Math.sin(angle);
 				let ca = Math.cos(angle);
 				let deltaRotMat = [ca, -sa, 0, 0, sa, ca, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 				let tMat = [...this.glPack.tr_matrix]
-				let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix)
-				for (let d = 1; d < drawObject.glPack.cylSymmetry; d++) {
+				//let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix)
+				for (let d = 1; d < useObject.glPack.cylSymmetry; d++) {
 					tMat = multMat4x4(deltaRotMat, tMat)
 					let ot_matrix = multMat4x4(mo_matrix, tMat)
 					gl.uniformMatrix4fv(_Mmatrix, false, ot_matrix);
-					gl.drawElements(drawObject.glPack.glMode, drawObject.glPack.nIndices, gl.UNSIGNED_INT, 4 * drawObject.glPack.startIndex);
+					gl.drawElements(useObject.glPack.glMode, nForDraw, gl.UNSIGNED_INT, 4 * useObject.glPack.startIndex);
 				}
 			}
-			if (drawObject.glPack.sphereSymmetry && drawObject.glPack.sphereSymmetry > 1 ) {
-				let theta = Math.PI / drawObject.glPack.sphereSymmetry;
+			if (useObject.glPack.sphereSymmetry && useObject.glPack.sphereSymmetry > 1 ) {
+				let theta = Math.PI / useObject.glPack.sphereSymmetry;
 				let st = Math.sin(theta);
 				let ct = Math.cos(theta);
 				let thetaRotMat = [1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1]
-				let phi = Math.PI / drawObject.glPack.sphereSymmetry;
+				let phi = Math.PI / useObject.glPack.sphereSymmetry;
 				let sp = Math.sin(phi);
 				let cp = Math.cos(phi);
 				let phiRotMat = [cp, -sp, 0, 0, sp, cp, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 				let thMat = [...this.glPack.tr_matrix]
-				let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix)
-				for (let dt = 1; dt < drawObject.glPack.sphereSymmetry; dt++) {
+				//let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix)
+				for (let dt = 1; dt < useObject.glPack.sphereSymmetry; dt++) {
 					thMat = multMat4x4(thetaRotMat, thMat);
 					let phiMat = [...thMat]
-					for (let dp = 0; dp < 2 * drawObject.glPack.sphereSymmetry; dp++) {
+					for (let dp = 0; dp < 2 * useObject.glPack.sphereSymmetry; dp++) {
 						let ot_matrix = multMat4x4(mo_matrix, phiMat)
 						gl.uniformMatrix4fv(_Mmatrix, false, ot_matrix);
-						gl.drawElements(drawObject.glPack.glMode, drawObject.glPack.nIndices, gl.UNSIGNED_INT, 4 * drawObject.glPack.startIndex);
+						gl.drawElements(useObject.glPack.glMode, nForDraw, gl.UNSIGNED_INT, 4 * useObject.glPack.startIndex);
 						phiMat = multMat4x4(phiRotMat, phiMat);
 					}
 				}
 			}
-			this.children.forEach(ob => ob.draw(gl, _Mmatrix, obj_matrix));
+			this.children.forEach(ob => ob.drawObject(gl, _Mmatrix, obj_matrix));
 		}
 	}
 		
