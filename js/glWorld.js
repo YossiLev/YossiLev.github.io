@@ -86,7 +86,7 @@ class glWorld {
 		this.gl.clearDepth(1.0);
 		this.gl.viewport(0.0, 0.0, canvas.width, canvas.height);
 		const ext = this.gl.getExtension('OES_element_index_uint');
-		
+
 		console.log('prepare start');
 		let comb = this.getComb();
 		console.log('prepare end');

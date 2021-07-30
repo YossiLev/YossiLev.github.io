@@ -47,13 +47,18 @@
     (\(T=0\) everywhere), do we get no distortion (\(G=0\)), and then we call it zero-curvature, or flat-space.
 </div>
 <div class="normal">
+    What is this curved space-time that makes gravity? How can we see it? This is the goal of this presentation.
+    So let's start talking about curved spaces.
+</div>
+<div class="normal">
     <b>One dimensional curved shapes, or curved lines</b> -
     It is easy to imagine a curved line, and to tell about a line if it is curved or not (not curved would give a straight line).
 </div>
 <div class="normal">
     <b>Two dimensional curved shapes, or curved surface</b> -
     A curved surface is also something familiar. We can tell the difference between a curved surface and a flat one by
-    looking.
+    looking. Look at the two surfaces below. One is curved and one is flat. Use the mouse the change view point (Guide here).
+    Can you see the curvature?
 </div>
 <canvas width="800" height="400" id="surface_Canvas" class="canvasWebGl" tabindex="0"></canvas>
 <div>
@@ -61,13 +66,79 @@
     <div class="animButton" onclick="worldS.animateObject('move', [-0.002, 0, 0, 0, 0.5, 0], 'sineS', 0.5)">shift back</div>
     <div class="animButton" onclick="worldS.animateObject('show', [-0.002, 0, 0, 0, 0.5, 0], 'sineS, sph', 1)">reveal</div>
 </div>
+<div class="headLine2">
+    Straight lines on a curves space?
+</div>
 <div class="normal">
     We can imagine drawing a straight line on a flat surface, but could there be a straight line on a curved surface?
     The best way to handle this is to stand on a point of the surface and decide on which direction you want to go.
     The make a tiny step in the direction you chose. Usually, you will find yourself no exactly on the surface but rather
     a bit away. So now it is time to make a correction step and fall to the closest point of the surface.
 </div>
+<div class="normal">
+    On a flat surface, this procedure give a path along a straight line. On a curved surface, the path is "the straightest
+    line possible".
+    <div class="list spreadList">
+        <div class="listItem">
+            See here how this works. Then, change view point and try it again.
+        </div>
+        <div class="listItem">
+            See here several such random straight lines and compare the results of the flat and curved surfaces.
+        </div>
+        <div class="listItem">
+            Compare the behavior of a bunch of lines that start as parallels.
+        </div>
+        <div class="listItem">
+            Compare the behavior of a bunch of lines that start from a single point to all directions.
+        </div>
+        <div class="listItem">
+            Change to top view and run all steps again.
+        </div>
+    </div>
 </div>
+<div class="normal">
+    Some things that are special to straight lines on curved surfaces, like there could be more than
+    a single straight line between the same two points, and parallel lines may meet. Such things do not depend on
+    the view point so they still exist even if the we are viewing the surface from the top. From this view point
+    the curvature is a bit obscured, but the straight lines continue to tell the tail of a curved surface.
+</div>
+<div class="normal">
+    This is important, because when we start talking about a curved three-dimensional space, we do not have the
+    option to directly view the curvature, by just looking at it from a higher dimensional point. So tracking
+    the paths of the straight lines is a valuable option.
+</div>
+<div class="headLine2">
+    Back to Gravitation - 4 Dimensions
+</div>
+<div class="normal">
+    While we live in a tree-dimensional world, understanding curvature on three-dimensional spaces is not enough.
+    The curved object, that drives gravity, has four dimensions. The three dimensions of space and another single
+    dimension of time. Every "point" in that space is made out of 4 numbers (coordinates). Three numbers describe
+    the location of the "point", while an additional number marks the time. The "point" is no longer a position,
+    but rather an "event".
+</div>
+<div class="headLine2">
+    The Geometry of Space-time
+</div>
+<div class="normal">
+    <div class="insertImage">
+        <img class="normalImage" src="../images/spaceTime.png" alt="Space Time"/>
+        <div class="imageLabel">Fig #st1# - Space Time</div>
+    </div>
+    We want to describe space time as having a geometry. What could the picture to draw? It should display all the
+    events that happen, and for each event show the location and also the time. The picture should include all
+    the events of some story. For example if there is a race between a rabbit and a turtle, the could go like that.
+    Both started at point A racing towards point B. The rabbit is faster, but once it got to the mid point of the race,
+
+    it fell asleep for an hour, while the turtle continued past the rabbit and go close the the end. Then the rabbit
+    woke up and continue to run but it wa too late. The whole story is shown in the following picture, with the rabbit
+    path is in red and turtle gets the blue path.
+</div>
+<div class="normal">
+    So we had concerns about understanding curvature in three dimensions, but the real target is to get to four.
+    Are we lost? Not really, and that's because gravitation effects are really intuitive and easy to grasp.
+</div>
+
 <canvas width="800" height="400" id="solar_Canvas" class="canvasWebGl" tabindex="0"></canvas>
 <div>
     <div class="animButton" onclick="worldSolar.animateObject('move', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
@@ -85,6 +156,9 @@
     worldS.addToRoot('sineS', glBuild.sineSurface(0.25, 0.09, [-0.2, 0, 0, 0, 0, 0], [1, 0.8, 0.8]));
     worldS.addToRoot('flatS', glBuild.flatSurface(0.25, [0.2, 0, 0, 0, 0, 0], [0.8, 1, 0.8]));
     worldS.addToRoot('sph', glBuild.sphere(0.1, 20, [0.0, 0, 0.2, 0, 0, 0], [0.9, 0.6, 0.2]));
+    worldS.addToRoot('sineSGeo', glBuild.curveOnSurface(worldS.getObjectByName('sineS'), 0.0, 0.0, 0.01, 0.01, 100, [1, 1, 0], 0.002));
+    worldS.addToRoot('sineSGeo2', glBuild.curveOnSurface(worldS.getObjectByName('sineS'), 0.0, 0.0, 0.01, 0.005, 100, [1, 1, 0], 0.002));
+
     worldS.prepare(document.getElementById('surface_Canvas'))
     worldS.startAnimation();
 
@@ -96,10 +170,17 @@
 
     let world = new glWorld();
     world.addToRoot('floor', glBuild.floor(4, 0.1));
-    world.addToRoot('helix', glBuild.helixCurve(0.2, 0.2, 3, 0.005, [0, 0, 0, 0, 45, 0], [0, 1, 0]));
-    world.addToRoot('helix2', glBuild.helixCurve(0.4, 0.4, 1.5, 0.005, [0.1, 0, 0, 0, 0, 0], [1, 1, 0]));
-    world.addToRoot('tr', glBuild.trefoilKnotCurve(0.03, [0, 0, 0.1, 0, 0, 0], [1, 0, 0.5]));
-    world.addToRoot('sine', glBuild.sineCurve(0.05, [0, 0, 0, 0, 0, 0], [1, 0.7, 0]));
+    world.addToRoot('helix', glBuild.helixCurve(0.2, 0.1, 6, 0.001, [0, 0, 0, 0, 45, 0], [0, 1, 0]));
+    world.addToRoot('arrow', glBuild.arrow(0.07, 0.03, 0.005, 0.01, [0, 0, 0, 0, 0, 0], [0, 1, 0]));
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            world.addToRoot(`@ar${i}${j}`, glBuild.makeClone([i * 0.1, j * 0.1, 0, 0, 0, 0], world.getObjectByName(`arrow`)));
+        }
+    }
+
+    world.addToRoot('helix2', glBuild.helixCurve(0.1, 0.1, 5, 0.001, [0.1, 0, 0, 0, 0, 0], [1, 1, 0]));
+    world.addToRoot('tr', glBuild.trefoilKnotCurve(0.003, [0, 0, 0.1, 0, 0, 0], [1, 0, 0.5]));
+    world.addToRoot('sine', glBuild.sineCurve(0.001, [0, 0, 0, 0, 0, 0], [1, 0.7, 0]));
     //world.addToRoot('another sine', glBuild.makeClone([0, 0.2, 0, 0, 0, 0], world.getObjectByName('sine')));
 
     //for (let i = 0; i <= 20; i++) {
@@ -117,44 +198,6 @@
             '<div class="but" onclick="world.toggleByName(\'' + n + '\')">' + n + '</div>').join('')
     }
 </script>
-<div class="normal">
-    The above formula mimics the gravitational “force” transforming “gravitational potential energy” into “kinetic energy”.
-    We should note that according to our theory,
-    the gravitated particle does not experience any force and does not change its energy.
-    It is more like sound waves in the windy air as the wind changes speed.
-</div>
-<div class="normal">
-    However, this is actually not Newton’s gravitation; it is closer to Einstein’s gravitation! Can you see why?
-</div>
-<div class="list spreadList">
-    <div class="listItem">
-        If a matter system with a clock, is simply drifting towards the main particle
-        (call this gravitating particle “earth” for convenience),
-        then the falling system is always at rest relative to the ether as it increases speed (free fall).
-        So clock rate does not change.
-        But a static object (a clock standing on the ground)
-        is actually moving through the flowing ether just to stay in place.
-        The circular paths of its particles become helix,
-        and internal cycle time becomes longer at exactly the right amount (see appendix D).
-        If another clock placed on a high tower, it will experience a slower ether wind,
-        so the effect of slowing down still appears, but less slow than the clock on the ground.
-        This is <b>time dilation</b> due to gravitation. In a flat world!
-    </div>
-    <div class="listItem">
-        Another feature of the flowing ether is that it slows down free light beams traveling perpendicular to the ether flow.
-        Similar to a boat crossing a flowing river losing some speed for resisting the river flow as it
-        makes its way to the other side.
-        With this, the new theory agrees with Einstein corrected calculation of light deviation due to gravity (see appendix).
-        Remember that the Newtonian calculation of gravitated light is wrong.
-    </div>
-</div>
-<div class="highlight">
-    Gravitation happens because masses suck the ether causing a drift towards them.
-</div>
-<div class="normal">
-    So, masses do not change the geometry of space-time; they create an inward ether wind.
-    The world manifold stands still and flat!
-</div>
 
 </body>
 </html>

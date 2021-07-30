@@ -10,6 +10,7 @@ class glBuild {
 	static dataInit(pos, glMode, options = {}) {
 		return ({
 			vertices: [], normals: [], colors: [], indices: [],
+			pos: pos,
 			trMatrix: buildRelativeMat(pos),
 			glMode: glMode,
 			...options
@@ -199,7 +200,7 @@ class glBuild {
 	}
 
 	static sineCurve(width, pos, col) {
-		const sineFunc = (pa) => [pa * Math.PI * 2, 0, Math.sin(pa * Math.PI * 2)];
+		const sineFunc = (pa) => [0.03 * pa * Math.PI * 2, 0, 0.1 * Math.sin(pa * Math.PI * 2)];
 		return glBuild.parametricCurve((p) => glBuild.curveFrame(sineFunc, p), 50, width, pos, col);
 	}
 	static sineCurve2(width, pos, col) {
@@ -222,13 +223,13 @@ class glBuild {
 	static trefoilKnotCurve(width, pos, col) {
 		const trefoilKnotFunc = (pa) => {
 			const t = pa * Math.PI * 2;
-			return [0.2 * (Math.cos(t) + 2 * Math.cos(2 * t)), 0.2 * (Math.sin(t) - 2 * Math.sin(2 * t)), 0.2 * (2 * Math.sin(3 * t))];
+			return [0.02 * (Math.cos(t) + 2 * Math.cos(2 * t)), 0.02 * (Math.sin(t) - 2 * Math.sin(2 * t)), 0.02 * (2 * Math.sin(3 * t))];
 		};
 		return glBuild.parametricCurve((p) => glBuild.curveFrame(trefoilKnotFunc, p), 250, width, pos, col);
 	}
 
 	static parametricCurve(func, n, width, pos, col) {
-		let data = glBuild.dataInit(pos,0x0004 /*gl.TRIANGLES*/)
+		let data = glBuild.dataInit(pos,0x0004 /*gl.TRIANGLES*/, {func: func})
 
 		let r = width;
 
@@ -248,27 +249,24 @@ class glBuild {
 				continue
 			}
 
-			let need_first_theta = true
+			let needFirstTheta = true
 			for (let iTheta = -180; iTheta < 181; iTheta +=30) {
 				let theta = (Math.PI * iTheta) / 180;
-				if (need_first_theta) {
-					need_first_theta = false;
+				if (needFirstTheta) {
+					needFirstTheta = false;
 					lastTheta = theta;
 					continue;
 				}
 
-				const p1t1 = fr.pos.map((v, iv) => 0.1 *(v + fr.norm1[iv] * Math.sin(theta) * r + fr.norm2[iv] * Math.cos(theta) * r));
-				const p1t0 = fr.pos.map((v, iv) => 0.1 *(v + fr.norm1[iv] * Math.sin(lastTheta) * r + fr.norm2[iv] * Math.cos(lastTheta) * r));
-				const p0t1 = lastFr.pos.map((v, iv) => 0.1 *(v + lastFr.norm1[iv] * Math.sin(theta) * r + lastFr.norm2[iv] * Math.cos(theta) * r));
-				const p0t0 = lastFr.pos.map((v, iv) => 0.1 *(v + lastFr.norm1[iv] * Math.sin(lastTheta) * r + lastFr.norm2[iv] * Math.cos(lastTheta) * r));
+				const p1t1 = fr.pos.map((v, iv) => v + fr.norm1[iv] * Math.sin(theta) * r + fr.norm2[iv] * Math.cos(theta) * r);
+				const p1t0 = fr.pos.map((v, iv) => v + fr.norm1[iv] * Math.sin(lastTheta) * r + fr.norm2[iv] * Math.cos(lastTheta) * r);
+				const p0t1 = lastFr.pos.map((v, iv) => v + lastFr.norm1[iv] * Math.sin(theta) * r + lastFr.norm2[iv] * Math.cos(theta) * r);
+				const p0t0 = lastFr.pos.map((v, iv) => v + lastFr.norm1[iv] * Math.sin(lastTheta) * r + lastFr.norm2[iv] * Math.cos(lastTheta) * r);
 
 				const surfaceNormal = [0, 1, 2].map(iv => fr.norm1[iv] * Math.sin(theta) + fr.norm2[iv] * Math.cos(theta));
 
 				let ll = data.vertices.length / 3;
-				data.vertices.push(...p1t1);
-				data.vertices.push(...p1t0);
-				data.vertices.push(...p0t0);
-				data.vertices.push(...p0t1);
+				data.vertices.push(...p1t1, ...p1t0, ...p0t0, ...p0t1);
 				data.normals.push(...surfaceNormal, ...surfaceNormal, ...surfaceNormal, ...surfaceNormal);
 				if (iTheta > -180 + 30) {
 					data.colors.push(...col, ...col, ...col, ...col);
@@ -285,18 +283,74 @@ class glBuild {
 
 		return new glInfo(data);
 	}
-	static flatSurface(r, pos, col) {
-		const flatSurfaceFunc = (xm, xn) => [[r * (xm - 0.5), r * (xn - 0.5), 0],[0, 0, 1]];
+	static arrow(l, l2, r , r2, pos, col) {
+		let data = glBuild.dataInit(pos,0x0004 /*gl.TRIANGLES*/)
+
+		let lastTheta = 0;
+		let lastFr = null;
+		let surfaceNormal, p1t1, p1t0, p0t1, p0t0;
+
+		for (let s = 0; s < 3; s++) {
+			let needFirstTheta = true
+			for (let iTheta = -180; iTheta < 181; iTheta += 10) {
+				let theta = (Math.PI * iTheta) / 180;
+				if (needFirstTheta) {
+					needFirstTheta = false;
+					lastTheta = theta;
+					continue;
+				}
+
+				switch (s) {
+					case 0:
+						p1t1 = [Math.sin(theta) * r, Math.cos(theta) * r, l - l2];
+						p1t0 = [Math.sin(lastTheta) * r, Math.cos(lastTheta) * r, l - l2];
+						p0t1 = [Math.sin(theta) * r, Math.cos(theta) * r, 0];
+						p0t0 = [Math.sin(lastTheta) * r, Math.cos(lastTheta) * r, 0];
+						surfaceNormal = [Math.sin((lastTheta + theta) / 2), Math.cos((lastTheta + theta) / 2), 0];
+						break;
+					case 1:
+						p1t1 = [Math.sin(theta) * r, Math.cos(theta) * r, l - l2];
+						p1t0 = [Math.sin(lastTheta) * r, Math.cos(lastTheta) * r, l - l2];
+						p0t1 = [Math.sin(theta) * r2, Math.cos(theta) * r2, l - l2];
+						p0t0 = [Math.sin(lastTheta) * r2, Math.cos(lastTheta) * r2, l - l2];
+						surfaceNormal = [0, 0, -1];
+						break;
+					case 2:
+						p1t1 = [Math.sin(theta) * r2, Math.cos(theta) * r2, l - l2];
+						p1t0 = [Math.sin(lastTheta) * r2, Math.cos(lastTheta) * r2, l - l2];
+						p0t1 = [0, 0, l];
+						p0t0 = [0, 0, l];
+						surfaceNormal = normalizeVec3([r2, 0, l2]);
+						surfaceNormal[1] = surfaceNormal[0] * Math.cos((lastTheta + theta) / 2);
+						surfaceNormal[0] = surfaceNormal[0] * Math.sin((lastTheta + theta) / 2);
+						break;
+				}
+
+				let ll = data.vertices.length / 3;
+				data.vertices.push(...p1t1, ...p1t0, ...p0t0, ...p0t1);
+				data.normals.push(...surfaceNormal, ...surfaceNormal, ...surfaceNormal, ...surfaceNormal);
+				data.colors.push(...col, ...col, ...col, ...col);
+				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 3, ll + 1);
+
+				lastTheta = theta;
+
+			}
+		}
+
+		return new glInfo(data);
+	}
+	static flatSurface(r1, pos, col) {
+		const flatSurfaceFunc = (xm, xn) => [[r1 * (xm - 0.5), r1 * (xn - 0.5), 0],[0, 0, 1]];
 		return glBuild.parametricSurface(flatSurfaceFunc, 40, 40, pos, col);
 	}
-	static sineSurface(r, h, pos, col) {
+	static sineSurface(r1, h, pos, col) {
 		const sineSurfaceFunc = (xm, xn) => [
-			[r * (xm - 0.5), r * (xn - 0.5), h * Math.sin(xm * Math.PI * 2) * Math.sin(xn * Math.PI * 2)],
+			[r1 * (xm - 0.5), r1 * (xn - 0.5), h * Math.sin(xm * Math.PI * 2) * Math.sin(xn * Math.PI * 2)],
 			normalizeVec3([-Math.cos(xm * Math.PI * 2), -Math.cos(xn * Math.PI * 2), 1])];
 		return glBuild.parametricSurface(sineSurfaceFunc, 40, 40, pos, col);
 	}
 	static parametricSurface(vnFunc, m, n, pos, col) {
-		let data = glBuild.dataInit(pos,0x0004 /*gl.TRIANGLES*/);
+		let data = glBuild.dataInit(pos,0x0004 /*gl.TRIANGLES*/, {func: vnFunc});
 
 		let pm = 0;
 		let pn = 0;
@@ -332,7 +386,34 @@ class glBuild {
 			pm = xm;
 		}
 
+		console.log(`pos = ${data.pos.toString()}`)
 		return new glInfo(data);
+	}
+
+	static curveOnSurface(surface, uStart, vStart, uStep, vStep, nSteps, col, width) {
+		//*
+		const curveFunc = (pa) => {
+			const u = uStart + uStep * nSteps * pa;
+			const v = vStart + vStep * nSteps * pa;
+			const vec = surface.glPack.func(u, v)[0];
+			return vec;
+		}
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(curveFunc, p), nSteps, width, surface.glPack.pos, col);
+		/*/
+
+		console.log(surface)
+		let data = glBuild.dataInit(surface.glPack.pos,0x0001 );
+
+		const func = surface.glPack.func;
+		let lastP = func(uStart, vStart)[0];
+		for (let iStep = 1; iStep < nSteps; iStep++) {
+			let p = func(uStart + iStep * uStep, vStart + iStep * vStep)[0];
+			glBuild.addLine(data, lastP, p, col, width);
+			lastP = p;
+		}
+
+		return new glInfo(data);
+		 //*/
 	}
 
 	static addLine(data, p1, p2, c, w = 1) {
@@ -564,6 +645,7 @@ class glBuild {
 class glInfo {
 	constructor(data) {
 		this.clone = data.clone ? data.clone: null;
+		this.pos = data.pos;
 		this.tr_matrix = data.trMatrix;
 		this.vertices = data.vertices;
 		this.normals = data.normals;
@@ -576,6 +658,7 @@ class glInfo {
 		this.nIndices = data.indices.length;
 		this.cylSymmetry = data.cylSymmetry ? data.cylSymmetry : 1;
 		this.sphereSymmetry = data.sphereSymmetry ? data.sphereSymmetry : 1;
+		this.func = data.func;
 	}
 	combine(comb) {
 		console.log('comb.vertices.length = ', comb.vertices.length)

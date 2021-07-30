@@ -134,7 +134,7 @@ fillAppendixOrder = () => {
     }
 }
 zoomOnImages = () => {
-    getArrayByClass("equLabel").forEach(el => {
+    getArrayByClass("insertImage").forEach(el => {
         el.onclick = (e) => {
             e.target.closest(".insertImage").classList.toggle("extendedImage");
         }
