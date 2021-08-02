@@ -7,6 +7,9 @@ class Torus {
 	}
 }
 class glBuild {
+	static lineList = [];
+	static doIt;
+	static doItM;
 	static dataInit(pos, glMode, options = {}) {
 		return ({
 			vertices: [], normals: [], colors: [], indices: [],
@@ -81,12 +84,6 @@ class glBuild {
 				glBuild.dataPush(data, ...vnSphereFunc(r, lastPhi, lastTheta), col);
 				glBuild.dataPush(data, ...vnSphereFunc(r, phi, lastTheta), col);
 
-				//data.vertices.push(r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi) * Math.cos(theta), r * Math.sin(theta));
-				//data.vertices.push(r * Math.sin(lastPhi) * Math.cos(theta), r * Math.cos(lastPhi) * Math.cos(theta), r * Math.sin(theta));
-				//data.vertices.push(r * Math.sin(lastPhi) * Math.cos(lastTheta), r * Math.cos(lastPhi) * Math.cos(lastTheta), r * Math.sin(lastTheta));
-				//data.vertices.push(r * Math.sin(phi) * Math.cos(lastTheta), r * Math.cos(phi) * Math.cos(lastTheta), r * Math.sin(lastTheta));
-				//data.normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
-				//data.colors.push(...col, ...col, ...col, ...col)
 				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 1, ll + 3)
 
 				lastPhi = phi
@@ -173,9 +170,7 @@ class glBuild {
 		}
 		return new glInfo(data);
 	}
-	static sineFunction(a) {
-		return [a, 0, Math.sin(a)];
-	}
+
 	static curveFrame(func, p) {
 		const epsilon = 0.0001;
 		const mv = func(p);
@@ -192,6 +187,16 @@ class glBuild {
 		const nVec3 = multVec3(nVec, nVec2);
 
 		return {pos: mv, norm1: nVec2, norm2: nVec3};
+	}
+	static surfaceFrame(func, p) {
+		const epsilon = 0.001;
+		const mv = func(p);
+		const mvM = func(p - epsilon)[0];
+		const mvP = func(p + epsilon)[0];
+		const nVec = normalizeVec3(subVec3(mvP, mvM));
+		const nVec2 = normalizeVec3(mv[1]);
+		const nVec3 = normalizeVec3(multVec3(nVec, nVec2));
+		return {pos: mv[0], norm1: nVec2, norm2: nVec3};
 	}
 
 	static helixCurve(d, r, n, width, pos, col) {
@@ -228,7 +233,7 @@ class glBuild {
 		return glBuild.parametricCurve((p) => glBuild.curveFrame(trefoilKnotFunc, p), 250, width, pos, col);
 	}
 
-	static parametricCurve(func, n, width, pos, col) {
+	static parametricCurve(func, n, width, pos, col, colorFunc = null) {
 		let data = glBuild.dataInit(pos,0x0004 /*gl.TRIANGLES*/, {func: func})
 
 		let r = width;
@@ -242,6 +247,10 @@ class glBuild {
 
 			let p = ip / n;
 			let fr = func(p);
+			let color = [...col];
+			if (colorFunc) {
+				color = [...colorFunc(p)];
+			}
 			if (needFirstP) {
 				needFirstP = false
 				last_p = p
@@ -269,7 +278,7 @@ class glBuild {
 				data.vertices.push(...p1t1, ...p1t0, ...p0t0, ...p0t1);
 				data.normals.push(...surfaceNormal, ...surfaceNormal, ...surfaceNormal, ...surfaceNormal);
 				if (iTheta > -180 + 30) {
-					data.colors.push(...col, ...col, ...col, ...col);
+					data.colors.push(...color, ...color, ...color, ...color);
 				} else {
 					data.colors.push(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 				}
@@ -344,9 +353,20 @@ class glBuild {
 		return glBuild.parametricSurface(flatSurfaceFunc, 40, 40, pos, col);
 	}
 	static sineSurface(r1, h, pos, col) {
-		const sineSurfaceFunc = (xm, xn) => [
-			[r1 * (xm - 0.5), r1 * (xn - 0.5), h * Math.sin(xm * Math.PI * 2) * Math.sin(xn * Math.PI * 2)],
-			normalizeVec3([-Math.cos(xm * Math.PI * 2), -Math.cos(xn * Math.PI * 2), 1])];
+		const sineSurfaceFunc = (xm, xn) => {
+			const rc = [
+				[	r1 * (xm - 0.5),
+					r1 * (xn - 0.5),
+					h * Math.sin(xm * Math.PI * 2) * Math.sin(xn * Math.PI * 2)],
+				normalizeVec3([- h * Math.cos(xm * Math.PI * 2) * Math.sin(xn * Math.PI * 2),
+					- h * Math.cos(xn * Math.PI * 2) * Math.sin(xm * Math.PI * 2), r1 * r1])
+			];
+			//glBuild.lineList.push([[rc[0][0], rc[0][1], rc[0][2]],
+			//	[rc[0][0] + 0.01 * rc[1][0], rc[0][1] + 0.01 * rc[1][1], rc[0][2] + 0.01 * rc[1][2]]]);
+
+			return rc;
+		}
+
 		return glBuild.parametricSurface(sineSurfaceFunc, 40, 40, pos, col);
 	}
 	static parametricSurface(vnFunc, m, n, pos, col) {
@@ -395,10 +415,10 @@ class glBuild {
 		const curveFunc = (pa) => {
 			const u = uStart + uStep * nSteps * pa;
 			const v = vStart + vStep * nSteps * pa;
-			const vec = surface.glPack.func(u, v)[0];
+			const vec = surface.glPack.func(u, v);
 			return vec;
 		}
-		return glBuild.parametricCurve((p) => glBuild.curveFrame(curveFunc, p), nSteps, width, surface.glPack.pos, col);
+		return glBuild.parametricCurve((p) => glBuild.surfaceFrame(curveFunc, p), nSteps, width, surface.glPack.pos, col);
 		/*/
 
 		console.log(surface)
@@ -416,6 +436,132 @@ class glBuild {
 		 //*/
 	}
 
+	static getDistanceByAngle(func, uv, vec3, epsilon, t) {
+		const u = uv[0] + epsilon * Math.cos(t);
+		const v = uv[1] + epsilon * Math.sin(t);
+		//console.log(u, v);
+		const f = func(u, v);
+		if (glBuild.doIt) {
+			glBuild.lineList.push([[f[0][0], f[0][1], f[0][2]], [f[0][0] + 0.1 * f[1][0], f[0][1] + 0.1 * f[1][1], f[0][2] + 0.1 * f[1][2]]]);
+		};
+		let d = distanceBetweenTwo3dLines(vec3, [...f[0],...f[1]]);
+		//console.log(d, ' <- ', [...f[0],...f[1]], vec3);
+		return d;
+	}
+	static getGeodesicUV(func, uv, puv, vec3, epsilon) {
+		glBuild.doIt = false;
+		const n = 400;
+		const pi = Math.PI / 4 / n;
+		let minD = 99999;
+		let bestT, bestI;
+		let angle = Math.atan2(uv[1] - puv[1], uv[0] - puv[0]) - Math.PI / 8;
+		//console.log('========= ', angle * 180 / Math.PI, uv[1] - puv[1], uv[0] - puv[0]);
+		for (let it = 0; it <= n; it ++) {
+			const t = angle + it * pi;
+			const d = glBuild.getDistanceByAngle(func, uv, vec3, epsilon, t);
+			//console.log(it, (t * 180 / Math.PI).toFixed(1), d);
+			if (minD > d) {
+				minD = d;
+				bestT = t;
+				bestI = it;
+			}
+		}
+		let maxT2;
+		if (Math.abs(bestI - n / 2) > 10) {
+			let minD = 99999;
+			glBuild.doIt = glBuild.doItM && glBuild.lineList.length === 0;
+			for (let it = 0; it <= n; it ++) {
+				const t = angle + it * pi;
+				const d = glBuild.getDistanceByAngle(func, uv, vec3, epsilon, t);
+				console.log(it, (t * 180 / Math.PI).toFixed(1), d);
+				if (minD > d) {
+					minD = d;
+					bestT = t;
+					bestI = it;
+				}
+			}
+			glBuild.doIt = false;
+		}
+		/*
+		let dev = pi2;
+		if (glBuild.getDistanceByAngle(func, uv, vec3, epsilon, maxT + dev) >
+			glBuild.getDistanceByAngle(func, uv, vec3, epsilon, maxT - dev)) {
+			maxT2 = maxT - dev;
+		} else {
+			maxT2 = maxT + dev;
+		}
+		*/
+
+		const minD1 = glBuild.getDistanceByAngle(func, uv, vec3, epsilon, bestT - pi);
+		const minD2 = glBuild.getDistanceByAngle(func, uv, vec3, epsilon, bestT + pi);
+
+		const x1 = bestT - pi / 2;
+		const x2 = bestT + pi / 2;
+		const y1 = minD - minD1;
+		const y2 = minD2 - minD;
+
+		const finalT = x1 - y1 * (x2 - x1) / (y2 - y1);
+
+		//console.log('bestI ', bestI, (bestT * 180 / Math.PI).toFixed(4), (finalT * 180 / Math.PI).toFixed(4), minD, minD1, minD2)
+		return [uv[0] + epsilon * Math.cos(finalT), uv[1] + epsilon * Math.sin(finalT)]
+	}
+
+	static geodesicOnSurface(surface, uStart, vStart, uDirection, vDirection, length, col, width) {
+		const func = surface.glPack.func;
+		let uv = [uStart, vStart];
+		let path = [], vec;
+		let p0 = func(uStart, vStart)[0];
+		let p1 = func(uStart + uDirection, vStart + vDirection)[0];
+		let puv = [uStart - uDirection, vStart - vDirection]
+		for (let ii = 0; ii < 1000; ii++) {
+			glBuild.doItM = ii > 10;
+			path.push(uv);
+			let vec = p0.map((pp0, i) => p1[i] - pp0);
+			//console.log('@@@@@@@ ', [...p0, ...vec]);
+			let nuv = glBuild.getGeodesicUV(func, uv, puv,[...p0, ...vec], 0.001);
+			puv = [...uv];
+			uv = [...nuv];
+			if (uv[0] < 0.0 || uv[0] > 1.0 || uv[1] < 0.0 || uv[1] > 1.0) {
+				break;
+			}
+			//console.log('uv ', uv[0].toFixed(4), uv[1].toFixed(4));
+			p0 = p1;
+			p1 = func(...uv)[0];
+		}
+		//console.log(path);
+		const lPath = path.slice(1).map((p, ip) =>
+			Math.sqrt((path[ip][0] - path[ip + 1][0]) * (path[ip][0] - path[ip + 1][0]) +
+				(path[ip][1] - path[ip + 1][1]) * (path[ip][1] - path[ip + 1][1])));
+		//console.log(lPath);
+		const sPath = [0];
+		lPath.forEach((p, ip) => sPath.push(sPath[ip] + p));
+		const sPathTot = sPath[sPath.length - 1];
+		//console.log(sPath);
+
+		const curveFunc = (pa) => {
+			const pos = pa * sPathTot;
+			let seg = sPath.findIndex(s => s >= pos);
+			if (seg < 0) {
+				seg = path.length - 1;
+			}
+			//console.log(pos, seg);
+			const part = (pos - sPath[seg - 1]) / (sPath[seg] - sPath[seg - 1]);
+			const u = seg === 0 ? path[0][0] : path[seg - 1][0] * (1 - part) + path[seg][0] * part;
+			const v = seg === 0 ? path[0][1] : path[seg - 1][1] * (1 - part) + path[seg][1] * part;
+			const vec = surface.glPack.func(u, v);
+			return vec;
+		}
+		const colorFunc = (pa) => {
+			const pos = pa * sPathTot;
+			let seg = sPath.findIndex(s => s >= pos);
+			if (seg < 0) {
+				seg = path.length - 1;
+			}
+			return (seg % 2 === 0) ? [1, 0, 0] : [0, 0, 1];
+		}
+		return glBuild.parametricCurve((p) => glBuild.surfaceFrame(curveFunc, p), 400, width, surface.glPack.pos, col/*, colorFunc*/);
+	}
+
 	static addLine(data, p1, p2, c, w = 1) {
 		let ll = data.vertices.length / 3
 		data.vertices.push(...p1, ...p2);
@@ -430,6 +576,16 @@ class glBuild {
 		glBuild.addLine(data, [0, 0, 0], [0, 0, 2], [0, 0, 1], 6);
 	}
 
+	static listOfLine(pos, col) {
+		let data = glBuild.dataInit(pos,0x0001 /*gl.LINES*/);
+
+		glBuild.lineList.forEach(l => {
+			glBuild.addLine(data, l[0], l[1], col)
+		});
+
+		glBuild.lineList = [];
+		return new glInfo(data);
+	}
 	static diracLines(size, pos, col) {
 		let s = 0.5 * size
 		let data = glBuild.dataInit(pos,0x0001 /*gl.LINES*/, {cylSymmetry: 20});

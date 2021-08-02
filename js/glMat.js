@@ -20,12 +20,10 @@ function buildRelativeMat(pos) {
 	const sps = Math.sin(ps)
 	const cps = Math.cos(ps)
 
-	const m = [ cth * cps,                     cth * sps,                   - sth      , 0,
+	return [ cth * cps,                     cth * sps,                   - sth      , 0,
 			- cph * sps + sph * sth * cps,   cph * cps + sph * sth * sps,   sph * cth, 0, 
 			  sph * sps + cph * sth * cps, - sph * cps + cph * sth * sps,   cph * cth, 0, 
 			pos[0], pos[1], pos[2], 1]
-
-	return m
 }
 
 function multMat4x4(m2, m1) {
@@ -57,13 +55,13 @@ function mat4FromAxisAngle(a, angle) {
 	const t = 1.0 - c
 
 	let m =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-	m[0 * 4 + 0] = t * a[0] * a[0] + c
-	m[0 * 4 + 1] = t * a[0] * a[1] - a[2] * s
-	m[0 * 4 + 2] = t * a[0] * a[2] + a[1] * s
-	m[1 * 4 + 0] = t * a[0] * a[1] + a[2] * s
-	m[1 * 4 + 1] = t * a[1] * a[1] + c
-	m[1 * 4 + 2] = t * a[1] * a[2] - a[0] * s
-	m[2 * 4 + 0] = t * a[0] * a[2] - a[1] * s
+	m[        0] = t * a[0] * a[0] + c
+	m[        1] = t * a[0] * a[1] - a[2] * s
+	m[        2] = t * a[0] * a[2] + a[1] * s
+	m[    4    ] = t * a[0] * a[1] + a[2] * s
+	m[    4 + 1] = t * a[1] * a[1] + c
+	m[    4 + 2] = t * a[1] * a[2] - a[0] * s
+	m[2 * 4    ] = t * a[0] * a[2] - a[1] * s
 	m[2 * 4 + 1] = t * a[1] * a[2] + a[0] * s
 	m[2 * 4 + 2] = t * a[2] * a[2] + c
 	m[3 * 4 + 3] = 1.0
@@ -116,8 +114,13 @@ function norm2Vec3(v) {
 function normalizeVec3(v) {
 	let n = normVec3(v)
 	return [v[0] / n, v[1] / n, v[2] / n]
-}				
-
+}
+function addVec3(v1, v2) {
+	return [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]]
+}
+function subVec3(v1, v2) {
+	return [v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2]]
+}
 function rotateX(m, angle) {
 	const c = Math.cos(angle);
 	const s = Math.sin(angle);
@@ -148,7 +151,7 @@ function rotateY(m, angle) {
  
 function zoomVecs(m, z) {
 
-	for (i = 0; i < 12; i++) {
+	for (let i = 0; i < 12; i++) {
 		m[i] = m[i] * z;
 	}
 }

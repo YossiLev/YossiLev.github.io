@@ -73,10 +73,7 @@ class glWorld {
 	}
 	
 	toggleByName(name) {
-		let obj = this.objects.find(ob => ob.name == name);
-		if (obj) {
-			obj.toggle();
-		}
+		let obj = this.objects.filter(ob => ob.name == name).forEach(ob => ob.toggle());
 	}
 	
 	prepare(canvas) {
