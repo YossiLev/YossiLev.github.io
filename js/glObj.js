@@ -450,7 +450,7 @@ class glBuild {
 	}
 	static getGeodesicUV(func, uv, puv, vec3, epsilon) {
 		glBuild.doIt = false;
-		const n = 400;
+		const n = 50;
 		const pi = Math.PI / 4 / n;
 		let minD = 99999;
 		let bestT, bestI;
@@ -841,9 +841,9 @@ class glInfo {
 	}
 }
 class glObj {
-	constructor(name, glPack) {
+	constructor(name, glPack, options = {}) {
 		this.name = name;
-		this.show = true;
+		this.show = options.show != undefined ? options.show : true;
 		this.partial = 1;
 		this.children = [];
 		this.glPack = glPack;
@@ -866,6 +866,7 @@ class glObj {
 		this.glPack.tr_matrix = multMat4x4(tr_mat, this.glPack.tr_matrix);
 	}
 	showPart(part) {
+		this.show = true;
 		this.partial = part;
 	}
 	drawObject(gl, _Mmatrix, mo_matrix) {

@@ -20,8 +20,8 @@ class glWorld {
 		}
 	}
 	
-	addToRoot(name, glPack) {
-		let newObj = new glObj(name, glPack)
+	addToRoot(name, glPack, options = {}) {
+		let newObj = new glObj(name, glPack, options)
 		this.objects.push(newObj);
 
 		return newObj;
