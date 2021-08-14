@@ -8,6 +8,9 @@ function shiftMat3(m, s) {
 	return ms;
 }
 
+function calcPartialPos(part, pos) {
+	return pos.map(p => p * part);
+}
 function buildRelativeMat(pos) {
 	const ph = pos[3] * Math.PI / 180
 	const th = pos[4] * Math.PI / 180

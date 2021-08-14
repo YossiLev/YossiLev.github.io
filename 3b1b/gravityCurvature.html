@@ -30,27 +30,27 @@
     \[F=\frac{GM_1M_2}{R^2}\]
 </div>
 <div class="normal" id="newTheory">
-    Then Albert Einstein introduced the theory of relativity, and then he tried to generalize the theory to include
-    accelerated motion. The result was a more general theory, to be later named "General Relativity". The theory gave
-    a new explanation to both accelerations and also the attractive forces of gravity. So it became the new theory for gravity.
-    It suggested that masses affect the "fabric of space-time" and bend (or curve or distort) it. In this space-time,
-    the motion of all the stuff (massive objects but also light!) is also distorted,
-    so they follow the curved paths in the curved space-time. A new formula gives the
+    In 1905, Albert Einstein introduced the theory of relativity. He then tried to generalize the theory to include
+    accelerated motion. The result was a more general theory, to be later known as "General Relativity". The theory gave
+    a new explanation to both acceleration and also the attractive forces of gravity. So it became a new theory for gravity.
+    It suggested that masses bend (or curve or distort) the "fabric of space-time". In this space-time,
+    the motion of all the stuff (massive objects but also light!) is distorted as well,
+    so they follow curved paths in the curved space-time. A new formula gives the
     connection between "Energy-Momentum T", which is the new name for Mass, and the geometric distortion of space-time,
     now called "Einstein Curvature G". Both G and T are defined at each point of space, and at each moment of time.
     The formula is ever so simple, but the simple shape is misleading. \[G=T\]
-    In reality this equation is so complicated, that in most cases we are un able to solve it (except for some super simple cases).
+    In reality this equation is so complicated, that in most cases we are unable to solve it (except for some super simple situations).
 </div>
 <div class="normal">
-    But still, we remain with the fact that all masses curve space-time,
-    and then all masses move in space-time along the curved paths. These curved paths are the
+    But still, we remain with the fact that masses curve space-time,
+    and then all masses move in that curved space-time along the curved paths. These paths are the
     "straightest" curves available on the curved space-time. Only when there are no masses at all
     (\(T=0\) everywhere), do we get no distortion (\(G=0\)), and then we call it zero-curvature, or flat-space.
     In such a flat space, the "straightest" curves behave line the good old straight line that we know.
 </div>
 <div class="normal">
-    What is this curved space-time that makes gravity? How can we visualize it? This is the goal of this presentation.
-    So let's start talking about curved spaces.
+    What is this curved space-time that makes gravity? How can we visualize it? This is the goal of our presentation.
+    So let's talk about curved spaces.
 </div>
 <div class="normal">
     <b>One dimensional curved shapes, or curved lines</b> -
@@ -62,11 +62,9 @@
     looking. Look at the two surfaces below. One is curved and one is flat. Use the mouse the change view point (Guide here).
     Can you see the curvature?
 </div>
-<canvas width="1000" height="600" id="surface_Canvas" class="canvasWebGl" tabindex="0"></canvas>
-<div>
-    <div class="animButton" onclick="worldS.animateObject('move', [0.002, 0, 0, 0, 0.5, 0], 'sineS', 1)">shift</div>
-    <div class="animButton" onclick="worldS.animateObject('move', [-0.002, 0, 0, 0, 0.5, 0], 'sineS', 0.5)">shift back</div>
-    <div class="animButton" onclick="worldS.animateObject('show', [-0.002, 0, 0, 0, 0.5, 0], 'sineSGeodB, flatSGeodB', 3)">reveal</div>
+<div class="container">
+    <canvas width="1300" height="600" id="surface_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+   <!-- <canvas width="1000" height="600" id="surface_Canvas_Text" class="textCanvas"></canvas> -->
 </div>
 <div class="headLine2">
     Straight lines on a curved space?
@@ -74,35 +72,32 @@
 <div class="normal">
     We can imagine drawing a straight line on a flat surface, but could there be a straight line on a curved surface?
     The best way to handle this is to stand on a point of the surface and decide on which direction you want to go.
-    The make a tiny step in the direction you chose. Usually, you will find yourself not exactly on the surface but rather
-    a bit away. So now it is time to make a correction step and fall to the closest point of the surface.
+    The make a tiny step in the direction you chose. Usually, you will find yourself stepping out of the surface.
+    So you can make a correction step and fall to the closest point of the surface.
 </div>
 <div class="normal">
     On a flat surface, this procedure give a path along a straight line. On a curved surface, the path is "the straightest
-    line possible".
-    <div class="list spreadList">
-        <div class="listItem">
-            See here how this works. Then, change view point and try it again.
-        </div>
-        <div class="listItem">
-            See several such random straight lines and compare the results of the flat and curved surfaces.
-            <span class="startAnimation"
-                  onclick="worldS.animateObject('show', [0, 0, 0, 0, 0, 0], 'sineGeodesicA, flatGeodesicA', 3)">Start</span>
-        </div>
-        <div class="listItem">
-            Compare the behavior of a bunch of lines that start as parallels.
-            <span class="startAnimation"
-                  onclick="worldS.animateObject('show', [0, 0, 0, 0, 0, 0], 'sineGeodesicA, flatGeodesicA', 3)">Start</span>
-        </div>
-        <div class="listItem">
-            Compare the behavior of a bunch of lines that start from a single point to all directions.
-            <span class="startAnimation"
-                  onclick="worldS.animateObject('show', [0, 0, 0, 0, 0, 0], 'sineGeodesicB, flatGeodesicB', 3)">Start</span>
-        </div>
-        <div class="listItem">
-            Change to top view and run all steps again.
-        </div>
-    </div>
+    line possible". Let's look at examples of such curves. Press the following buttons to put some lines on both surfaces.
+    Lines start at the same point and same directions but continue differently on each surface.
+    <span class="animButton" onclick="worldS.animate('show', null, 'sGL, fGL', 3)">
+        Two lines
+    </span>
+    <span class="animButton" onclick="worldS.animate('show', null, 'sGA, fGA', 3)">
+        Array of Parallels
+    </span>
+    <span class="animButton" onclick="worldS.animate('show', null, 'sGB, fGB', 3)">
+        Different Directions
+    </span>
+    <span class="animButton" onclick="worldS.animate('show', null, 'sGC, fGC', 3)">
+        Another point
+    </span>
+    <span class="animButton" onclick="worldS.hideObjects('sGL, fGL, sGA, fGA, sGB, fGB, sGC, fGC')">
+        Clear
+    </span>
+    <span class="animButton" onclick="worldS.resetView()">
+        Reset View
+    </span>
+
 </div>
 <div class="normal">
     Some things that are special to straight lines on curved surfaces, like there could be more than
@@ -135,10 +130,10 @@
     </div>
     We want to describe space-time as having a geometry. What could the picture to draw? It should display all the
     events that happen, and for each event show the location and also the time. The picture should include all
-    the events of some story. For example if there is a race between a rabbit and a turtle, the could go like that.
-    Both started at point A racing towards point B. The rabbit is faster, but once it got to the mid point of the race,
+    the events of some story. For example if there is a race between a rabbit and a turtle, they could go like that.
+    Both started at point A racing towards point B. The rabbit is faster, but once it got to the mid-point of the race,
 
-    it fell asleep for an hour, while the turtle continued past the rabbit and go close the the end. Then the rabbit
+    it fell asleep for an hour, while the turtle continued past the rabbit and go close to the end. Then the rabbit
     woke up and continue to run but it wa too late. The whole story is shown in the following picture, with the rabbit
     path is in red and turtle gets the blue path.
 </div>
@@ -149,13 +144,13 @@
 
 <canvas width="800" height="400" id="solar_Canvas" class="canvasWebGl" tabindex="0"></canvas>
 <div>
-    <div class="animButton" onclick="worldSolar.animateObject('move', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
+    <div class="animButton" onclick="worldSolar.animate('move', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
 </div>
 <canvas width="1300" height="600" id="my_Canvas" class="canvasWebGl" tabindex="0"></canvas>
 <div>
-    <div class="animButton" onclick="world.animateObject('move', [0, 0, 0, 0, 2.5, 0], 'tr', 5)">shift</div>
-    <div class="animButton" onclick="world.animateObject('move', [0.002, 0, 0, 0, 0.5, 0], 'tr', 0.5)">shift back</div>
-    <div class="animButton" onclick="world.animateObject('show', [0.002, 0, 0, 0, 0.5, 0], 'tr, helix', 3)">reveal</div>
+    <div class="animButton" onclick="world.animate('move', [0, 0, 0, 0, 90, 0], 'tr', 1)">shift</div>
+    <div class="animButton" onclick="world.animate('move', [0.2, 0, 0, 0, 45, 0], 'tr', 0.5)">shift back</div>
+    <div class="animButton" onclick="world.animate('move', [0, 0, 0, 0, 180, 0], 'helix', 1)">rotate</div>
 </div>
 <div id="objBut"></div>
 
@@ -173,21 +168,26 @@
     //worldS.addToRoot('sineSGeod2', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.3, 0.0, 0.005, 0.01, 100, [1, 0, 1], 0.001));
 
     const hideOptions = { show: false };
+    worldS.addToRoot('sGL', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.2, 0.1, 0.000, 0.02, 100, [0.8, 1, 0], 0.001), hideOptions);
+    worldS.addToRoot('fGL', glBuild.geodesicOnSurface(worldS.getObjectByName('flatS'), 0.2, 0.1, 0.000, 0.02, 100, [0.8, 1, 0], 0.001), hideOptions);
+    worldS.addToRoot('sGL', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.8, 0.4, -0.03, 0.02, 100, [0.8, 1, 0], 0.001), hideOptions);
+    worldS.addToRoot('fGL', glBuild.geodesicOnSurface(worldS.getObjectByName('flatS'), 0.8, 0.4, -0.03, 0.02, 100, [0.8, 1, 0], 0.001), hideOptions);
+
     for (let x = 0.1; x < 1.0; x += 0.05) {
-        worldS.addToRoot('sineGeodesicA', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), x, 0.05, 0.000, 0.01, 100, [1, 1, 1], 0.001), hideOptions);
-        worldS.addToRoot('flatGeodesicA', glBuild.geodesicOnSurface(worldS.getObjectByName('flatS'), x, 0.05, 0.000, 0.01, 100, [1, 1, 1], 0.001), hideOptions);
+        worldS.addToRoot('sGA', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), x, 0.05, 0.0, 0.01, 100, [1, 1, 1], 0.001), hideOptions);
+        worldS.addToRoot('fGA', glBuild.geodesicOnSurface(worldS.getObjectByName('flatS'), x, 0.05, 0.0, 0.01, 100, [1, 1, 1], 0.001), hideOptions);
     }
     for (let a = 0.0; a < Math.PI / 2; a += 0.1) {
-        worldS.addToRoot('sineGeodesicB', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.1, 0.1, 0.0001 * Math.sin(a), 0.0001 * Math.cos(a), 100, [1, 1, 0.4], 0.001), hideOptions);
-        worldS.addToRoot('flatGeodesicB', glBuild.geodesicOnSurface(worldS.getObjectByName('flatS'), 0.1, 0.1, 0.0001 * Math.sin(a), 0.0001 * Math.cos(a), 100, [1, 1, 0.4], 0.001), hideOptions);
+        worldS.addToRoot('sGB', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.1, 0.1, 0.0001 * Math.sin(a), 0.0001 * Math.cos(a), 100, [1, 1, 0.4], 0.001), hideOptions);
+        worldS.addToRoot('fGB', glBuild.geodesicOnSurface(worldS.getObjectByName('flatS'), 0.1, 0.1, 0.0001 * Math.sin(a), 0.0001 * Math.cos(a), 100, [1, 1, 0.4], 0.001), hideOptions);
     }
     for (let a = Math.PI / 4; a < 3 * Math.PI / 4; a += 0.1) {
-        worldS.addToRoot('sineGeodesicC', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.1, 0.5, 0.0001 * Math.sin(a), 0.0001 * Math.cos(a), 100, [0, 0, 1], 0.001), hideOptions);
-        worldS.addToRoot('flatGeodesicC', glBuild.geodesicOnSurface(worldS.getObjectByName('flatS'), 0.1, 0.5, 0.0001 * Math.sin(a), 0.0001 * Math.cos(a), 100, [0, 0, 1], 0.001), hideOptions);
+        worldS.addToRoot('sGC', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.1, 0.5, 0.0001 * Math.sin(a), 0.0001 * Math.cos(a), 100, [0.7, 1, 1], 0.001), hideOptions);
+        worldS.addToRoot('fGC', glBuild.geodesicOnSurface(worldS.getObjectByName('flatS'), 0.1, 0.5, 0.0001 * Math.sin(a), 0.0001 * Math.cos(a), 100, [0.7, 1, 1], 0.001), hideOptions);
     }
 
     worldS.addToRoot('lineList', glBuild.listOfLine([-0.2, 0, 0, 0, 0, 0], [1, 0, 0]));
-    worldS.prepare(document.getElementById('surface_Canvas'))
+    worldS.prepare(document.getElementById('surface_Canvas'));
     worldS.startAnimation();
 
     let worldSolar = new glWorld();
@@ -199,16 +199,16 @@
     let world = new glWorld();
     world.addToRoot('floor', glBuild.floor(4, 0.1));
     world.addToRoot('helix', glBuild.helixCurve(0.2, 0.1, 6, 0.001, [0, 0, 0, 0, 45, 0], [0, 1, 0]));
-    world.addToRoot('arrow', glBuild.arrow(0.07, 0.03, 0.005, 0.01, [0, 0, 0, 0, 0, 0], [0, 1, 0]));
-    for (let i = 0; i < 4; i++) {
-        for (let j = 0; j < 4; j++) {
-            world.addToRoot(`@ar${i}${j}`, glBuild.makeClone([i * 0.1, j * 0.1, 0, 0, 0, 0], world.getObjectByName(`arrow`)));
-        }
-    }
+    //world.addToRoot('arrow', glBuild.arrow(0.07, 0.03, 0.005, 0.01, [0, 0, 0, 0, 0, 0], [0, 1, 0]));
+    //for (let i = 0; i < 4; i++) {
+    //    for (let j = 0; j < 4; j++) {
+    //        world.addToRoot(`@ar${i}${j}`, glBuild.makeClone([i * 0.1, j * 0.1, 0, 0, 0, 0], world.getObjectByName(`arrow`)));
+    //    }
+    //}
 
     world.addToRoot('helix2', glBuild.helixCurve(0.1, 0.1, 5, 0.001, [0.1, 0, 0, 0, 0, 0], [1, 1, 0]));
     world.addToRoot('tr', glBuild.trefoilKnotCurve(0.003, [0, 0, 0.1, 0, 0, 0], [1, 0, 0.5]));
-    world.addToRoot('sine', glBuild.sineCurve(0.001, [0, 0, 0, 0, 0, 0], [1, 0.7, 0]));
+    //world.addToRoot('sine', glBuild.sineCurve(0.001, [0, 0, 0, 0, 0, 0], [1, 0.7, 0]));
     //world.addToRoot('another sine', glBuild.makeClone([0, 0.2, 0, 0, 0, 0], world.getObjectByName('sine')));
 
     //for (let i = 0; i <= 20; i++) {

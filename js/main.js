@@ -178,7 +178,7 @@ addTts = () => {
 
 webGlFocus = () => {
     getArrayByClass("canvasWebGl").forEach(el => {
-        el.onfocus = ((e) => {console.log(e); glWorld.setFocusByCanvas(e.target)});
+        el.onfocus = ((e) => glWorld.setFocusByCanvas(e.target));
     });
 }
 embedVideo = (label) => {

@@ -12,9 +12,7 @@ class glWorld {
 		singleWorld = this;
 	}
 	static setFocusByCanvas(canvas) {
-		console.log(canvas);
 		let iWorld = glWorld.allWorlds.findIndex(w => w.canvas === canvas);
-		console.log(iWorld);
 		if (iWorld >= 0) {
 			glWorld.allWorlds[iWorld].setFocus();
 		}
@@ -44,49 +42,101 @@ class glWorld {
 	getObjectByName(name) {
 		return this.objects.find(ob => ob.name == name);
 	}
-	transformObject(operation, stepTime, pos, namesString) {
-		const names = namesString.split(',').map(n => n.trim());
+	getSelectedObjects(namesSelections) {
+		const names = namesSelections.split(',').map(n => n.trim());
+		return this.objects.filter(ob => names.includes(ob.name));
+	}
+	transformObjects(object, operation, partTime, pos) {
 		switch (operation) {
 			case "move":
-				this.objects.filter(ob => names.includes(ob.name)).forEach(o => o.transform(buildRelativeMat(pos)));
+				object.setLocalMatrix(object.getMemoryMatrix());
+				object.transformPosition(buildRelativeMat(calcPartialPos(partTime, pos)));
 				break;
 			case "show":
-				this.objects.filter(ob => names.includes(ob.name)).forEach(o => o.showPart(stepTime));
+				object.showPart(partTime);
 				break;
 		}
 	}
-	animateObject(operation, pos, name, time) {
+	showObjects(namesSelections) {
+		this.getSelectedObjects(namesSelections).forEach(o => o.show());
+	}
+	hideObjects(namesSelections) {
+		this.getSelectedObjects(namesSelections).forEach(o => o.hide());
+	}
+	animate(operation, pos, namesSelections, time) {
 		this.canvas.focus();
 		this.setFocus();
 		let stepTime = 0.0;
+		const animObjects = this.getSelectedObjects(namesSelections);
+		animObjects.forEach(o => o.setMemoryMatrix(o.getLocalMatrix()));
+
 		const animateTimer = setInterval(() => {
 			stepTime += 0.02;
-			this.transformObject(operation, stepTime / time, pos, name);
+			const partTime = stepTime / time;
+			animObjects.forEach(o => this.transformObjects(o, operation, partTime, pos));
 			if (time <= stepTime) {
 				clearInterval(animateTimer);
 			}
 		}, 20)
 	}
 
-	drawAllObjects(gl, _Mmatrix, mo_matrix) {
-		this.objects.forEach(ob => ob.drawObject(gl, _Mmatrix, mo_matrix))
+	drawAllObjects() {
+		if (this.ctx) {
+			this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+		}
+		this.objects.forEach(ob => {
+				ob.drawObject(this.gl, this._Mmatrix, this.mo_matrix);
+			}
+		)
+		if (this.ctx) {
+			this.ctx.strokeStyle = "black";
+			this.ctx.fillStyle = "black";
+			this.ctx.fillText("Yossi", 100, 100);
+		}
 	}
 	
 	toggleByName(name) {
 		let obj = this.objects.filter(ob => ob.name == name).forEach(ob => ob.toggle());
 	}
-	
-	prepare(canvas) {
+
+	resetView() {
+		const pp = this.get_projection(40, this.canvas.width/this.canvas.height, 1, 40);
+		const mm = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ]
+		if (!this.proj_matrix) {
+			this.proj_matrix = pp;
+			this.mo_matrix = mm;
+		} else {
+			pp.forEach((p, ip) => {this.proj_matrix[ip] = p; });
+			mm.forEach((m, im) => {this.mo_matrix[im] = m; });
+		}
+	}
+
+
+	get_projection(angle, a, zMin, zMax) {
+		const ang = Math.tan((angle*.5)*Math.PI/180);//angle*.5
+		//ang /= 4
+		let f = 0.1
+		return [
+			0.5 / ang, 0 , 0, 0,
+			0, 0.5 * a / ang, 0, 0,
+			0, 0, - f * (zMax + zMin) / (zMax - zMin), -f,
+			0, 0, f * (- 2 * zMax * zMin) / (zMax - zMin), 0
+		];
+	}
+
+	prepare(canvas, tCanvas = null) {
 		this.canvas = canvas;
-		this.gl = this.canvas.getContext('experimental-webgl');
+		this.gl = this.canvas.getContext('webgl');
 		this.gl.clearColor(0.8, 0.8, 0.8, 0.9);
 		this.gl.clearDepth(1.0);
 		this.gl.viewport(0.0, 0.0, canvas.width, canvas.height);
+		if (tCanvas) {
+			this.ctx = tCanvas.getContext("2d");
+		}
+
 		const ext = this.gl.getExtension('OES_element_index_uint');
 
-		console.log('prepare start');
 		let comb = this.getComb();
-		console.log('prepare end');
 
 		// Create and store data into vertex buffer
 		let vertex_buffer = this.gl.createBuffer();
@@ -173,22 +223,12 @@ class glWorld {
 
 		/*==================== MATRIX ====================== */
 
-		function get_projection(angle, a, zMin, zMax) {
-			const ang = Math.tan((angle*.5)*Math.PI/180);//angle*.5
-			//ang /= 4
-			let f = 0.1
-			return [
-			   0.5 / ang, 0 , 0, 0,
-			   0, 0.5 * a / ang, 0, 0,
-			   0, 0, - f * (zMax + zMin) / (zMax - zMin), -f,
-			   0, 0, f * (- 2 * zMax * zMin) / (zMax - zMin), 0
-			   ];
-		}
 
-		this.proj_matrix = get_projection(40, canvas.width/canvas.height, 1, 40);
-		this.view_matrix = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ];
+		this.resetView()
+		this.view_matrix = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0, -6,1 ];
 
-		this.view_matrix[14] = this.view_matrix[14]-6;
+
+		//this.view_matrix[14] = this.view_matrix[14]-6;
 
 		/*================= Mouse events ======================*/
 		this.AMORTIZATION = 0.8;//.95;
@@ -286,7 +326,7 @@ class glWorld {
 		let lastTime = getTime.getTime();
 	}
 	
-	animate(time) {
+	animateWorld(time) {
 		/*
 		count += 1;
 		if (count % 10 == 0) {
@@ -317,16 +357,16 @@ class glWorld {
 		this.gl.uniformMatrix4fv(this._Pmatrix, false, this.proj_matrix);
 		this.gl.uniformMatrix4fv(this._Vmatrix, false, this.view_matrix);
 
-		singleWorld.drawAllObjects(this.gl, this._Mmatrix, this.mo_matrix);
+		singleWorld.drawAllObjects();
 
 		window.requestAnimationFrame(animateG);
 	}
 		
 	startAnimation() {
-		this.animate(1);
+		this.animateWorld(1);
 	}
 }
 
 function animateG() {
-	singleWorld.animate(1);
+	singleWorld.animateWorld(1);
 }

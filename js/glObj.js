@@ -406,7 +406,6 @@ class glBuild {
 			pm = xm;
 		}
 
-		console.log(`pos = ${data.pos.toString()}`)
 		return new glInfo(data);
 	}
 
@@ -817,15 +816,15 @@ class glInfo {
 		this.func = data.func;
 	}
 	combine(comb) {
-		console.log('comb.vertices.length = ', comb.vertices.length)
-		console.log('comb.colors.length = ', comb.colors.length)
-		console.log('comb.indices.length = ', comb.indices.length)
+		//console.log('comb.vertices.length = ', comb.vertices.length)
+		//console.log('comb.colors.length = ', comb.colors.length)
+		//console.log('comb.indices.length = ', comb.indices.length)
 		this.startVertex = comb.vertices.length / 3
 		this.startIndex = comb.indices.length;
 		this.indices = this.indices.map(ind => ind + this.startVertex);
-		console.log('this.vertices.length = ', this.vertices.length)
-		console.log('this.colors.length = ', this.colors.length)
-		console.log('this.indices.length = ', this.indices.length)
+		//console.log('this.vertices.length = ', this.vertices.length)
+		//console.log('this.colors.length = ', this.colors.length)
+		//console.log('this.indices.length = ', this.indices.length)
 
 		comb.vertices.push(...this.vertices);
 		this.vertices = null;
@@ -853,7 +852,6 @@ class glObj {
 	hide = () => {this.show = false};
 	toggle = () => {this.show = !this.show};
 	combine(comb) {
-		console.log(this.name);
 		this.glPack.combine(comb);
 		this.children.forEach(ob => ob.glPack.combine(comb));
 	}
@@ -862,58 +860,76 @@ class glObj {
 		this.children.push(newObj);
 		return newObj;
 	}
-	transform(tr_mat) {
+	transformPosition(tr_mat) {
 		this.glPack.tr_matrix = multMat4x4(tr_mat, this.glPack.tr_matrix);
+	}
+	getLocalMatrix() {
+		return [...this.glPack.tr_matrix];
+	}
+	setLocalMatrix(m) {
+		this.glPack.tr_matrix = [...m];
+	}
+	getMemoryMatrix() {
+		if (!this.glPack.tr_memoryMatrix) {
+			return null;
+		}
+		return [...this.glPack.tr_memoryMatrix];
+	}
+	setMemoryMatrix(m) {
+		this.glPack.tr_memoryMatrix = [...m];
 	}
 	showPart(part) {
 		this.show = true;
 		this.partial = part;
 	}
 	drawObject(gl, _Mmatrix, mo_matrix) {
-		if (this.show) {
-			const useObject = this.glPack.clone ? this.glPack.clone : this;
-			let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix);
-			let nForDraw = Math.floor(this.partial * useObject.glPack.nIndices);
-			gl.uniformMatrix4fv(_Mmatrix, false, obj_matrix);
-			gl.drawElements(useObject.glPack.glMode, nForDraw, gl.UNSIGNED_INT, 4 * useObject.glPack.startIndex);
-			if (useObject.glPack.cylSymmetry && useObject.glPack.cylSymmetry > 1) {
-				let angle = Math.PI * 2 / useObject.glPack.cylSymmetry;
-				let sa = Math.sin(angle);
-				let ca = Math.cos(angle);
-				let deltaRotMat = [ca, -sa, 0, 0, sa, ca, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-				let tMat = [...this.glPack.tr_matrix]
-				//let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix)
-				for (let d = 1; d < useObject.glPack.cylSymmetry; d++) {
-					tMat = multMat4x4(deltaRotMat, tMat)
-					let ot_matrix = multMat4x4(mo_matrix, tMat)
+		if (!this.show) {
+			return null
+		}
+		const useObject = this.glPack.clone ? this.glPack.clone : this;
+		let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix);
+		let nForDraw = Math.floor(this.partial * useObject.glPack.nIndices);
+		gl.uniformMatrix4fv(_Mmatrix, false, obj_matrix);
+		gl.drawElements(useObject.glPack.glMode, nForDraw, gl.UNSIGNED_INT, 4 * useObject.glPack.startIndex);
+		if (useObject.glPack.cylSymmetry && useObject.glPack.cylSymmetry > 1) {
+			let angle = Math.PI * 2 / useObject.glPack.cylSymmetry;
+			let sa = Math.sin(angle);
+			let ca = Math.cos(angle);
+			let deltaRotMat = [ca, -sa, 0, 0, sa, ca, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+			let tMat = [...this.glPack.tr_matrix]
+			//let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix)
+			for (let d = 1; d < useObject.glPack.cylSymmetry; d++) {
+				tMat = multMat4x4(deltaRotMat, tMat)
+				let ot_matrix = multMat4x4(mo_matrix, tMat)
+				gl.uniformMatrix4fv(_Mmatrix, false, ot_matrix);
+				gl.drawElements(useObject.glPack.glMode, nForDraw, gl.UNSIGNED_INT, 4 * useObject.glPack.startIndex);
+			}
+		}
+		if (useObject.glPack.sphereSymmetry && useObject.glPack.sphereSymmetry > 1 ) {
+			let theta = Math.PI / useObject.glPack.sphereSymmetry;
+			let st = Math.sin(theta);
+			let ct = Math.cos(theta);
+			let thetaRotMat = [1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1]
+			let phi = Math.PI / useObject.glPack.sphereSymmetry;
+			let sp = Math.sin(phi);
+			let cp = Math.cos(phi);
+			let phiRotMat = [cp, -sp, 0, 0, sp, cp, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+			let thMat = [...this.glPack.tr_matrix]
+			//let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix)
+			for (let dt = 1; dt < useObject.glPack.sphereSymmetry; dt++) {
+				thMat = multMat4x4(thetaRotMat, thMat);
+				let phiMat = [...thMat]
+				for (let dp = 0; dp < 2 * useObject.glPack.sphereSymmetry; dp++) {
+					let ot_matrix = multMat4x4(mo_matrix, phiMat)
 					gl.uniformMatrix4fv(_Mmatrix, false, ot_matrix);
 					gl.drawElements(useObject.glPack.glMode, nForDraw, gl.UNSIGNED_INT, 4 * useObject.glPack.startIndex);
+					phiMat = multMat4x4(phiRotMat, phiMat);
 				}
 			}
-			if (useObject.glPack.sphereSymmetry && useObject.glPack.sphereSymmetry > 1 ) {
-				let theta = Math.PI / useObject.glPack.sphereSymmetry;
-				let st = Math.sin(theta);
-				let ct = Math.cos(theta);
-				let thetaRotMat = [1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1]
-				let phi = Math.PI / useObject.glPack.sphereSymmetry;
-				let sp = Math.sin(phi);
-				let cp = Math.cos(phi);
-				let phiRotMat = [cp, -sp, 0, 0, sp, cp, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-				let thMat = [...this.glPack.tr_matrix]
-				//let obj_matrix = multMat4x4(mo_matrix, this.glPack.tr_matrix)
-				for (let dt = 1; dt < useObject.glPack.sphereSymmetry; dt++) {
-					thMat = multMat4x4(thetaRotMat, thMat);
-					let phiMat = [...thMat]
-					for (let dp = 0; dp < 2 * useObject.glPack.sphereSymmetry; dp++) {
-						let ot_matrix = multMat4x4(mo_matrix, phiMat)
-						gl.uniformMatrix4fv(_Mmatrix, false, ot_matrix);
-						gl.drawElements(useObject.glPack.glMode, nForDraw, gl.UNSIGNED_INT, 4 * useObject.glPack.startIndex);
-						phiMat = multMat4x4(phiRotMat, phiMat);
-					}
-				}
-			}
-			this.children.forEach(ob => ob.drawObject(gl, _Mmatrix, obj_matrix));
 		}
+		this.children.forEach(ob => ob.drawObject(gl, _Mmatrix, obj_matrix));
+
+		return obj_matrix;
 	}
 		
 }
