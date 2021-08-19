@@ -5,6 +5,7 @@ class glWorld {
 	constructor(mo_matrix = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ]) {
 		this.objects = [];
 		this.mo_matrix = mo_matrix;
+		this.labelViews = [];
 		this.setFocus();
 		glWorld.allWorlds.push(this);
 	}
@@ -16,6 +17,18 @@ class glWorld {
 		if (iWorld >= 0) {
 			glWorld.allWorlds[iWorld].setFocus();
 		}
+	}
+	addLabelView(label, view) {
+		this.labelViews.push({label, view})
+	}
+	activateView(label) {
+		const lv = this.labelViews.find(lv => lv.label === label);
+		if (!lv) {
+			return;
+		}
+		this.canvas.focus();
+		this.setFocus();
+		buildRelativeMat(lv.view).forEach((m, im) => {this.mo_matrix[im] = m; });
 	}
 	
 	addToRoot(name, glPack, options = {}) {
@@ -110,7 +123,6 @@ class glWorld {
 			mm.forEach((m, im) => {this.mo_matrix[im] = m; });
 		}
 	}
-
 
 	get_projection(angle, a, zMin, zMax) {
 		const ang = Math.tan((angle*.5)*Math.PI/180);//angle*.5
@@ -227,7 +239,6 @@ class glWorld {
 		this.resetView()
 		this.view_matrix = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0, -6,1 ];
 
-
 		//this.view_matrix[14] = this.view_matrix[14]-6;
 
 		/*================= Mouse events ======================*/
@@ -284,6 +295,12 @@ class glWorld {
 			}
 		};
 
+		const mouseDblClick = (e) => {
+			if (singleWorld && e.target === singleWorld.canvas) {
+				singleWorld.resetView();
+			}
+		}
+
 		const mouseWheel = function(e) {
 			if (singleWorld && e.target === singleWorld.canvas) {
 
@@ -313,7 +330,7 @@ class glWorld {
 		canvas.addEventListener("mousemove", mouseMove, false);
 		canvas.addEventListener("onwheel" in document ? "wheel" : "mousewheel", mouseWheel, false)
 		canvas.addEventListener('contextmenu', event => event.preventDefault());
-
+		canvas.addEventListener('dblclick', mouseDblClick, false);
 
 		/*=================== Drawing =================== */
 

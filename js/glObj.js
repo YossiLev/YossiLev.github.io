@@ -150,7 +150,7 @@ class glBuild {
 	}
 	static floor(n, size) {
 		let data = glBuild.dataInit([0, 0, 0, 0, 0, 0],0x0004 /*gl.TRIANGLES*/)
-		let cols = [[0, 0, 0], [1, 1, 1]]
+		let cols = [[0.1, 0.1, 0.1], [0.9, 0.9, 0.9]]
 		for (let ix = -n; ix < n; ix++) {
 			let x = ix * size;
 			for (let iy = -n; iy < n; iy++) {
@@ -179,7 +179,7 @@ class glBuild {
 		const nVec = normalizeVec3([mvP[0] - mvM[0], mvP[1] - mvM[1], mvP[2] - mvM[2]]);
 		let nVecS = [mvP[0] + mvM[0] - 2 * mv[0], mvP[1] + mvM[1] - 2 * mv[1], mvP[2] + mvM[2] - 2 * mv[2]];
 		if (norm2Vec3(nVecS) < epsilon * epsilon * epsilon * epsilon * epsilon) {
-			nVecS = nVec[2] < 0.05 ? [0, 1, 0] : [0, 0, 1];
+			nVecS = nVec[2] > 0.05 ? [0, 1, 0] : [0, 0, 1];
 		} else {
 			nVecS = normalizeVec3(nVecS);
 		}
@@ -200,10 +200,16 @@ class glBuild {
 	}
 
 	static helixCurve(d, r, n, width, pos, col) {
-		const helixFunc = (pa) => [r * Math.cos(pa * n * Math.PI * 2), r * Math.sin(pa * n * Math.PI * 2), pa * n * d * d];
+		const helixFunc = (pa) => [r * Math.cos(pa * n * Math.PI * 2), r * Math.sin(pa * n * Math.PI * 2), pa * n * d];
 		return glBuild.parametricCurve((p) => glBuild.curveFrame(helixFunc, p), 50 * n, width, pos, col);
 	}
-
+	static segmentCurve(p1, p2, width, pos, col) {
+		const segmentFunc = (pa) => {
+			let rc = p1.map((p, ip) => (1 - pa) * p + pa * p2[ip]);
+			return rc;
+		}
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(segmentFunc, p), 1, width, pos, col);
+	}
 	static sineCurve(width, pos, col) {
 		const sineFunc = (pa) => [0.03 * pa * Math.PI * 2, 0, 0.1 * Math.sin(pa * Math.PI * 2)];
 		return glBuild.parametricCurve((p) => glBuild.curveFrame(sineFunc, p), 50, width, pos, col);
@@ -225,6 +231,84 @@ class glBuild {
 		};
 		return glBuild.parametricCurve((p) => glBuild.curveFrame(arc3dFunc, p), 250, width, pos, col);
 	}
+	static ellipse(rx, ry, width, pos, col) {
+		class ellTime {
+			constructor(e) {
+				this.f = [];
+				const a = Math.sqrt((1 - e) / (1 + e));
+				const b = e * Math.sqrt(1 - e * e);
+				for (let th = 0.0; th < Math.PI - 0.2; th = th + 0.1) {
+					this.f.push(
+						{
+							th: th,
+						    time: 2 * Math.atan(a * Math.tan(th/ 2)) - b * Math.sin(th) / (1 + e * Math.cos(th))
+						});
+				}
+				this.f.push({ th: Math.PI, time: Math.PI });
+			}
+			getTheta(time) {
+				while (time > Math.PI) {
+					time -= 2 * Math.PI;
+				}
+				while (time < - Math.PI) {
+					time += 2 * Math.PI;
+				}
+				let sign = time >= 0 ? 1 : - 1;
+				time = time * sign;
+				let mMin = 0;
+				let mMax = this.f.length - 1;
+				while (mMax > mMin + 1) {
+					let mMid = Math.trunc((mMax + mMin) / 2);
+					if (this.f[mMid].time > time) {
+						mMax = mMid;
+					} else {
+						mMin = mMid;
+					}
+				}
+				let u = (time - this.f[mMin].time) / (this.f[mMax].time - this.f[mMin].time)
+				let theta = ((1 - u) * this.f[mMin].th + u * this.f[mMax].th) * sign;
+				if (theta < 0) {
+					theta += 2 * Math.PI;
+				}
+				return theta;
+			}
+		};
+		const f = Math.sqrt(rx * rx  - ry * ry); // distance pf focal point from center
+		const e = f / rx; // eccentricity
+		let calcObj = new ellTime(e);
+		const ellipseFunc = (pa) => {
+			const t1 = pa * Math.PI * 2;
+			if (e < 0.0001) {
+				return [rx * Math.cos(t1), rx * Math.sin(t1), 0];
+			}
+			const t = calcObj.getTheta(t1);
+			const sig = t > Math.PI * 3 / 2 || t < Math.PI / 2 ? 1 : - 1; // sigh for picking quadratic solution
+			const tant = Math.tan(t);
+			const tantDry = tant / ry;
+			// quadratic equation coefficients
+			const a = 1 / (rx * rx) + tantDry * tantDry;
+			const b = 2 * f / (rx * rx);
+			const c = f * f / (rx * rx) - 1;
+			let disc = b * b - 4 * a * c;
+			let x = 0;
+			let y = 0;
+			if (disc >= 0)  {
+				x = (- b + sig * Math.sqrt(disc)) / (2 * a);
+				y = x * tant;
+			}
+			return [x, y, 0];
+		};
+		const ellipseFrame = (pa) => {
+			const pos = ellipseFunc(pa);
+			const prevPos = ellipseFunc(pa - 0.0001);
+			const dir = pos.map((p, ip) => 10000 * (p - prevPos[ip]));
+			const v = Math.sqrt(1 / (Math.sqrt(pos[0] * pos[0] + pos[1] * pos[1])));
+
+			return {pos: pos, norm1: [0,0,1], norm2: normalizeVec3(multVec3([0,0,1], dir))};
+		};
+		return glBuild.parametricCurve(ellipseFrame, 100, width, pos, col);
+	}
+
 	static trefoilKnotCurve(width, pos, col) {
 		const trefoilKnotFunc = (pa) => {
 			const t = pa * Math.PI * 2;
@@ -251,6 +335,9 @@ class glBuild {
 			if (colorFunc) {
 				color = [...colorFunc(p)];
 			}
+			//if (ip % 2) {
+			//	color = [1, 0, 0];
+			//}
 			if (needFirstP) {
 				needFirstP = false
 				last_p = p

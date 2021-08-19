@@ -43,7 +43,7 @@ a {
 }
 .headLine2 {
     font-size: 24px;
-    padding: 10px 0 4px 0;
+    padding: 60px 0 4px 0;
     color: #202020;
     text-align: left;
 }
@@ -106,6 +106,9 @@ a {
 }
 .normalImage {
     width:400px;
+}
+.normalImageLarge {
+     width:700px;
 }
 .extendedImage .normalImage {
     width: 100%;

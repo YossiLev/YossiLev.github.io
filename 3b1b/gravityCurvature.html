@@ -20,9 +20,12 @@
 <div class="headLine">
     The Curvature of Gravitation
 </div>
+<div class="headLine2">
+    Quick History - Gravitation 1.0; Gravitation 2.0
+</div>
 <div class="normal" id="apples">
     Apples fall to the ground, and planets orbit around the sun. Isaac Newton explained both findings, saying that
-    bodies with mass attract other bodies, causing them change their speed.
+    bodies with mass attract other bodies, causing them change their motion.
     The calculation of the attraction force between mass 1 and mass 2 is given by the formula
     <span style="visibility: hidden;">. F , equals G Mass 1 times Mass 2, divided by square of the distance between the masses</span>
 </div>
@@ -52,6 +55,9 @@
     What is this curved space-time that makes gravity? How can we visualize it? This is the goal of our presentation.
     So let's talk about curved spaces.
 </div>
+<div class="headLine2">
+    Straight Lines on Curved Spaces
+</div>
 <div class="normal">
     <b>One dimensional curved shapes, or curved lines</b> -
     It is easy to imagine a curved line, and to tell about a line if it is curved or not (not curved would give a straight line).
@@ -65,9 +71,6 @@
 <div class="container">
     <canvas width="1300" height="600" id="surface_Canvas" class="canvasWebGl" tabindex="0"></canvas>
    <!-- <canvas width="1000" height="600" id="surface_Canvas_Text" class="textCanvas"></canvas> -->
-</div>
-<div class="headLine2">
-    Straight lines on a curved space?
 </div>
 <div class="normal">
     We can imagine drawing a straight line on a flat surface, but could there be a straight line on a curved surface?
@@ -110,9 +113,6 @@
     option to directly view the curvature, by just looking at it from a higher dimensional point. So tracking
     the paths of the straight lines is a valuable option.
 </div>
-<div class="headLine2">
-    Back to Gravitation - 4 Dimensions
-</div>
 <div class="normal">
     While we live in a three-dimensional world, understanding curvature on three-dimensional spaces is not enough.
     The curved object, that drives gravity, has four dimensions. The three dimensions of space and another single
@@ -125,24 +125,56 @@
 </div>
 <div class="normal">
     <div class="insertImage">
-        <img class="normalImage" src="../images/spaceTime.png" alt="Space Time"/>
+        <img class="normalImage normalImageLarge" src="../images/spaceTime.png" alt="Space Time"/>
         <div class="imageLabel">Fig #st1# - Space Time</div>
     </div>
-    We want to describe space-time as having a geometry. What could the picture to draw? It should display all the
+    We want to describe space-time as a geometry. What could be the picture to draw? It should display all the
     events that happen, and for each event show the location and also the time. The picture should include all
-    the events of some story. For example if there is a race between a rabbit and a turtle, they could go like that.
+    the events of some story.
+</div>
+<div class="normal">
+    For example if there is a race between a rabbit and a turtle, they could go like that.
     Both started at point A racing towards point B. The rabbit is faster, but once it got to the mid-point of the race,
-
     it fell asleep for an hour, while the turtle continued past the rabbit and go close to the end. Then the rabbit
-    woke up and continue to run but it wa too late. The whole story is shown in the following picture, with the rabbit
-    path is in red and turtle gets the blue path.
+    woke up and continued to run, but it was too late.
+</div>
+<div class="normal">
+    The whole story is shown in the following picture. The rabbit's path is in red, and turtle gets the blue path.
+    Every point on this picture can host an event, that is something that happened at a certain exact location and at
+    a certain exact time.
+    The horizontal coordinate of an event holds the position, that is "where", while the vertical holds the time, the "When".
+    If you see that some participant in the scenario, has a vertical line, this means that while time is passing,
+    position is not. This matches a participant staying put for some period of time, so no motion.
+    On the other hand, we never see a horizontal line, as this would have meant a participant that appear to be at
+    more than one position at the same time.
+</div>
+<div class="normal">
+    Such a map has two dimensions, one of space and one of time, jointly called Space-Time. We see all the points on
+    it (the events) and can draw lines between them. So we can treat them as if they belong to a geometry,
+    using geometrical terms, like length, slope, etc. While it is two-dimensional, the usual way is to say the its
+    had 1&nbsp;+&nbsp;1 (one plus one) dimensions. So we emphasize that there is one position dimension and one time dimension.
+</div>
+<div class="normal">
+    The physical space we live in is described using three coordinates to mark the position of a certain object.
+    If we want to talk of our space-time, to would have 3&nbsp;+&nbsp;1 (three plus one) dimensions. All together four dimensions.
+    Let make a smaller step and talk about 2&nbsp;+&nbsp;1 dimensions. By that we mean, two dimensions of space with one dimension
+    of time. Again, we meet our rabbit and turtle, but now they are free to move around on a two-dimensional space.
+    So they race not from point A to point B, but rather on a circular track. The full space-time will of course be
+    a three-dimensional thing (see below). The checkered floor marks the two coordinates of space, while the green
+    arrow is the time coordinate, the "When".
+</div>
+<canvas width="800" height="600" id="2dp1_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+<span class="animButton" onclick="world2dPlus1.activateView('a')">View A</span>
+<div class="headLine2">
+    The Curved Space-time or Gravitation
 </div>
 <div class="normal">
     So we had concerns about understanding curvature in three dimensions, but the real target is to get to four.
-    Are we lost? Not really, and that's because gravitation effects are really intuitive and easy to grasp.
+    Are we lost? Not really, because gravitation effects are really intuitive and easy to grasp.
+    All we need to do is to take what we know about how gravitation affects objects and translate it into geometry.
 </div>
 
-<canvas width="800" height="400" id="solar_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+<canvas width="1200" height="700" id="solar_Canvas" class="canvasWebGl" tabindex="0"></canvas>
 <div>
     <div class="animButton" onclick="worldSolar.animate('move', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
 </div>
@@ -158,14 +190,6 @@
     let worldS = new glWorld();
     worldS.addToRoot('sineS', glBuild.sineSurface(0.25, 0.09, [-0.2, 0, 0, 0, 0, 0], [1, 0.6, 0.6]));
     worldS.addToRoot('flatS', glBuild.flatSurface(0.25, [0.2, 0, 0, 0, 0, 0], [0.6, 0.6, 1]));
-    //worldS.addToRoot('sph', glBuild.sphere(0.1, 20, [0.0, 0, 0.2, 0, 0, 0], [0.9, 0.6, 0.2]));
-    //worldS.addToRoot('sineSGeo', glBuild.curveOnSurface(worldS.getObjectByName('sineS'), 0.0, 0.0, 0.01, 0.01, 100, [1, 1, 0], 0.002));
-    //worldS.addToRoot('sineSGeo2', glBuild.curveOnSurface(worldS.getObjectByName('sineS'), 0.0, 0.0, 0.01, 0.005, 100, [1, 1, 0], 0.002));
-    //worldS.addToRoot('sineSGeod', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.0, 0.0, 0.01, 0.01, 100, [1, 0, 1], 0.001));
-
-    //worldS.addToRoot('sineSGeod2', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.1, 0.0, 0.005, 0.01, 100, [1, 0, 1], 0.001));
-    //worldS.addToRoot('sineSGeod2', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.2, 0.0, 0.005, 0.01, 100, [1, 0, 1], 0.001));
-    //worldS.addToRoot('sineSGeod2', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.3, 0.0, 0.005, 0.01, 100, [1, 0, 1], 0.001));
 
     const hideOptions = { show: false };
     worldS.addToRoot('sGL', glBuild.geodesicOnSurface(worldS.getObjectByName('sineS'), 0.2, 0.1, 0.000, 0.02, 100, [0.8, 1, 0], 0.001), hideOptions);
@@ -190,26 +214,41 @@
     worldS.prepare(document.getElementById('surface_Canvas'));
     worldS.startAnimation();
 
+    let world2dPlus1 = new glWorld();
+    world2dPlus1.addToRoot('floor', glBuild.floor(3, 0.1));
+    world2dPlus1.addToRoot('helixTurtle', glBuild.helixCurve(0.4, 0.2, 1, 0.003, [0.0, 0, 0, 0, 0, 0], [0, 0.5, 1]));
+    world2dPlus1.addToRoot('helixRabbit1', glBuild.helixCurve(0.2, 0.2, 0.5, 0.003, [0.0, 0, 0, 0, 0, 0], [1, 0, 0]));
+    world2dPlus1.addToRoot('helixRabbit2', glBuild.helixCurve(0.2, 0.2, 0.5, 0.003, [0.0, 0, 0.35, 0, 0, 180], [1, 0, 0]));
+    world2dPlus1.addToRoot('lineRabbit', glBuild.segmentCurve([- 0.2, 0, 0.1], [- 0.2, 0, 0.35], 0.003, [0.0, 0, 0, 0, 0, 0], [1, 0, 0]));
+    world2dPlus1.addToRoot('arrow', glBuild.arrow(0.5, 0.05, 0.005, 0.02, [- 0.25, 0.25, 0, 0, 0, 0], [0, 1, 0]));
+    world2dPlus1.addLabelView('a', [0, -0.23, -0.1, -80, 0, 0]);
+    world2dPlus1.prepare(document.getElementById('2dp1_Canvas'));
+    world2dPlus1.startAnimation();
+
     let worldSolar = new glWorld();
     worldSolar.addToRoot('sun', glBuild.sphere(0.02, 20, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.0]));
     worldSolar.addToRoot('earth', glBuild.sphere(0.005, 20, [0.2, 0, 0.0, 0, 0, 0], [0.8, 0.8, 1.0]));
+    worldSolar.addToRoot('orbit', glBuild.ellipse(0.2, 0.2, 0.001, [0, 0, 0, 0, 0, 0], [0, 0, 1]));
+    worldSolar.addToRoot('orbit', glBuild.ellipse(0.24, 0.16, 0.001, [0, 0, 0, 0, 0, 0], [0, 1, 0]));
+    worldSolar.addToRoot('orbit', glBuild.ellipse(0.3, 0.16, 0.001, [0, 0, 0, 0, 0, 90], [0, 1, 1]));
+    worldSolar.addToRoot('orbit', glBuild.ellipse(0.4, 0.16, 0.001, [0, 0, 0, 0, 0, 160], [1, 1, 0]));
     worldSolar.prepare(document.getElementById('solar_Canvas'))
     worldSolar.startAnimation();
 
     let world = new glWorld();
     world.addToRoot('floor', glBuild.floor(4, 0.1));
-    world.addToRoot('helix', glBuild.helixCurve(0.2, 0.1, 6, 0.001, [0, 0, 0, 0, 45, 0], [0, 1, 0]));
+    //world.addToRoot('helix', glBuild.helixCurve(0.2, 0.1, 6, 0.001, [0, 0, 0, 0, 45, 0], [0, 1, 0]));
     //world.addToRoot('arrow', glBuild.arrow(0.07, 0.03, 0.005, 0.01, [0, 0, 0, 0, 0, 0], [0, 1, 0]));
     //for (let i = 0; i < 4; i++) {
     //    for (let j = 0; j < 4; j++) {
     //        world.addToRoot(`@ar${i}${j}`, glBuild.makeClone([i * 0.1, j * 0.1, 0, 0, 0, 0], world.getObjectByName(`arrow`)));
     //    }
     //}
-
-    world.addToRoot('helix2', glBuild.helixCurve(0.1, 0.1, 5, 0.001, [0.1, 0, 0, 0, 0, 0], [1, 1, 0]));
-    world.addToRoot('tr', glBuild.trefoilKnotCurve(0.003, [0, 0, 0.1, 0, 0, 0], [1, 0, 0.5]));
+    world.addToRoot('helix1', glBuild.helixCurve(0.05, 0.1, 12, 0.001, [0.0, 0, 0, 0, 0, 0], [1, 0, 0]));
+    world.addToRoot('helix2', glBuild.helixCurve(0.1, 0.1 * 1.58740, 6, 0.001, [0.0, 0, 0, 0, 0, 0], [1, 1, 0]));
+    world.addToRoot('helix3', glBuild.helixCurve(0.15, 0.1 * 2.08008, 4, 0.001, [0.0, 0, 0, 0, 0, 0], [1, 0, 1]));
+    //world.addToRoot('tr', glBuild.trefoilKnotCurve(0.003, [0, 0, 0.1, 0, 0, 0], [1, 0, 0.5]));
     //world.addToRoot('sine', glBuild.sineCurve(0.001, [0, 0, 0, 0, 0, 0], [1, 0.7, 0]));
-    //world.addToRoot('another sine', glBuild.makeClone([0, 0.2, 0, 0, 0, 0], world.getObjectByName('sine')));
 
     //for (let i = 0; i <= 20; i++) {
     //    world.addToRoot(`@sf${i}`, glBuild.arc3dCurve(0.8, (i - 10) * 0.1, -1, 1, 0.005, [0, 0, 0, 0, 0, 0], [1, 1, 0]));
