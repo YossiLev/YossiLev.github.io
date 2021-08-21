@@ -250,17 +250,21 @@
     Are we lost? Not really, because gravitation effects are really intuitive and easy to grasp.
     All we need to do is to take what we know about how gravitation affects objects and translate it into geometry.
 </div>
+<div>
+    <div>
+        <div class="butTab">Apples</div>
+        <span class="animButton" onclick="worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0, - 0.05, 3), 'apple', 3);">Fall</span>
+        <span class="animButton" onclick="worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0.1, - 0.05, 6), 'apple', 6);">Throw</span>
+    </div>
+    <div>
+        <div class="butTab">Planets</div>
+        <span class="animButton" onclick="worldSolar.animatePath(glBuild.getEllipseFunction(0.2, 0.2), 'earth1', 5);">Circular Orbit</span>
+        <span class="animButton" onclick="worldSolar.animatePath(glBuild.getEllipseFunction(0.4, 0.346), 'earth1', 5);">Elliptic</span>
+    </div>
+</div>
 <div class="containerFlex">
     <canvas width="700" height="700" id="solar_Canvas2D" class="canvasWebGl webGlGuide" tabindex="0"></canvas>
-    <div>
-        <div>
-            <span class="animButton" onclick="worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0, - 0.05, 3), 'apple', 3);">Fall</span>
-            <span class="animButton" onclick="worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0.1, - 0.05, 6), 'apple', 6);">Throw</span>
-            <span class="animButton" onclick="worldSolar.animatePath(glBuild.getEllipseFunction(0.2, 0.2), 'earth1', 5);">Orbit</span>
-            <span class="animButton" onclick="worldSolar.animatePath(glBuild.getEllipseFunction(0.4, 0.346), 'earth1', 5);">Ellipse</span>
-        </div>
-        <canvas width="550" height="700" id="solar_Canvas" class="canvasWebGl " tabindex="0"></canvas>
-    </div>
+    <canvas width="550" height="700" id="solar_Canvas" class="canvasWebGl " tabindex="0"></canvas>
 </div>
 <div>
     <div class="animButton" onclick="worldSolar.animate('moveBy', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
@@ -332,11 +336,16 @@
         worldSolar2D.addToRoot(`@flx${i}p`, glBuild.makeClone([i * 0.1, 0, 0, 0, 0, 90], worldSolar2D.getObjectByName(`fl`)));
         worldSolar2D.addToRoot(`@flx${i}n`, glBuild.makeClone([-i * 0.1, 0, 0, 0, 0, 90], worldSolar2D.getObjectByName(`fl`)));
     }
+    worldSolar2D.addToRoot('arrow', glBuild.arrow(0.5, 0.05, 0.005, 0.02, [- 0.25, 0.25, 0, 0, 0, 0], [0, 1, 0]));
+
 
     worldSolar2D.addToRoot('sun', glBuild.sphere(0.035, 20, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.0]));
     worldSolar2D.addToRoot('earth1', glBuild.sphere(0.005, 20, [0.2, 0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
     //worldSolar2D.addToRoot('earth2', glBuild.sphere(0.03, 20, [0, 0.0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
     //worldSolar2D.addToRoot('apple', glBuild.sphere(0.005, 20, [0.2, 0.0, 0.0, 0, 0, 0], [1, 0.3, 0.1]));
+    worldSolar2D.addToRoot('fall', glBuild.freeFallCurve(0.2, 0, - 0.05, 3, 0.001, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.9]));
+    worldSolar2D.addToRoot('throw', glBuild.freeFallCurve(0.2, 0.1, - 0.05, 6, 0.001, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.9]));
+
         worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.2, 0.2, 0.001, [0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 1, 0, 1, 0, 0]));
         worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.24, 0.16, 0.001, [0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 0, 1]));
         worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.3, 0.16, 0.001, [0, 0, 0, 0, 0, 90], [0, 1, 1]));
@@ -347,7 +356,7 @@
     let worldSolar = new glWorld();
     //worldSolar.addToRoot('sun', glBuild.sphere(0.035, 20, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.0]));
     //worldSolar.addToRoot('earth1', glBuild.sphere(0.005, 20, [0.2, 0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
-    worldSolar.addToRoot('earth2', glBuild.sphere(0.03, 20, [0, 0.0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
+    worldSolar.addToRoot('earth2', glBuild.sphere(0.6, 150, [-0.6, 0.0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
     worldSolar.addToRoot('apple', glBuild.sphere(0.005, 20, [0.2, 0.0, 0.0, 0, 0, 0], [1, 0.3, 0.1]));
     //worldSolar.addToRoot('orbit', glBuild.ellipse(0.4, 0.346, 0.001, [0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 1, 0, 1, 0, 0]));
 //    worldSolar.addToRoot('orbit', glBuild.ellipse(0.24, 0.16, 0.001, [0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 0, 1]));

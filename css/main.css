@@ -260,6 +260,13 @@ a {
 .containerFlex {
      display: flex;
 }
+.fullWidth {
+    width: 100%;
+    border: 1px solid black;
+}
+.butTab {
+    border: 1px solid red;
+}
 .textCanvas {
     background-color: transparent;  /* needed because webgl-tutoraisl.css sets canvas bg color to white */
     position: absolute;

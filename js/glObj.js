@@ -234,9 +234,17 @@ class glBuild {
 	static getFreeFallFunction(x, v, a, time) {
 		return (pa) => {
 			pa *= time;
-			console.log(pa, [Math.max(0, x + v * pa + 0.5 * a * pa * pa), 0, 0]);
 			return [Math.max(0, x + v * pa + 0.5 * a * pa * pa), 0, 0];
 		};
+	}
+	static freeFallCurve(x, v, a, time, width, pos, col, colorFunc = null) {
+		let freeFunc = glBuild.getFreeFallFunction(x, v, a, time);
+		const fallCurve = (pa) => {
+			let pos = freeFunc(pa);
+			pos[2] = pa * time * 0.1;
+			return pos;
+		}
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(fallCurve, p), 100, width, pos, col, colorFunc);
 	}
 
 	static getEllipseFunction(rx, ry) {
