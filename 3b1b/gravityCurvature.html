@@ -194,16 +194,46 @@
 <div class="normal">
     The physical space we live in is described using three coordinates to mark the position of a certain object.
     If we want to talk of our space-time, to would have 3&nbsp;+&nbsp;1 (three plus one) dimensions. All together four dimensions.
-    Let make a smaller step and talk about 2&nbsp;+&nbsp;1 dimensions. By that we mean, two dimensions of space with one dimension
+</div>
+<div class="normal">
+    Let's make a smaller step and talk about 2&nbsp;+&nbsp;1 dimensions. By that we mean, two dimensions of space with one dimension
     of time. Again, we meet our rabbit and turtle, but now they are free to move on a two-dimensional space.
     So they race again, but not from point A to point B, but rather on a circular track. The full space-time will of course be
     a three-dimensional thing (see below). The checkered floor marks the two coordinates of space, while the green
     arrow is the time coordinate, the "When".
+    <div class="containerLeft">
+        <div>
+            <span class="animButton" onclick="world2dPlus1.resetView()">Top view</span>
+            <span class="animButton" onclick="world2dPlus1.activateView('side')">Side view</span>
+            <span class="animButton" onclick="world2dPlus1.activateView('side2')">Side 2</span>
+            <span class="animButton" onclick="world2dPlus1.animate('moveBy', [0, 0, 0.5, 0, 0, 0], 'floor', 8)">Run Time</span>
+            <span class="animButton" onclick="world2dPlus1.animate('moveBy', [0, 0, -0.5, 0, 0, 0], 'floor', 0.1)">Reset Time</span>
+        </div>
+        <canvas width="800" height="600" id="2dp1_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+    </div>
 </div>
-<canvas width="800" height="600" id="2dp1_Canvas" class="canvasWebGl" tabindex="0"></canvas>
-<span class="animButton" onClick="world2dPlus1.activateView('a')">View A</span>
-<span class="animButton" onclick="world2dPlus1.animate('move', [0, 0, 0.5, 0, 0, 0], 'floor', 8)">Run Time</span>
-<span class="animButton" onclick="world2dPlus1.animate('move', [0, 0, -0.5, 0, 0, 0], 'floor', 0.1)">Reset Time</span>
+<div class="normal">
+    Do try playing around with the view of this 2&nbsp;+&nbsp;1 world. One interesting point of view is the "Top View".
+    It shows all the places where the two buddies eventually were. And that is the circle or the racetrack. On the other hand,
+    the "Side View" show the events including how time was playing into matter. So we can see each participant speed
+    (this is the slope of the line, the more fast you are the less steep is your line). Convince yourself that you
+    understand that the rabbit (red path) is generally faster than the turtle (blue path). See the vertical red
+    line that represents staying in place.
+</div>
+<div class="normal">
+    While each point of view teaches us some part of the full story, so we need to always change our point of view to get the
+    whole story and feel comfortable with what each part represents.
+</div>
+<div class="normal">
+    Another thing to look at is a single slice of time. Look at the current state of the floor.
+    It represents the state of the world at a certain moment, the time of the start of the race.
+    So we see the red and blue paths hit that floor plain, at a certain location.
+    This is the starting point of the race.
+    If we place the floor at a higher point, it would mean a later time into the race.
+    If we continuously move the floor upwards, we would advance in time and could track both paths through the entire race.
+    Press the "run time" button to let time pass and track the points where the paths hit the floor.
+</div>
+
 <div class="headLine2">
     The Curved Space-time of Gravitation
 </div>
@@ -215,13 +245,13 @@
 
 <canvas width="1200" height="700" id="solar_Canvas" class="canvasWebGl" tabindex="0"></canvas>
 <div>
-    <div class="animButton" onclick="worldSolar.animate('move', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
+    <div class="animButton" onclick="worldSolar.animate('moveBy', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
 </div>
 <canvas width="1300" height="600" id="my_Canvas" class="canvasWebGl" tabindex="0"></canvas>
 <div>
-    <div class="animButton" onclick="world.animate('move', [0, 0, 0, 0, 90, 0], 'tr', 1)">shift</div>
-    <div class="animButton" onclick="world.animate('move', [0.2, 0, 0, 0, 45, 0], 'tr', 0.5)">shift back</div>
-    <div class="animButton" onclick="world.animate('move', [0, 0, 0, 0, 180, 0], 'helix', 1)">rotate</div>
+    <div class="animButton" onclick="world.animate('moveBy', [0, 0, 0, 0, 90, 0], 'tr', 1)">shift</div>
+    <div class="animButton" onclick="world.animate('moveBy', [0.2, 0, 0, 0, 45, 0], 'tr', 0.5)">shift back</div>
+    <div class="animButton" onclick="world.animate('moveBy', [0, 0, 0, 0, 180, 0], 'helix', 1)">rotate</div>
     <span class="animButton" onclick="world.activateView('side')">Side View</span>
     <span class="animButton" onclick="world.activateView('normal')">Normal View</span>
     <span class="animButton" onclick="world.resetView()">Top View </span>
@@ -267,7 +297,9 @@
     world2dPlus1.addToRoot('helixRabbit2', glBuild.helixCurve(0.2, 0.2, 0.5, 0.003, [0.0, 0, 0.35, 0, 0, 180], [1, 0, 0]));
     world2dPlus1.addToRoot('lineRabbit', glBuild.segmentCurve([- 0.2, 0, 0.1], [- 0.2, 0, 0.35], 0.003, [0.0, 0, 0, 0, 0, 0], [1, 0, 0]));
     world2dPlus1.addToRoot('arrow', glBuild.arrow(0.5, 0.05, 0.005, 0.02, [- 0.25, 0.25, 0, 0, 0, 0], [0, 1, 0]));
-    world2dPlus1.addLabelView('a', [0, -0.23, -0.1, -80, 0, 0]);
+    world2dPlus1.addLabelView('side', [0, -0.23, -0.1, -80, 0, 0]);
+    world2dPlus1.addLabelView('side2', [ 1.3737387097273113, 0, 0, 0, 0, 1.8316516129697482, 0, 0, 0.017, -0.0026, -0.10512820512820514, -0.1, 0, 0, -0.20512820512820512, 0,
+        -0.02510639970324361, 0.035361579898365365, 0.9990591711010072, 0, 0.9996096857158929, -0.011361541273127367, 0.025522374553865218, 0, 0.012253363493742966, 0.9993099989727874, -0.03506253037217399, 0, 0.055530609659277703, -0.2443674538718856, 0.010044843405483055, 1]);
     world2dPlus1.prepare(document.getElementById('2dp1_Canvas'));
     world2dPlus1.startAnimation();
 

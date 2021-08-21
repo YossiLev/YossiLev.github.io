@@ -80,7 +80,11 @@ class glWorld {
 	}
 	transformObjects(object, operation, partTime, pos) {
 		switch (operation) {
-			case "move":
+			case "moveBy":
+				object.setLocalMatrix(object.getMemoryMatrix());
+				object.transformPosition(buildRelativeMat(calcPartialPos(partTime, pos)));
+				break;
+			case "moveTo":
 				object.setLocalMatrix(object.getMemoryMatrix());
 				object.transformPosition(buildRelativeMat(calcPartialPos(partTime, pos)));
 				break;

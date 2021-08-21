@@ -240,6 +240,11 @@ a {
 .container {
     position: relative;
 }
+.containerLeft {
+    position: relative;
+    float: left;
+    margin: 10px 24px 10px 0px;
+}
 .textCanvas {
     background-color: transparent;  /* needed because webgl-tutoraisl.css sets canvas bg color to white */
     position: absolute;
