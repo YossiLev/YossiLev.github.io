@@ -192,6 +192,7 @@ a {
 .link {
     text-decoration: underline;
     cursor: pointer;
+    color: #1c74c1;
 }
 .guideFrame {
     position: absolute;
@@ -215,6 +216,15 @@ a {
     border: 1px solid lightgray;
     border-radius: 50%;
 }
+.guideButton {
+    position: relative;
+    top: 20px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    text-align: center
+}
+
 .vidFrame {
     position: fixed;
     left: 0;
@@ -243,7 +253,7 @@ a {
 .containerLeft {
     position: relative;
     float: left;
-    margin: 10px 24px 10px 0px;
+    padding: 10px 24px 10px 0px;
 }
 .textCanvas {
     background-color: transparent;  /* needed because webgl-tutoraisl.css sets canvas bg color to white */

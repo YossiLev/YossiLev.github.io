@@ -181,6 +181,18 @@ webGlFocus = () => {
         el.onfocus = ((e) => glWorld.setFocusByCanvas(e.target));
     });
 }
+webGlGuide = () => {
+    getArrayByClass("canvasWebGl").forEach(el => {
+        const guideButton = document.createElement("div");
+        guideButton.classList.add('closeButton', 'guideButton');
+        guideButton.onclick = (e) => {
+            webGlPresentGuide(e, el.id);
+        }
+        guideButton.innerText = "?";
+
+        el.parentElement.insertBefore(guideButton, el);
+    });
+}
 webGlPresentGuide = (e, id) => {
     const glElement = document.getElementById(id);
     const guideId = 'guideOf_' + id;
@@ -210,7 +222,8 @@ embedVideo = (label) => {
     const body = document.getElementsByTagName("BODY")[0];
     body.insertBefore(vidFrame, body.firstChild);
 }
-window.onloadFuncs = [addHeader, fillAppendixOrder, optionalOpenClose, equationsLabels, zoomOnImages, initActions, addTts, webGlFocus];
+window.onloadFuncs = [addHeader, fillAppendixOrder, optionalOpenClose, equationsLabels,
+    zoomOnImages, initActions, addTts, webGlFocus, webGlGuide];
 
 window.onload = function()
 {

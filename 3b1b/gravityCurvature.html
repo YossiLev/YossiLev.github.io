@@ -24,11 +24,10 @@
     Motivation
 </div>
 <div class="normal">
-    The current theory of gravity tells a story of objects that curve (or bend or distort) space-time.
+    The current theory of gravity tells a story about objects that curve (or bend or distort) space-time.
     When no other forces exist, objects will move in straight paths at a constant speed.
     However, on a curved space-time, these straight paths behave differently than what our intuition tells us.
-    The result of all that is what we see in nature as orbits of planets,
-    and apples accelerating towards the ground.
+    And then, what we see in nature are planets orbiting the sun, and apples accelerating towards the ground.
 </div>
 <div class="normal">
     The aim of this presentation is to give an intuitive view of what is this <b>curved space-time</b>.
@@ -116,7 +115,9 @@
 <div class="container">
     <span class="animButton" onclick="worldS.activateView('side')">Side View </span>
     <span class="animButton" onclick="worldS.resetView()">Top View </span>
-    <canvas width="1300" height="600" id="surface_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+    <div>
+        <canvas width="1300" height="600" id="surface_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+    </div>
    <!-- <canvas width="1000" height="600" id="surface_Canvas_Text" class="textCanvas"></canvas> -->
 </div>
 <div class="normal">
@@ -242,12 +243,15 @@
     Are we lost? Not really, because gravitation effects are really intuitive and easy to grasp.
     All we need to do is to take what we know about how gravitation affects objects and translate it into geometry.
 </div>
-
-<canvas width="1200" height="700" id="solar_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+<div class="container">
+    <canvas width="1300" height="700" id="solar_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+</div>
 <div>
     <div class="animButton" onclick="worldSolar.animate('moveBy', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
 </div>
-<canvas width="1300" height="600" id="my_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+<div class="container">
+    <canvas width="1300" height="600" id="my_Canvas" class="canvasWebGl" tabindex="0"></canvas>
+</div>
 <div>
     <div class="animButton" onclick="world.animate('moveBy', [0, 0, 0, 0, 90, 0], 'tr', 1)">shift</div>
     <div class="animButton" onclick="world.animate('moveBy', [0.2, 0, 0, 0, 45, 0], 'tr', 0.5)">shift back</div>
