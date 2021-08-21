@@ -181,6 +181,21 @@ webGlFocus = () => {
         el.onfocus = ((e) => glWorld.setFocusByCanvas(e.target));
     });
 }
+webGlPresentGuide = (e, id) => {
+    const glElement = document.getElementById(id);
+    const guideId = 'guideOf_' + id;
+    const guideFrame = document.createElement("div");
+    guideFrame.classList.add('guideFrame');
+    guideFrame.id = guideId;
+    webGlCloseGuide = (ide) => {
+        const el = document.getElementById(ide);
+        el.parentElement.removeChild(el);
+    }
+    guideFrame.innerHTML =
+        `<i class="material-icons closeButton" onclick="webGlCloseGuide('${guideId}');" style="cursor: pointer; float:right; margin-top: -20px;" >close</i>`
+        + glWorld.getGuide().map(l => `<div>${l}</div>`).join('');
+    glElement.parentElement.insertBefore(guideFrame, glElement);
+}
 embedVideo = (label) => {
     const vidFrame = document.createElement("div");
     vidFrame.classList.add('vidFrame');

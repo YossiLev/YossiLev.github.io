@@ -9,6 +9,14 @@ class glWorld {
 		this.setFocus();
 		glWorld.allWorlds.push(this);
 	}
+	static getGuide() {
+		return [
+			'Press the left mouse button and move the mouse to rotate the view',
+			'Press the right mouse button and move the mouse to shift the view',
+			'Use the mouse wheel to zoom in and out',
+			'Double click with left mouse button to reset the view'
+		];
+	}
 	setFocus() {
 		singleWorld = this;
 	}
@@ -28,7 +36,18 @@ class glWorld {
 		}
 		this.canvas.focus();
 		this.setFocus();
-		buildRelativeMat(lv.view).forEach((m, im) => {this.mo_matrix[im] = m; });
+		switch (lv.view.length) {
+			case 6:
+				buildRelativeMat(lv.view).forEach((m, im) => {this.mo_matrix[im] = m; });
+				break;
+			case 16:
+				lv.view.forEach((m, im) => {this.mo_matrix[im] = m; });
+				break;
+			case 32:
+				lv.view.slice(0, 16).forEach((m, im) => {this.proj_matrix[im] = m; });
+				lv.view.slice(16, 32).forEach((m, im) => {this.mo_matrix[im] = m; });
+				break;
+		}
 	}
 	
 	addToRoot(name, glPack, options = {}) {
@@ -119,6 +138,7 @@ class glWorld {
 			this.proj_matrix = pp;
 			this.mo_matrix = mm;
 		} else {
+			console.log('Current pr-mo ', this.proj_matrix.concat(this.mo_matrix))
 			pp.forEach((p, ip) => {this.proj_matrix[ip] = p; });
 			mm.forEach((m, im) => {this.mo_matrix[im] = m; });
 		}
@@ -368,7 +388,7 @@ class glWorld {
 		this.gl.enable(this.gl.DEPTH_TEST);
 
 		// gl.depthFunc(gl.LEQUAL);
-		this.gl.clearColor(1,1,1, 1.0);
+		this.gl.clearColor(0.98,0.98,0.98, 1.0);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
 		this.gl.uniformMatrix4fv(this._Pmatrix, false, this.proj_matrix);

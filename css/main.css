@@ -43,7 +43,7 @@ a {
 }
 .headLine2 {
     font-size: 24px;
-    padding: 60px 0 4px 0;
+    padding: 30px 0 4px 0;
     color: #202020;
     text-align: left;
 }
@@ -87,7 +87,7 @@ a {
     display: inline-block;
 }
 .list {
-    margin-top: 8px;
+    margin: 8px 0;
 }
 .listItem {
     margin-top: 4px;
@@ -189,7 +189,32 @@ a {
 .optionalParagraph.optionalStatusClosed > .optionalOpening {
     display: none;
 }
-
+.link {
+    text-decoration: underline;
+    cursor: pointer;
+}
+.guideFrame {
+    position: absolute;
+    right: 20px;
+    top: -20px;
+    text-align: left;
+    background-color: white;
+    border: 2px solid gray;
+    border-radius: 4px;
+    z-index: 100;
+    padding: 8px 10px;
+    margin: 8px 10px;
+    font-size: smaller;
+}
+.closeButton{
+    background-color: white;
+    padding: 3px;
+    cursor: pointer;
+    float:right;
+    margin-top: -20px;
+    border: 1px solid lightgray;
+    border-radius: 50%;
+}
 .vidFrame {
     position: fixed;
     left: 0;
@@ -233,12 +258,12 @@ a {
 }
 .animButton {
     display: inline-block;
-    background-color: #202020;
+    background-color: #5f5c5c;
     color: #ffff80;
-    padding: 3px 5px;
+    padding: 1px 7px;
     margin: 1px;
-    border: 1px solid red;
-    border-radius: 3px;
+    border: 2px solid #d7de65;
+    border-radius: 15px;
 }
 .animButton::before {
     content: "> ";

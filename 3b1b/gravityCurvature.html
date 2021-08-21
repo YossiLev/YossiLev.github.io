@@ -21,10 +21,43 @@
     The Curvature of Gravitation
 </div>
 <div class="headLine2">
+    Motivation
+</div>
+<div class="normal">
+    The current theory of gravity tells a story of objects that curve (or bend or distort) space-time.
+    When no other forces exist, objects will move in straight paths at a constant speed.
+    However, on a curved space-time, these straight paths behave differently than what our intuition tells us.
+    The result of all that is what we see in nature as orbits of planets,
+    and apples accelerating towards the ground.
+</div>
+<div class="normal">
+    The aim of this presentation is to give an intuitive view of what is this <b>curved space-time</b>.
+</div>
+<div class="normal">
+    We will explain
+    <div class="list">
+        <div class="listItem">
+            What is a straight line on a curved space, and how looking at straight lines can expose the curvature of the space.
+        </div>
+        <div class="listItem">
+            How can we unite space and time into a single geometrical entity called <b>a four-dimensional space-time</b>
+        </div>
+        <div class="listItem">
+            How gravity bends that space-time, and how straight lines look on it
+        </div>
+    </div>
+</div>
+<div class="normal">
+    The visualization of gravity curving space should not have been difficult.
+    Unfortunately, if you Google the term "curved space time" and go to the "Images" tab,
+    you will be staring at various pictures with one common problem -
+    they are all incorrect in demonstrating the true nature of the curvature of gravity.
+</div>
+<div class="headLine2">
     Quick History - Gravitation 1.0; Gravitation 2.0
 </div>
 <div class="normal" id="apples">
-    Apples fall to the ground, and planets orbit around the sun. Isaac Newton explained both findings, saying that
+    Apples fall to the ground, and planets orbit around the sun. Isaac Newton connected both findings, explaining that
     bodies with mass attract other bodies, causing them change their motion.
     The calculation of the attraction force between mass 1 and mass 2 is given by the formula
     <span style="visibility: hidden;">. F , equals G Mass 1 times Mass 2, divided by square of the distance between the masses</span>
@@ -34,22 +67,36 @@
 </div>
 <div class="normal" id="newTheory">
     In 1905, Albert Einstein introduced the theory of relativity. He then tried to generalize the theory to include
-    accelerated motion. The result was a more general theory, to be later known as "General Relativity". The theory gave
+    accelerated motion. The result (in 1915) was a more general theory, to be later known as "General Relativity". The theory gave
     a new explanation to both acceleration and also the attractive forces of gravity. So it became a new theory for gravity.
     It suggested that masses bend (or curve or distort) the "fabric of space-time". In this space-time,
     the motion of all the stuff (massive objects but also light!) is distorted as well,
     so they follow curved paths in the curved space-time. A new formula gives the
-    connection between "Energy-Momentum T", which is the new name for Mass, and the geometric distortion of space-time,
+    connection between "Energy-Momentum T", which is roughly the new name for Mass, and the geometric distortion of space-time,
     now called "Einstein Curvature G". Both G and T are defined at each point of space, and at each moment of time.
     The formula is ever so simple, but the simple shape is misleading. \[G=T\]
-    In reality this equation is so complicated, that in most cases we are unable to solve it (except for some super simple situations).
+    In reality, the equation is so complicated, so in most cases, we can't solve it (except for some super simple situations).
 </div>
 <div class="normal">
-    But still, we remain with the fact that masses curve space-time,
-    and then all masses move in that curved space-time along the curved paths. These paths are the
-    "straightest" curves available on the curved space-time. Only when there are no masses at all
-    (\(T=0\) everywhere), do we get no distortion (\(G=0\)), and then we call it zero-curvature, or flat-space.
-    In such a flat space, the "straightest" curves behave line the good old straight line that we know.
+    Let's forget about equations for a moment, and take a good look at what Einstein was suggesting.
+    <div class="list">
+        <div class="listItem">
+            Gravitation is NOT a force! Masses to not attract each other.
+        </div>
+        <div class="listItem">
+            Gravitation is all about reshaping the geometry of the world, changing distances between points,
+            and making new roads for other masses to walk through.
+        </div>
+        <div class="listItem">
+            Then masses follow these new roads as their default path, without and sense of being forced to do so.
+        </div>
+        <div class="listItem">
+            The natural free motion is along the curved paths made by gravity.
+        </div>
+    </div>
+    These statements are a bit difficult to understand. To make it worse, Einstein did not suggest changing the
+    geometry of our three-dimensional space. We first need to include a new fourth dimension of time, then treat
+    all that as a unified four-dimensional object called Space-Time. Only then can we start messing with its geometry.
 </div>
 <div class="normal">
     What is this curved space-time that makes gravity? How can we visualize it? This is the goal of our presentation.
@@ -58,48 +105,38 @@
 <div class="headLine2">
     Straight Lines on Curved Spaces
 </div>
+
 <div class="normal">
-    <b>One dimensional curved shapes, or curved lines</b> -
-    It is easy to imagine a curved line, and to tell about a line if it is curved or not (not curved would give a straight line).
-</div>
-<div class="normal">
-    <b>Two dimensional curved shapes, or curved surface</b> -
-    A curved surface is also something familiar. We can tell the difference between a curved surface and a flat one by
-    looking. Look at the two surfaces below. One is curved and one is flat. Use the mouse the change view point (Guide here).
+    Let's compare a curved surface to a non-curved (or flat) one. We can tell the difference by just
+    looking at them. It is less obvious from a "top view", so press "side view" for a better look.
+    You can also use the mouse to change the view as you wish
+    (<span class="link" onclick="webGlPresentGuide(event, 'surface_Canvas');">Guide here</span>).
     Can you see the curvature?
 </div>
 <div class="container">
+    <span class="animButton" onclick="worldS.activateView('side')">Side View </span>
+    <span class="animButton" onclick="worldS.resetView()">Top View </span>
     <canvas width="1300" height="600" id="surface_Canvas" class="canvasWebGl" tabindex="0"></canvas>
    <!-- <canvas width="1000" height="600" id="surface_Canvas_Text" class="textCanvas"></canvas> -->
 </div>
 <div class="normal">
     We can imagine drawing a straight line on a flat surface, but could there be a straight line on a curved surface?
-    The best way to handle this is to stand on a point of the surface and decide on which direction you want to go.
-    The make a tiny step in the direction you chose. Usually, you will find yourself stepping out of the surface.
-    So you can make a correction step and fall to the closest point of the surface.
+    While there is an exact mathematical definition for a straight line on a curved space, we want to suggest a more
+    intuitive way to look at it. Think about our surface as the field of a golf course, with all its hills and valleys.
+    Then try to drive a golf cart on that field. Hold firm to the steering wheel point at the forward position and don't let
+    it change. If you were driving on a flat field, your path would be straight. However, driving through hills and
+    valleys will cause your cart to change direction. Even though your path is the straightest path possible.
 </div>
 <div class="normal">
-    On a flat surface, this procedure give a path along a straight line. On a curved surface, the path is "the straightest
-    line possible". Let's look at examples of such curves. Press the following buttons to put some lines on both surfaces.
-    Lines start at the same point and same directions but continue differently on each surface.
-    <span class="animButton" onclick="worldS.animate('show', null, 'sGL, fGL', 3)">
-        Two lines
-    </span>
-    <span class="animButton" onclick="worldS.animate('show', null, 'sGA, fGA', 3)">
-        Array of Parallels
-    </span>
-    <span class="animButton" onclick="worldS.animate('show', null, 'sGB, fGB', 3)">
-        Different Directions
-    </span>
-    <span class="animButton" onclick="worldS.animate('show', null, 'sGC, fGC', 3)">
-        Another point
-    </span>
-    <span class="animButton" onclick="worldS.hideObjects('sGL, fGL, sGA, fGA, sGB, fGB, sGC, fGC')">
-        Clear
-    </span>
-    <span class="animButton" onclick="worldS.resetView()">
-        Reset View
-    </span>
+    Let's look at examples of such curves. Press the following buttons to put some lines on both surfaces.
+    Lines start at the same point on each surface and same direction but continue differently as they cling to the surface.
+    <span class="animButton" onclick="worldS.animate('show', null, 'sGL, fGL', 3)">Two lines</span>
+    <span class="animButton" onclick="worldS.animate('show', null, 'sGA, fGA', 3)">Parallels</span>
+    <span class="animButton" onclick="worldS.animate('show', null, 'sGB, fGB', 3)">Spreading</span>
+    <span class="animButton" onclick="worldS.animate('show', null, 'sGC, fGC', 3)">More Spreading</span>
+    <span class="animButton" onclick="worldS.hideObjects('sGL, fGL, sGA, fGA, sGB, fGB, sGC, fGC')">Clear Lines</span>
+</div>
+<div class="normal">
 
 </div>
 <div class="normal">
@@ -133,40 +170,42 @@
     the events of some story.
 </div>
 <div class="normal">
-    For example if there is a race between a rabbit and a turtle, they could go like that.
+    For example if there is a race between a rabbit and a turtle.
     Both started at point A racing towards point B. The rabbit is faster, but once it got to the mid-point of the race,
-    it fell asleep for an hour, while the turtle continued past the rabbit and go close to the end. Then the rabbit
+    it fell asleep for an hour, while the turtle continued past the rabbit. Later, the rabbit
     woke up and continued to run, but it was too late.
 </div>
 <div class="normal">
     The whole story is shown in the following picture. The rabbit's path is in red, and turtle gets the blue path.
-    Every point on this picture can host an event, that is something that happened at a certain exact location and at
+    Every point on this picture represents an event, that is something that happened at a certain exact location and at
     a certain exact time.
     The horizontal coordinate of an event holds the position, that is "where", while the vertical holds the time, the "When".
     If you see that some participant in the scenario, has a vertical line, this means that while time is passing,
     position is not. This matches a participant staying put for some period of time, so no motion.
-    On the other hand, we never see a horizontal line, as this would have meant a participant that appear to be at
-    more than one position at the same time.
+    On the other hand, we never see a horizontal line, as this would have meant a participant being at
+    more than one position at the same time, which is not allowed.
 </div>
 <div class="normal">
     Such a map has two dimensions, one of space and one of time, jointly called Space-Time. We see all the points on
     it (the events) and can draw lines between them. So we can treat them as if they belong to a geometry,
-    using geometrical terms, like length, slope, etc. While it is two-dimensional, the usual way is to say the its
-    had 1&nbsp;+&nbsp;1 (one plus one) dimensions. So we emphasize that there is one position dimension and one time dimension.
+    using geometrical terms, like length, slope, etc. While it is two-dimensional, the usual way is to say that it
+    has 1&nbsp;+&nbsp;1 (one plus one) dimensions. So we emphasize that there is one position dimension and one time dimension.
 </div>
 <div class="normal">
     The physical space we live in is described using three coordinates to mark the position of a certain object.
     If we want to talk of our space-time, to would have 3&nbsp;+&nbsp;1 (three plus one) dimensions. All together four dimensions.
     Let make a smaller step and talk about 2&nbsp;+&nbsp;1 dimensions. By that we mean, two dimensions of space with one dimension
-    of time. Again, we meet our rabbit and turtle, but now they are free to move around on a two-dimensional space.
-    So they race not from point A to point B, but rather on a circular track. The full space-time will of course be
+    of time. Again, we meet our rabbit and turtle, but now they are free to move on a two-dimensional space.
+    So they race again, but not from point A to point B, but rather on a circular track. The full space-time will of course be
     a three-dimensional thing (see below). The checkered floor marks the two coordinates of space, while the green
     arrow is the time coordinate, the "When".
 </div>
 <canvas width="800" height="600" id="2dp1_Canvas" class="canvasWebGl" tabindex="0"></canvas>
-<span class="animButton" onclick="world2dPlus1.activateView('a')">View A</span>
+<span class="animButton" onClick="world2dPlus1.activateView('a')">View A</span>
+<span class="animButton" onclick="world2dPlus1.animate('move', [0, 0, 0.5, 0, 0, 0], 'floor', 8)">Run Time</span>
+<span class="animButton" onclick="world2dPlus1.animate('move', [0, 0, -0.5, 0, 0, 0], 'floor', 0.1)">Reset Time</span>
 <div class="headLine2">
-    The Curved Space-time or Gravitation
+    The Curved Space-time of Gravitation
 </div>
 <div class="normal">
     So we had concerns about understanding curvature in three dimensions, but the real target is to get to four.
@@ -183,6 +222,10 @@
     <div class="animButton" onclick="world.animate('move', [0, 0, 0, 0, 90, 0], 'tr', 1)">shift</div>
     <div class="animButton" onclick="world.animate('move', [0.2, 0, 0, 0, 45, 0], 'tr', 0.5)">shift back</div>
     <div class="animButton" onclick="world.animate('move', [0, 0, 0, 0, 180, 0], 'helix', 1)">rotate</div>
+    <span class="animButton" onclick="world.activateView('side')">Side View</span>
+    <span class="animButton" onclick="world.activateView('normal')">Normal View</span>
+    <span class="animButton" onclick="world.resetView()">Top View </span>
+
 </div>
 <div id="objBut"></div>
 
@@ -211,6 +254,9 @@
     }
 
     worldS.addToRoot('lineList', glBuild.listOfLine([-0.2, 0, 0, 0, 0, 0], [1, 0, 0]));
+    worldS.addLabelView('side', [1.3737387097273113, 0, 0, 0, 0, 2.976433871075841, 0, 0, 0, 0, -0.10512820512820514, -0.1, 0, 0, -0.20512820512820512, 0,
+        1, 0, -0, 0, -0, 0.766044443118978, -0.6427876096865393, 0, 0, 0.6427876096865393, 0.766044443118978, 0, 0, 0, 0, 1]);
+
     worldS.prepare(document.getElementById('surface_Canvas'));
     worldS.startAnimation();
 
@@ -254,6 +300,22 @@
     //    world.addToRoot(`@sf${i}`, glBuild.arc3dCurve(0.8, (i - 10) * 0.1, -1, 1, 0.005, [0, 0, 0, 0, 0, 0], [1, 1, 0]));
     //    world.addToRoot(`@sfc${i}`, glBuild.makeClone([0, 0, 0, 0, 90, 0], world.getObjectByName(`@sf${i}`)));
     //}
+    world.addLabelView('side', [
+        1.3737387097273113, 0, 0, 0,
+        0, 2.976433871075841, 0, 0,
+        0.0026000000000000003,  0.07640000000000018, -0.10512820512820514, -0.1,
+        0, 0, -0.20512820512820512, 0,
+        0.5259727162298479, -0.0011621583573477596, 0.0018774619800226494, 0,
+        0.0018868109693413453, 0.004257001136427263, -0.5259567392660992, 0,
+        0.001146917564586616, 0.525958839666198, 0.004261132575165785, 0, 0, 0, 0, 1]);
+    world.addLabelView('normal', [1.3737387097273113, 0, 0, 0,
+        0, 2.976433871075841, 0, 0,
+        0.013400000000000009, 0.058000000000000086, -0.10512820512820514, -0.1,
+        0, 0, -0.20512820512820512, 0,
+        0.5036140512935409, 0.00783505663485207, -0.060910189895720196, 0,
+        -0.06018285871009997, 0.1631393614451248, -0.4766152790990378, 0,
+        0.01222550052489335, 0.48033604137176883, 0.16286920059394344, 0, 0, 0, 0, 1]);
+
     world.prepare(document.getElementById('my_Canvas'))
     buildShowButtons(world.getNames(), 'objBut')
     world.startAnimation();
