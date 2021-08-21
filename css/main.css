@@ -206,6 +206,8 @@ a {
     padding: 8px 10px;
     margin: 8px 10px;
     font-size: smaller;
+    color: #56b9e5;
+
 }
 .closeButton{
     background-color: white;
@@ -254,6 +256,9 @@ a {
     position: relative;
     float: left;
     padding: 10px 24px 10px 0px;
+}
+.containerFlex {
+     display: flex;
 }
 .textCanvas {
     background-color: transparent;  /* needed because webgl-tutoraisl.css sets canvas bg color to white */

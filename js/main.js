@@ -182,7 +182,7 @@ webGlFocus = () => {
     });
 }
 webGlGuide = () => {
-    getArrayByClass("canvasWebGl").forEach(el => {
+    getArrayByClass("webGlGuide").forEach(el => {
         const guideButton = document.createElement("div");
         guideButton.classList.add('closeButton', 'guideButton');
         guideButton.onclick = (e) => {

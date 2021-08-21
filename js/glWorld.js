@@ -85,8 +85,11 @@ class glWorld {
 				object.transformPosition(buildRelativeMat(calcPartialPos(partTime, pos)));
 				break;
 			case "moveTo":
-				object.setLocalMatrix(object.getMemoryMatrix());
-				object.transformPosition(buildRelativeMat(calcPartialPos(partTime, pos)));
+				const init = object.getMemoryMatrix();
+				const sPos = pos.map((p, ip) => ip < 3 ? p - init[12 + ip] : p);
+				console.log(init, pos, sPos);
+				object.setLocalMatrix(init);
+				object.transformPosition(buildRelativeMat(calcPartialPos(partTime, sPos)));
 				break;
 			case "show":
 				object.showPart(partTime);
@@ -110,6 +113,22 @@ class glWorld {
 			stepTime += 0.02;
 			const partTime = stepTime / time;
 			animObjects.forEach(o => this.transformObjects(o, operation, partTime, pos));
+			if (time <= stepTime) {
+				clearInterval(animateTimer);
+			}
+		}, 20)
+	}
+	animatePath(pathFunction, namesSelections, time) {
+		this.canvas.focus();
+		this.setFocus();
+		let stepTime = 0.0;
+		const animObjects = this.getSelectedObjects(namesSelections);
+
+		const animateTimer = setInterval(() => {
+			stepTime += 0.02;
+			const partTime = stepTime / time;
+			console.log(partTime, pathFunction(partTime))
+			animObjects.forEach(o => o.setPosition(pathFunction(partTime)));
 			if (time <= stepTime) {
 				clearInterval(animateTimer);
 			}

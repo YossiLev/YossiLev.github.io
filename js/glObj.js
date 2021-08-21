@@ -199,22 +199,22 @@ class glBuild {
 		return {pos: mv[0], norm1: nVec2, norm2: nVec3};
 	}
 
-	static helixCurve(d, r, n, width, pos, col) {
+	static helixCurve(d, r, n, width, pos, col, colorFunc = null) {
 		const helixFunc = (pa) => [r * Math.cos(pa * n * Math.PI * 2), r * Math.sin(pa * n * Math.PI * 2), pa * n * d];
-		return glBuild.parametricCurve((p) => glBuild.curveFrame(helixFunc, p), 50 * n, width, pos, col);
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(helixFunc, p), 50 * n, width, pos, col, colorFunc);
 	}
-	static segmentCurve(p1, p2, width, pos, col) {
+	static segmentCurve(p1, p2, width, pos, col, colorFunc = null) {
 		const segmentFunc = (pa) => {
 			let rc = p1.map((p, ip) => (1 - pa) * p + pa * p2[ip]);
 			return rc;
 		}
-		return glBuild.parametricCurve((p) => glBuild.curveFrame(segmentFunc, p), 1, width, pos, col);
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(segmentFunc, p), 1, width, pos, col, colorFunc);
 	}
 	static sineCurve(width, pos, col) {
 		const sineFunc = (pa) => [0.03 * pa * Math.PI * 2, 0, 0.1 * Math.sin(pa * Math.PI * 2)];
 		return glBuild.parametricCurve((p) => glBuild.curveFrame(sineFunc, p), 50, width, pos, col);
 	}
-	static sineCurve2(width, pos, col) {
+	static sineCurve2(width, pos, col, colorFunc = null) {
 		return glBuild.parametricCurve((p, t, r) => {
 			const a = p * Math.PI * 2;
 			const mv = [a, 0, Math.sin(a)];
@@ -222,16 +222,24 @@ class glBuild {
 			const nVec2 = [0, 1, 0];
 			const nVec3 = multVec3(nVec, nVec2);
 			return mv.map((v, iv) => 0.1 *(v + nVec2[iv] * Math.sin(t) * r + nVec3[iv] * Math.cos(t) * r));
-		}, 50, width, pos, col);
+		}, 50, width, pos, col, colorFunc);
 	}
-	static arc3dCurve(r, phi, t1, t2, width, pos, col) {
+	static arc3dCurve(r, phi, t1, t2, width, pos, col, colorFunc = null) {
 		const arc3dFunc = (pa) => {
 			const t = t1 * pa + t2 * (1 - pa);
 			return [r * Math.cos(t) * Math.sin(phi), r * Math.cos(t) * Math.cos(phi), r * Math.sin(t)];
 		};
-		return glBuild.parametricCurve((p) => glBuild.curveFrame(arc3dFunc, p), 250, width, pos, col);
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(arc3dFunc, p), 250, width, pos, col, colorFunc);
 	}
-	static ellipse(rx, ry, width, pos, col) {
+	static getFreeFallFunction(x, v, a, time) {
+		return (pa) => {
+			pa *= time;
+			console.log(pa, [Math.max(0, x + v * pa + 0.5 * a * pa * pa), 0, 0]);
+			return [Math.max(0, x + v * pa + 0.5 * a * pa * pa), 0, 0];
+		};
+	}
+
+	static getEllipseFunction(rx, ry) {
 		class ellTime {
 			constructor(e) {
 				this.f = [];
@@ -276,7 +284,7 @@ class glBuild {
 		const f = Math.sqrt(rx * rx  - ry * ry); // distance pf focal point from center
 		const e = f / rx; // eccentricity
 		let calcObj = new ellTime(e);
-		const ellipseFunc = (pa) => {
+		return (pa) => {
 			const t1 = pa * Math.PI * 2;
 			if (e < 0.0001) {
 				return [rx * Math.cos(t1), rx * Math.sin(t1), 0];
@@ -298,26 +306,30 @@ class glBuild {
 			}
 			return [x, y, 0];
 		};
+	}
+	static ellipse(rx, ry, width, pos, col, colorFunc = null) {
+		const pathFunc = glBuild.getEllipseFunction(rx, ry);
+
 		const ellipseFrame = (pa) => {
-			const pos = ellipseFunc(pa);
-			const prevPos = ellipseFunc(pa - 0.0001);
+			const pos = pathFunc(pa);
+			const prevPos = pathFunc(pa - 0.0001);
 			const dir = pos.map((p, ip) => 10000 * (p - prevPos[ip]));
 			const v = Math.sqrt(1 / (Math.sqrt(pos[0] * pos[0] + pos[1] * pos[1])));
 
 			return {pos: pos, norm1: [0,0,1], norm2: normalizeVec3(multVec3([0,0,1], dir))};
 		};
-		return glBuild.parametricCurve(ellipseFrame, 100, width, pos, col);
+		return glBuild.parametricCurve(ellipseFrame, 50, width, pos, col, colorFunc);
 	}
 
-	static trefoilKnotCurve(width, pos, col) {
+	static trefoilKnotCurve(width, pos, col, colorFunc = null) {
 		const trefoilKnotFunc = (pa) => {
 			const t = pa * Math.PI * 2;
 			return [0.02 * (Math.cos(t) + 2 * Math.cos(2 * t)), 0.02 * (Math.sin(t) - 2 * Math.sin(2 * t)), 0.02 * (2 * Math.sin(3 * t))];
 		};
-		return glBuild.parametricCurve((p) => glBuild.curveFrame(trefoilKnotFunc, p), 250, width, pos, col);
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(trefoilKnotFunc, p), 250, width, pos, col, colorFunc);
 	}
 
-	static parametricCurve(func, n, width, pos, col, colorFunc = null) {
+	static parametricCurve(func, n, width, pos, colx, colorFunc) {
 		let data = glBuild.dataInit(pos,0x0004 /*gl.TRIANGLES*/, {func: func})
 
 		let r = width;
@@ -325,56 +337,70 @@ class glBuild {
 		let last_p = 0;
 		let lastTheta = 0;
 		let lastFr = null;
+		const colModulu = colx.length / 3;
+		const colors = colx.reduce((resultArray, item, index) => {
+			const chunkIndex = Math.floor(index / 3)
+			if(!resultArray[chunkIndex]) {
+				resultArray[chunkIndex] = [];
+			}
+			resultArray[chunkIndex].push(item);
+			return resultArray;
+		}, [])
 
 		let needFirstP = true
 		for (let ip = 0; ip <= n; ip++) {
 
 			let p = ip / n;
-			let fr = func(p);
-			let color = [...col];
+			let color = [...colors[ip % colModulu]];
 			if (colorFunc) {
 				color = [...colorFunc(p)];
 			}
-			//if (ip % 2) {
-			//	color = [1, 0, 0];
-			//}
+			let fr = func(p);
 			if (needFirstP) {
 				needFirstP = false
 				last_p = p
 				lastFr = fr;
 				continue
 			}
+			const subDiv = Math.floor(distVec3(fr.pos, lastFr.pos) / 0.015) + 1;
 
-			let needFirstTheta = true
-			for (let iTheta = -180; iTheta < 181; iTheta +=30) {
-				let theta = (Math.PI * iTheta) / 180;
-				if (needFirstTheta) {
-					needFirstTheta = false;
-					lastTheta = theta;
-					continue;
+			for (let is = 1; is <= subDiv; is++) {
+				let ps = last_p + 1 / (n * subDiv);
+				if (subDiv !== 1) {
+					fr = func(ps);
 				}
 
-				const p1t1 = fr.pos.map((v, iv) => v + fr.norm1[iv] * Math.sin(theta) * r + fr.norm2[iv] * Math.cos(theta) * r);
-				const p1t0 = fr.pos.map((v, iv) => v + fr.norm1[iv] * Math.sin(lastTheta) * r + fr.norm2[iv] * Math.cos(lastTheta) * r);
-				const p0t1 = lastFr.pos.map((v, iv) => v + lastFr.norm1[iv] * Math.sin(theta) * r + lastFr.norm2[iv] * Math.cos(theta) * r);
-				const p0t0 = lastFr.pos.map((v, iv) => v + lastFr.norm1[iv] * Math.sin(lastTheta) * r + lastFr.norm2[iv] * Math.cos(lastTheta) * r);
+				let needFirstTheta = true
+				for (let iTheta = -180; iTheta < 181; iTheta += 30) {
+					let theta = (Math.PI * iTheta) / 180;
+					if (needFirstTheta) {
+						needFirstTheta = false;
+						lastTheta = theta;
+						continue;
+					}
 
-				const surfaceNormal = [0, 1, 2].map(iv => fr.norm1[iv] * Math.sin(theta) + fr.norm2[iv] * Math.cos(theta));
+					const p1t1 = fr.pos.map((v, iv) => v + fr.norm1[iv] * Math.sin(theta) * r + fr.norm2[iv] * Math.cos(theta) * r);
+					const p1t0 = fr.pos.map((v, iv) => v + fr.norm1[iv] * Math.sin(lastTheta) * r + fr.norm2[iv] * Math.cos(lastTheta) * r);
+					const p0t1 = lastFr.pos.map((v, iv) => v + lastFr.norm1[iv] * Math.sin(theta) * r + lastFr.norm2[iv] * Math.cos(theta) * r);
+					const p0t0 = lastFr.pos.map((v, iv) => v + lastFr.norm1[iv] * Math.sin(lastTheta) * r + lastFr.norm2[iv] * Math.cos(lastTheta) * r);
 
-				let ll = data.vertices.length / 3;
-				data.vertices.push(...p1t1, ...p1t0, ...p0t0, ...p0t1);
-				data.normals.push(...surfaceNormal, ...surfaceNormal, ...surfaceNormal, ...surfaceNormal);
-				if (iTheta > -180 + 30) {
+					const surfaceNormal = [0, 1, 2].map(iv => fr.norm1[iv] * Math.sin(theta) + fr.norm2[iv] * Math.cos(theta));
+
+					let ll = data.vertices.length / 3;
+					data.vertices.push(...p1t1, ...p1t0, ...p0t0, ...p0t1);
+					data.normals.push(...surfaceNormal, ...surfaceNormal, ...surfaceNormal, ...surfaceNormal);
+					//if (iTheta > -180 + 30) {
 					data.colors.push(...color, ...color, ...color, ...color);
-				} else {
-					data.colors.push(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-				}
-				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 3, ll + 1);
+					//	} else {
+					//			data.colors.push(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+					//		}
+					data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 3, ll + 1);
 
-				lastTheta = theta;
+					lastTheta = theta;
+				}
+				last_p = ps;
+				lastFr = fr;
 			}
-			last_p = p;
-			lastFr = fr;
 		}
 
 		return new glInfo(data);
@@ -496,7 +522,7 @@ class glBuild {
 		return new glInfo(data);
 	}
 
-	static curveOnSurface(surface, uStart, vStart, uStep, vStep, nSteps, col, width) {
+	static curveOnSurface(surface, uStart, vStart, uStep, vStep, nSteps, col, width, colorFunc = null) {
 		//*
 		const curveFunc = (pa) => {
 			const u = uStart + uStep * nSteps * pa;
@@ -504,7 +530,7 @@ class glBuild {
 			const vec = surface.glPack.func(u, v);
 			return vec;
 		}
-		return glBuild.parametricCurve((p) => glBuild.surfaceFrame(curveFunc, p), nSteps, width, surface.glPack.pos, col);
+		return glBuild.parametricCurve((p) => glBuild.surfaceFrame(curveFunc, p), nSteps, width, surface.glPack.pos, col, colorFunc);
 		/*/
 
 		console.log(surface)
@@ -592,7 +618,7 @@ class glBuild {
 		return [uv[0] + epsilon * Math.cos(finalT), uv[1] + epsilon * Math.sin(finalT)]
 	}
 
-	static geodesicOnSurface(surface, uStart, vStart, uDirection, vDirection, length, col, width) {
+	static geodesicOnSurface(surface, uStart, vStart, uDirection, vDirection, length, col, width, colorFunc = null) {
 		const func = surface.glPack.func;
 		let uv = [uStart, vStart];
 		let path = [], vec;
@@ -637,15 +663,7 @@ class glBuild {
 			const vec = surface.glPack.func(u, v);
 			return vec;
 		}
-		const colorFunc = (pa) => {
-			const pos = pa * sPathTot;
-			let seg = sPath.findIndex(s => s >= pos);
-			if (seg < 0) {
-				seg = path.length - 1;
-			}
-			return (seg % 2 === 0) ? [1, 0, 0] : [0, 0, 1];
-		}
-		return glBuild.parametricCurve((p) => glBuild.surfaceFrame(curveFunc, p), 400, width, surface.glPack.pos, col/*, colorFunc*/);
+		return glBuild.parametricCurve((p) => glBuild.surfaceFrame(curveFunc, p), 400, width, surface.glPack.pos, col, colorFunc);
 	}
 
 	static addLine(data, p1, p2, c, w = 1) {
@@ -949,6 +967,9 @@ class glObj {
 	}
 	transformPosition(tr_mat) {
 		this.glPack.tr_matrix = multMat4x4(tr_mat, this.glPack.tr_matrix);
+	}
+	setPosition(pos) {
+		pos.forEach((p, ip) => this.glPack.tr_matrix[12 + ip] = p);
 	}
 	getLocalMatrix() {
 		return [...this.glPack.tr_matrix];
