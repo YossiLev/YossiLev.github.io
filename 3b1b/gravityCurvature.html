@@ -29,8 +29,8 @@
 <div class="normal">
     The current theory of gravity tells a story about objects that curve (or bend or distort) space&#8209;time.
     When no other forces exist, objects will move in straight paths at a constant speed.
-    However, on a curved space&#8209;time, these straight paths behave differently than what our intuition tells us.
-    And then, what we see in nature are planets orbiting the sun, and apples accelerating towards the ground.
+    However, on a curved space&#8209;time, such straight paths behave differently from what we expect.
+    And then, the motion we observe in nature is of planets orbiting the sun, and apples accelerating towards the ground.
 </div>
 <div class="normal">
     The aim of this presentation is to give an intuitive view of what is this <b>curved space&#8209;time</b>.
@@ -42,7 +42,7 @@
             What is a straight line on a curved space, and how looking at straight lines can expose the curvature of the space.
         </div>
         <div class="listItem">
-            How can we unite space and time into a single geometrical entity called <b>a four&#8209;dimensional space&#8209;time</b>
+            How we can unite space and time into a single geometrical entity called <b>a four&#8209;dimensional space&#8209;time</b>
         </div>
         <div class="listItem">
             How gravity bends that space&#8209;time, and how straight lines look on it
@@ -95,7 +95,7 @@
         </div>
     </div>
     These statements are a bit difficult to understand. To make it worse, Einstein did not suggest changing the
-    geometry of our three&#8209;dimensional space. We first need to include a new fourth dimension of time, then treat
+    geometry of our three&#8209;dimensional space. We first need to include a new fourth dimension of time. Then, treat
     all that as a unified four&#8209;dimensional object called space&#8209;time. Only then can we start messing with its geometry.
 </div>
 <div class="normal">
@@ -132,7 +132,7 @@
 
 <div class="normal">
     Let's look at examples of such paths. Press the following buttons to put some lines on both surfaces.
-    Lines start at the same point on each surface, and also with same initial direction, but the lines continue differently
+    Lines will start at the same point on each surface, and also with same initial direction, but the lines continue differently
     as they cling to the surface.
 </div>
 <div class="normal">
@@ -144,14 +144,15 @@
 </div>
 <div class="normal">
     Some things that are special to straight lines on curved surfaces, like there could be more than
-    a single straight line between the same two points, and parallel lines may meet. Such things do not depend on
-    the view point, so they still exist even if we are viewing the surface from the top. From this view point
+    a single straight line between the same two points, and line that start as parallel may meet.
+    Such things do not depend on the view point,
+    so they still exist even if we are viewing the surface from the top. From this view point
     the curvature is a bit obscured, but the straight lines continue to tell the tail of a curved surface.
 </div>
 <div class="normal">
     This is important, because when we start talking about a curved three&#8209;dimensional space, we do not have the
     option to step out and directly look the curvature from a higher dimensional point. So tracking
-    the paths of the straight lines becomes a valuable option.
+    the paths of the straight lines becomes a reasonable way to identify and estimate curvature.
 </div>
 <div class="normal">
     While we live in a three&#8209;dimensional world, understanding curvature on three&#8209;dimensional spaces is not enough.
@@ -179,19 +180,19 @@
     woke up and continued to run, but it was too late.
 </div>
 <div class="normal">
-    The whole story is shown in the following picture. The rabbit's path is in red, and turtle gets the blue path.
+    The whole story is shown in the above picture. The rabbit's path is in red, and turtle gets the blue path.
     Every point on this picture represents an event, that is something that happened at a certain exact location and at
     a certain exact time.
     The horizontal coordinate of an event holds the position, that is "Where", while the vertical holds the time, the "When".
     If you see that some participant in the scenario, has a vertical line, this means that while time is passing,
     position is not changing. This matches a participant staying put for some period of time, so no motion.
-    On the other hand, we never see a horizontal line, as this would have meant a participant being at
+    On the other hand, we never see horizontal lines, as this would have meant a participant being at
     more than one position at the same time, which is not possible.
 </div>
 <div class="normal">
     Such a map has two dimensions, one of space and one of time, jointly called space&#8209;time. We see all the points on
     it (the events) and can draw lines between them. So we can treat them as if they belong to a geometry,
-    using geometrical terms, like length, slope, etc. While it is two&#8209;dimensional, the usual way is to say that it
+    using geometrical terms, like length, slope, etc. While it is two&#8209;dimensional, the common way is to say that it
     has 1&nbsp;+&nbsp;1 (one plus one) dimensions. So we emphasize that there is one position dimension and one time dimension.
 </div>
 <div class="normal">
@@ -209,8 +210,8 @@
             <span class="animButton" onclick="world2dPlus1.resetView()">Top view</span>
             <span class="animButton" onclick="world2dPlus1.activateView('side')">Side view</span>
             <span class="animButton" onclick="world2dPlus1.activateView('side2')">Side 2</span>
-            <span class="animButton" onclick="world2dPlus1.animate('moveTo', [0, 0, 0.5, 0, 0, 0], 'floor', 8)">Run Time</span>
-            <span class="animButton" onclick="world2dPlus1.animate('moveTo', [0, 0, 0, 0, 0, 0], 'floor', 0.1)">Reset Time</span>
+            <span class="animButton" onclick="world2dPlus1.animate('moveTo', [0, 0, 0.5, 0, 0, 0], 'floor', 8)">Run</span>
+            <span class="animButton" onclick="world2dPlus1.animate('moveTo', [0, 0, 0, 0, 0, 0], 'floor', 0.1)">Back to Start</span>
         </div>
         <canvas width="600" height="600" id="2dp1_Canvas" class="canvasWebGl webGlGuide" tabindex="0"></canvas>
     </div>
@@ -224,8 +225,8 @@
     line that represents staying in place.
 </div>
 <div class="normal">
-    While each point of view teaches us some part of the full story, so we need to always change our point of view to get the
-    whole story and feel comfortable with what each part represents.
+    Each point of view teaches us some part of the full story, so we need to always change our point of view, in order to get the
+    whole story, and feel comfortable with what each part represents.
 </div>
 <div class="normal">
     Another thing to look at is a single slice of time. Look at the current state of the floor.
@@ -233,8 +234,9 @@
     So we see the red and blue paths hit that floor plain, at a certain location.
     This is the starting point of the race.
     If we place the floor at a higher point, it would mean a later time into the race.
-    If we continuously move the floor upwards, we would advance in time and could track both paths through the entire race.
-    Press the "run time" button to let time pass and track the points where the paths hit the floor.
+    If we continuously move the floor upwards, we would advance in time and could track both paths through the entire race.</br>
+    Press "Run" to let time pass and track the points where the paths hit the floor.</br>
+    Press "Back to Start" to bring the floor back to the starting time.
 </div>
 
 <div class="headLine2">
@@ -242,7 +244,7 @@
 </div>
 <div class="normal">
     So now we have some understanding about the thing we call space&#8209;time.
-    We have seen it from all angles, we understand the meaning of paths along space&#8209;time. What is still missing is how gravity
+    We have seen it from all angles, and understand the meaning of paths along space&#8209;time. What is still missing is how gravity
     curve this space&#8209;time.
 </div>
 <div class="normal">
@@ -254,14 +256,14 @@
     or the Sun against the Earth. In both cases, the motion of the big object will feel little effect, so it would be
     practically not moving (great! this is a simple vertical line in space&#8209;time, standing still!). That big
     object will be the most significant contributor to the effect on space&#8209;time curvature. So the smaller object will
-    travel along a straight path in the unchanging curved space&#8209;time.
+    travel along a straight path inside this unchanging curved space&#8209;time.
 </div>
 <div class="normal">
-    We will explore these paths below, where on the right there will be an animation of the motion like it look in our
+    We will explore these paths below, where on the right there will be an animation of the motion, just like it looks in our
     three&#8209;dimensional world, while the left is the space&#8209;time view of a 2&nbsp;+&nbsp;1 dimensions.
     So pick a category from the tabs below. Then pick a path type to explore, read the description and press the activation button.
     When the path is seen, look at it from various points of view, and make sure you understand what's going on.
-    And when the paths become cluttered, use "Clear Paths" below.
+    And when more paths are added and the picture becomes cluttered, you can use "Clear Paths" below.
 </div>
 <div class="normal">
     So pick a category and have fun!
@@ -274,10 +276,10 @@
         <div id="segmentOptions"></div>
         <div id="mainFall" class="mainPart segmentApples">
             <span class="mainHeader">Apples in free fall</span>
-            We know what happens to an apple when we hold and apple on our hand and let go.
-            It moves straight down towards the earth with growing speed.</br>
+            We know what happens to an apple when we hold it on our hand and let go.
+            The apple moves straight down towards the earth with growing speed.</br>
             Click <span class="animButton" onclick="animFall();">Fall</span> to see the simulation of the motion on
-            the right simulation window, then look at the path in the space&#8209;time on the left side.
+            the right side, then look at the path in the space&#8209;time on the left side.
             Did you notice that the initial direction of the apple in the space&#8209;time view is vertical.
             This is because the apple was at rest at the beginning.
         </div>
@@ -286,19 +288,21 @@
             Another well known path of our apple is to throw it up un the air. We know what's going to happen. The apple
             will climb while loosing speed. Then from the top of the path, it will continue to accelerate down just as before.</br>
             Click <span class="animButton" onclick="animThrow();">Throw</span> to see that simulation, and then see how this new
-            path differs from the previous one, of just dropping the apple.
+            path differs from the previous one, of just dropping the apple. Same starting point, but a different starting direction.
         </div>
         <div id="mainThrowDown" class="mainPart segmentApples">
             <span class="mainHeader">Throw the apple down to the ground</span>
-            In a similar manner we can also ask what happens if we throw the apple down.
-            <span class="animButton" onclick="animThrowDown();">Throw Down</span>
+            In a similar manner, we can also ask what happens if we throw the apple down.
+            Go ahead <span class="animButton" onclick="animThrowDown();">Throw Down</span>.</br>
+            All the three paths of the apple spread out of the same point.
         </div>
         <div id="mainThrowLater" class="mainPart segmentApples">
             <span class="mainHeader">Drop the apple, but at a later time</span>
             Remember that we are looking for straight lines in space&#8209;time experiencing gravitation. In that sense, the paths
             of an apple that is being dropped now is different from the path of making the drop a bit later or a bit earlier
-            from now.
-            <span class="animButton" onclick="animFallLater();">Drop Later/Earlier</span>
+            from now.</br>
+            Click <span class="animButton" onclick="animFallLater();">Drop Later/Earlier</span> to see many similar paths,
+            where the "let go" time was different.
         </div>
         <div id="mainCircular" class="mainPart segmentPlanets">
             <span class="mainHeader">The simplest orbit - circular path</span>
@@ -313,8 +317,7 @@
             <span class="mainHeader">Same circle opposite direction</span>
             The circular orbit can go in both directions.</br>
             Click <span class="animButton" onclick="animCircularRev();">Other Way</span> to see the opposite direction circle.
-            Compare the space&#8209;time paths ob both circles.
-
+            Compare the space&#8209;time paths of both circles. Where do they meet?
         </div>
         <div id="mainElliptic" class="mainPart segmentPlanets">
             <span class="mainHeader">Elliptic orbits</span>
@@ -366,11 +369,12 @@
 <div class="normal">
     Gravity warping space&#8209;time is both easy and complicated at the same time.
     The guiding principle of going along the shortest path is so elegant and natural, however to
-    see and understand the pull entangled picture is close to impossible.
-    Much like the Einstein's gravity equation \(G=T\). I hope I contributed a little to clarify the picture.
+    see and understand the full entangled picture is close to impossible.
+    Much like the Einstein's gravity equation \(G=T\).</br>
+    I hope this presentation has contributed a little to clarify the picture.
 </div>
 <div class="normal">
-    Many things were not covered in this presentation
+    Many things were not covered here
     <div class="list">
         <div class="listItem">
             How does space&#8209;time geometry look in cases where it is not constant?
