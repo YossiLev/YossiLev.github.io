@@ -292,10 +292,16 @@
             <span class="animButton" onclick="animFallLater();">Drop Later/Earlier</span>
         </div>
         <div id="mainCircular" class="mainPart segmentPlanets">
-            <span class="animButton" onclick="worldSolar.animatePath(glBuild.getEllipseFunction(0.2, 0.2), 'earth1', 5);">Circular Orbit</span>
+            <span class="animButton" onclick="animCircular();">Circular Orbit</span>
+        </div>
+        <div id="mainCircularRev" class="mainPart segmentPlanets">
+            <span class="animButton" onclick="animCircularRev();">Other Way</span>
         </div>
         <div id="mainElliptic" class="mainPart segmentPlanets">
-            <span class="animButton" onclick="worldSolar.animatePath(glBuild.getEllipseFunction(0.4, 0.346), 'earth1', 5);">Elliptic</span>
+            <span class="animButton" onclick="animElliptic();">Elliptic</span>
+        </div>
+        <div id="mainAllAround" class="mainPart segmentPlanets">
+            <span class="animButton" onclick="animAllAround();">Around</span>
         </div>
     </div>
 </div>
@@ -309,6 +315,7 @@
 </div>
 <div>
 </div>
+<!--
 <div class="normal">
     So we had concerns about understanding curvature in three dimensions, but the real target is to get to four.
     Are we lost? Not really, because gravitation effects are really intuitive and easy to grasp.
@@ -323,6 +330,7 @@
     <canvas width="1000" height="500" id="my_Canvas" class="canvasWebGl" tabindex="0"></canvas>
 </div>
 <div id="objBut"></div>
+-->
 
 <script>
     let worldSurf = new glWorld();
@@ -423,6 +431,19 @@
     const animFallLater = () => {
         worldSolar2D.showObjects('@fallClonesTime');
     }
+    const animCircular = () => {
+        worldSolar.animatePath(glBuild.getEllipseFunction(0.2, 0.2), 'earth1', 5).then((r) => {
+            worldSolar2D.showObjects('orbitCircle');
+        });
+    }
+    const animCircularRev = () => {
+        worldSolar2D.showObjects('orbitCircleRev');
+    }
+    const animElliptic = () => {
+        worldSolar.animatePath(glBuild.getEllipseFunction(0.4, 0.346), 'earth1', 5).then((r) => {
+            worldSolar2D.showObjects('orbitEllipse');
+        });
+    }
     worldSolar2D.addToRoot('orbitEllipse', glBuild.ellipseSpaceTimeCurve(0.24, 0.16, 6, 0.005, [0.0, 0, 0.0, 0, 0, 0], [0.1, 0.1, 0.1, 0.4, 0.4, 1]), hideOptions);
     worldSolar2D.addToRoot('orbitCircle', glBuild.ellipseSpaceTimeCurve(0.2, 0.2, 6, 0.003, [0, 0, 0.0, 0, 0, 0], [1.0, 0.3, 0.3, 0.6, 0.1, 0.1]), hideOptions);
     worldSolar2D.addToRoot('orbitCircleRev', glBuild.ellipseSpaceTimeCurve(- 0.2, 0.2, 6, 0.003, [0.0, 0, 0.0, 0, 0, 0], [0.3, 1., 0.3, 0.1, 0.6, 0.1]), hideOptions);
@@ -445,7 +466,7 @@
 
     worldSolar2D.prepare(document.getElementById('solar_Canvas2D'))
     worldSolar2D.startAnimation();
-
+/*
     let world = new glWorld();
     world.addToRoot('floor', glBuild.floor(4, 0.1));
     //world.addToRoot('helix', glBuild.helixCurve(0.2, 0.1, 6, 0.001, [0, 0, 0, 0, 45, 0], [0, 1, 0]));
@@ -477,6 +498,8 @@
 
     world.prepare(document.getElementById('my_Canvas'))
     world.startAnimation();
+
+ */
 
     const showMainPart = (e, id) => {
         getArrayByClass("structNavSub").forEach(el => {

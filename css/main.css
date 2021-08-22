@@ -155,7 +155,7 @@ a {
 }
 .structNav {
     display: inline-block;
-    background-color: #7fff7f;
+    background-color: #f7f0f0;
     color: darkred;
     padding: 3px 10px;
 }
@@ -168,7 +168,7 @@ a {
 }
 .structNavSub {
     display: inline-block;
-    background-color: #7fff7f;
+    background-color: #f7f0f0;
     color: darkred;
     padding: 3px 10px;
     margin: 4px 0px;
