@@ -171,7 +171,7 @@ class glBuild {
 		return new glInfo(data);
 	}
 
-	static curveFrame(func, p) {
+	static curveFrame(func, p, lf = null) {
 		const epsilon = 0.0001;
 		const mv = func(p);
 		const mvM = func(p - epsilon);
@@ -179,12 +179,19 @@ class glBuild {
 		const nVec = normalizeVec3([mvP[0] - mvM[0], mvP[1] - mvM[1], mvP[2] - mvM[2]]);
 		let nVecS = [mvP[0] + mvM[0] - 2 * mv[0], mvP[1] + mvM[1] - 2 * mv[1], mvP[2] + mvM[2] - 2 * mv[2]];
 		if (norm2Vec3(nVecS) < epsilon * epsilon * epsilon * epsilon * epsilon) {
-			nVecS = nVec[2] > 0.05 ? [0, 1, 0] : [0, 0, 1];
+			if (lf === null) {
+				nVecS = nVec[2] > 0.05 ? [0, 1, 0] : [0, 0, 1];
+			} else {
+				return {...lf, pos: mv }
+			}
 		} else {
 			nVecS = normalizeVec3(nVecS);
 		}
-		const nVec2 = multVec3(nVec, nVecS);
+		const nVec2 = normalizeVec3(multVec3(nVec, nVecS));
 		const nVec3 = multVec3(nVec, nVec2);
+		if (lf != null && multScalarVec3(nVec2, lf.norm1) < 0.4) {
+			return {...lf, pos: mv }
+		}
 
 		return {pos: mv, norm1: nVec2, norm2: nVec3};
 	}
@@ -237,14 +244,24 @@ class glBuild {
 			return [Math.max(0, x + v * pa + 0.5 * a * pa * pa), 0, 0];
 		};
 	}
-	static freeFallCurve(x, v, a, time, width, pos, col, colorFunc = null) {
+	static freeFallSpaceTimeCurve(x, v, a, time, width, pos, col, colorFunc = null) {
 		let freeFunc = glBuild.getFreeFallFunction(x, v, a, time);
 		const fallCurve = (pa) => {
 			let pos = freeFunc(pa);
 			pos[2] = pa * time * 0.1;
 			return pos;
 		}
-		return glBuild.parametricCurve((p) => glBuild.curveFrame(fallCurve, p), 100, width, pos, col, colorFunc);
+		return glBuild.parametricCurve((p, lf) => glBuild.curveFrame(fallCurve, p, lf), 100, width, pos, col, colorFunc);
+	}
+
+	static ellipseSpaceTimeCurve(rx, ry, time, width, pos, col, colorFunc = null) {
+		let ellipseFunc = glBuild.getEllipseFunction(rx, ry);
+		const ellipseCurve = (pa) => {
+			let pos = ellipseFunc(pa);
+			pos[2] = pa * time * 0.1;
+			return pos;
+		}
+		return glBuild.parametricCurve((p, lf) => glBuild.curveFrame(ellipseCurve, p, lf), 100, width, pos, col, colorFunc);
 	}
 
 	static getEllipseFunction(rx, ry) {
@@ -289,13 +306,15 @@ class glBuild {
 				return theta;
 			}
 		};
+		const sign = rx > 0 ? 1 : -1;
+		rx *= sign;
 		const f = Math.sqrt(rx * rx  - ry * ry); // distance pf focal point from center
 		const e = f / rx; // eccentricity
 		let calcObj = new ellTime(e);
 		return (pa) => {
 			const t1 = pa * Math.PI * 2;
 			if (e < 0.0001) {
-				return [rx * Math.cos(t1), rx * Math.sin(t1), 0];
+				return [rx * Math.cos(t1), sign * rx * Math.sin(t1), 0];
 			}
 			const t = calcObj.getTheta(t1);
 			const sig = t > Math.PI * 3 / 2 || t < Math.PI / 2 ? 1 : - 1; // sigh for picking quadratic solution
@@ -312,7 +331,7 @@ class glBuild {
 				x = (- b + sig * Math.sqrt(disc)) / (2 * a);
 				y = x * tant;
 			}
-			return [x, y, 0];
+			return [x, y * sign, 0];
 		};
 	}
 	static ellipse(rx, ry, width, pos, col, colorFunc = null) {
@@ -334,7 +353,7 @@ class glBuild {
 			const t = pa * Math.PI * 2;
 			return [0.02 * (Math.cos(t) + 2 * Math.cos(2 * t)), 0.02 * (Math.sin(t) - 2 * Math.sin(2 * t)), 0.02 * (2 * Math.sin(3 * t))];
 		};
-		return glBuild.parametricCurve((p) => glBuild.curveFrame(trefoilKnotFunc, p), 250, width, pos, col, colorFunc);
+		return glBuild.parametricCurve((p, lf) => glBuild.curveFrame(trefoilKnotFunc, p, lf), 250, width, pos, col, colorFunc);
 	}
 
 	static parametricCurve(func, n, width, pos, colx, colorFunc) {
@@ -363,7 +382,8 @@ class glBuild {
 			if (colorFunc) {
 				color = [...colorFunc(p)];
 			}
-			let fr = func(p);
+			//console.log('b1', lastFr);
+			let fr = func(p, lastFr);
 			if (needFirstP) {
 				needFirstP = false
 				last_p = p
@@ -375,7 +395,8 @@ class glBuild {
 			for (let is = 1; is <= subDiv; is++) {
 				let ps = last_p + 1 / (n * subDiv);
 				if (subDiv !== 1) {
-					fr = func(ps);
+					//console.log('b2', lastFr);
+					fr = func(ps, lastFr);
 				}
 
 				let needFirstTheta = true
@@ -398,12 +419,11 @@ class glBuild {
 					data.vertices.push(...p1t1, ...p1t0, ...p0t0, ...p0t1);
 					data.normals.push(...surfaceNormal, ...surfaceNormal, ...surfaceNormal, ...surfaceNormal);
 					//if (iTheta > -180 + 30) {
-					data.colors.push(...color, ...color, ...color, ...color);
-					//	} else {
-					//			data.colors.push(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-					//		}
+						data.colors.push(...color, ...color, ...color, ...color);
+				//	} else {
+				//		data.colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+				//	}
 					data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 3, ll + 1);
-
 					lastTheta = theta;
 				}
 				last_p = ps;
@@ -961,9 +981,9 @@ class glObj {
 		this.glPack = glPack;
 	}
 
-	show = () => {this.show = true};
-	hide = () => {this.show = false};
-	toggle = () => {this.show = !this.show};
+	showObj = () => {this.show = true};
+	hideObj = () => {this.show = false};
+	toggleObj = () => {this.show = !this.show};
 	combine(comb) {
 		this.glPack.combine(comb);
 		this.children.forEach(ob => ob.glPack.combine(comb));

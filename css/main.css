@@ -292,6 +292,10 @@ a {
     border: 2px solid #d7de65;
     border-radius: 15px;
 }
+.animButton:hover {
+    color: #ffff04;
+    background-color: #b9b7b7;
+}
 .animButton::before {
     content: "> ";
 }

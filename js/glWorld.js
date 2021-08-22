@@ -6,6 +6,8 @@ class glWorld {
 		this.objects = [];
 		this.mo_matrix = mo_matrix;
 		this.labelViews = [];
+		this.groupLabel = "";
+		this.animationIsRunning = false;
 		this.setFocus();
 		glWorld.allWorlds.push(this);
 	}
@@ -26,32 +28,41 @@ class glWorld {
 			glWorld.allWorlds[iWorld].setFocus();
 		}
 	}
-	addLabelView(label, view) {
-		this.labelViews.push({label, view})
+	addLabelView(label, view, init = false) {
+		this.labelViews.push({label, view, init})
 	}
-	activateView(label) {
+	activateView(label, setInFocus = true) {
 		const lv = this.labelViews.find(lv => lv.label === label);
 		if (!lv) {
 			return;
 		}
-		this.canvas.focus();
-		this.setFocus();
-		switch (lv.view.length) {
+		if (setInFocus) {
+			this.canvas.focus();
+			this.setFocus();
+		}
+		this.useView(lv.view);
+	}
+	useView(v) {
+		switch (v.length) {
 			case 6:
-				buildRelativeMat(lv.view).forEach((m, im) => {this.mo_matrix[im] = m; });
+				buildRelativeMat(v).forEach((m, im) => {this.mo_matrix[im] = m; });
 				break;
 			case 16:
-				lv.view.forEach((m, im) => {this.mo_matrix[im] = m; });
+				v.forEach((m, im) => {this.mo_matrix[im] = m; });
 				break;
 			case 32:
-				lv.view.slice(0, 16).forEach((m, im) => {this.proj_matrix[im] = m; });
-				lv.view.slice(16, 32).forEach((m, im) => {this.mo_matrix[im] = m; });
+				v.slice(0, 16).forEach((m, im) => {this.proj_matrix[im] = m; });
+				v.slice(16, 32).forEach((m, im) => {this.mo_matrix[im] = m; });
 				break;
 		}
 	}
-	
+	setGroupLabel(newLabel) {
+		this.groupLabel = newLabel;
+	}
+
 	addToRoot(name, glPack, options = {}) {
-		let newObj = new glObj(name, glPack, options)
+		let newObj = new glObj(name, glPack, options);
+		newObj.groupLabel = this.groupLabel;
 		this.objects.push(newObj);
 
 		return newObj;
@@ -76,7 +87,9 @@ class glWorld {
 	}
 	getSelectedObjects(namesSelections) {
 		const names = namesSelections.split(',').map(n => n.trim());
-		return this.objects.filter(ob => names.includes(ob.name));
+		const rc = this.objects.filter(ob => names.find(n => n.includes(ob.name) || (n[0] === '#' && ob.groupLabel === n.substr(1))));
+		console.log(names, rc.length, rc);
+		return rc;
 	}
 	transformObjects(object, operation, partTime, pos) {
 		switch (operation) {
@@ -87,7 +100,6 @@ class glWorld {
 			case "moveTo":
 				const init = object.getMemoryMatrix();
 				const sPos = pos.map((p, ip) => ip < 3 ? p - init[12 + ip] : p);
-				console.log(init, pos, sPos);
 				object.setLocalMatrix(init);
 				object.transformPosition(buildRelativeMat(calcPartialPos(partTime, sPos)));
 				break;
@@ -97,42 +109,57 @@ class glWorld {
 		}
 	}
 	showObjects(namesSelections) {
-		this.getSelectedObjects(namesSelections).forEach(o => o.show());
+		this.getSelectedObjects(namesSelections).forEach(o => o.showObj());
+		this.setFocus();
 	}
 	hideObjects(namesSelections) {
-		this.getSelectedObjects(namesSelections).forEach(o => o.hide());
+		this.getSelectedObjects(namesSelections).forEach(o => o.hideObj());
+		this.setFocus();
 	}
 	animate(operation, pos, namesSelections, time) {
+		if (this.animationIsRunning) {
+			return;
+		}
 		this.canvas.focus();
 		this.setFocus();
 		let stepTime = 0.0;
 		const animObjects = this.getSelectedObjects(namesSelections);
 		animObjects.forEach(o => o.setMemoryMatrix(o.getLocalMatrix()));
 
+		this.animationIsRunning = true;
 		const animateTimer = setInterval(() => {
 			stepTime += 0.02;
 			const partTime = stepTime / time;
 			animObjects.forEach(o => this.transformObjects(o, operation, partTime, pos));
 			if (time <= stepTime) {
+				this.animationIsRunning = false;
 				clearInterval(animateTimer);
 			}
 		}, 20)
 	}
 	animatePath(pathFunction, namesSelections, time) {
+		if (this.animationIsRunning) {
+			return;
+		}
 		this.canvas.focus();
 		this.setFocus();
 		let stepTime = 0.0;
 		const animObjects = this.getSelectedObjects(namesSelections);
 
-		const animateTimer = setInterval(() => {
-			stepTime += 0.02;
-			const partTime = stepTime / time;
-			console.log(partTime, pathFunction(partTime))
-			animObjects.forEach(o => o.setPosition(pathFunction(partTime)));
-			if (time <= stepTime) {
-				clearInterval(animateTimer);
-			}
-		}, 20)
+		return new Promise((resolve, reject) => {
+			const animateTimer = setInterval(() => {
+				this.animationIsRunning = true;
+				stepTime += 0.02;
+				const partTime = stepTime / time;
+				animObjects.forEach(o => o.setPosition(pathFunction(partTime)));
+				if (time <= stepTime) {
+					clearInterval(animateTimer);
+					console.log('resolved in');
+					this.animationIsRunning = false;
+					resolve(1);
+				}
+			}, 20)
+		});
 	}
 
 	drawAllObjects() {
@@ -151,7 +178,7 @@ class glWorld {
 	}
 	
 	toggleByName(name) {
-		let obj = this.objects.filter(ob => ob.name == name).forEach(ob => ob.toggle());
+		let obj = this.objects.filter(ob => ob.name == name).forEach(ob => ob.toggleObj());
 	}
 
 	resetView() {
@@ -164,6 +191,10 @@ class glWorld {
 			console.log('Current pr-mo ', this.proj_matrix.concat(this.mo_matrix))
 			pp.forEach((p, ip) => {this.proj_matrix[ip] = p; });
 			mm.forEach((m, im) => {this.mo_matrix[im] = m; });
+		}
+		const lv = this.labelViews.find(lv => lv.init);
+		if (lv) {
+			this.useView(lv.view);
 		}
 	}
 

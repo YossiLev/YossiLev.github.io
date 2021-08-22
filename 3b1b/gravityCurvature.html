@@ -73,8 +73,8 @@
     so they follow curved paths in the curved space-time. A new formula gives the
     connection between "Energy-Momentum T", which is roughly the new name for Mass, and the geometric distortion of space-time,
     now called "Einstein Curvature G". Both G and T are evaluated at each point of space, and at each moment of time.
-    The formula is ever so simple, but the simple shape is misleading. \[G=T\]
-    In reality, the equation is so complicated, so in most cases, we can't solve it (except for some super simple situations).
+    The formula looks simple, but this is misleading. \[G=T\]
+    In reality, the equation is so complicated, that in most cases, we can't solve it (except for some super simple situations).
 </div>
 <div class="normal">
     Let's forget about equations for a moment, and take a good look at what Einstein was suggesting.
@@ -84,12 +84,10 @@
         </div>
         <div class="listItem">
             Gravitation is all about reshaping the geometry of the world, changing distances between points,
-            and making new roads for other masses to walk through.
+            and making new roads for other masses to travel on.
         </div>
         <div class="listItem">
             Then masses follow these new roads as their default path, without and sense of being forced to do so.
-        </div>
-        <div class="listItem">
             The natural free motion is along the curved paths made by gravity.
         </div>
     </div>
@@ -130,8 +128,10 @@
 </div>
 <div class="normal">
     Let's look at examples of such paths. Press the following buttons to put some lines on both surfaces.
-    Lines start at the same point on each surface, and also with same direction, but the lines continue differently
+    Lines start at the same point on each surface, and also with same initial direction, but the lines continue differently
     as they cling to the surface.
+</div>
+<div class="normal">
     <span class="animButton" onclick="worldSurf.animate('show', null, 'sGL, fGL', 3)">Two lines</span>
     <span class="animButton" onclick="worldSurf.animate('show', null, 'sGA, fGA', 3)">Parallels</span>
     <span class="animButton" onclick="worldSurf.animate('show', null, 'sGB, fGB', 3)">Spreading</span>
@@ -146,8 +146,8 @@
 </div>
 <div class="normal">
     This is important, because when we start talking about a curved three-dimensional space, we do not have the
-    option to directly view the curvature, by just looking at it from a higher dimensional point. So tracking
-    the paths of the straight lines is a valuable option.
+    option to step out and directly look the curvature from a higher dimensional point. So tracking
+    the paths of the straight lines becomes a valuable option.
 </div>
 <div class="normal">
     While we live in a three-dimensional world, understanding curvature on three-dimensional spaces is not enough.
@@ -178,11 +178,11 @@
     The whole story is shown in the following picture. The rabbit's path is in red, and turtle gets the blue path.
     Every point on this picture represents an event, that is something that happened at a certain exact location and at
     a certain exact time.
-    The horizontal coordinate of an event holds the position, that is "where", while the vertical holds the time, the "When".
+    The horizontal coordinate of an event holds the position, that is "Where", while the vertical holds the time, the "When".
     If you see that some participant in the scenario, has a vertical line, this means that while time is passing,
     position is not changing. This matches a participant staying put for some period of time, so no motion.
     On the other hand, we never see a horizontal line, as this would have meant a participant being at
-    more than one position at the same time, which is not allowed.
+    more than one position at the same time, which is not possible.
 </div>
 <div class="normal">
     Such a map has two dimensions, one of space and one of time, jointly called Space-Time. We see all the points on
@@ -197,7 +197,7 @@
 <div class="normal">
     Let's make a smaller step and talk about 2&nbsp;+&nbsp;1 dimensions. By that we mean, two dimensions of space with one dimension
     of time. Again, we meet our rabbit and turtle, but now they are free to move on a two-dimensional plain.
-    So they race again, but not from point A to point B, but rather on a circular track. The full space-time will of course be
+    So they race again, but not from point A to point B, but rather on a circular track. The full space-time will be, of course,
     a three-dimensional thing (see below). The checkered floor marks the two coordinates of space, while the green
     arrow is the time coordinate, the "When".
     <div class="containerLeft">
@@ -213,7 +213,7 @@
 </div>
 <div class="normal">
     Do try playing around with the view of this 2&nbsp;+&nbsp;1 world. One interesting point of view is the "Top View".
-    It shows all the places where the two buddies eventually were. And that is the circle or the racetrack. On the other hand,
+    It shows all the places where the two buddies were passing through. And that is the circle or the racetrack. On the other hand,
     the "Side View" show the events including how time was playing into matter. So we can see each participant speed
     (this is the slope of the line, the more fast you are the less steep is your line). Convince yourself that you
     understand that the rabbit (red path) is generally faster than the turtle (blue path). See the vertical red
@@ -242,19 +242,27 @@
     curve this space-time.
 </div>
 <div class="normal">
-    One thing we can do is to list the straight paths in a space-time influenced by gravity. For this we will use
+    One thing we can do is to list the straight paths under gravity. For this, we will use
     our knowledge about motions that gravity inspires. We are eventually back to "falling apples and orbiting planets".
+    So we will talk about the interaction between to bodies, one big against one small. Like the Earth against an apple,
+    or the Sun against the Earth. In both cases, the motion of the big object will feel little effect, so it would be
+    practically not moving (great! this is a simple vertical line in space-time, standing still!). That big
+    object will be the most significant contributor to the effect on space-time curvature. So the smaller object will
+    travel along a straight path in the constant curved space-time.
 </div>
 <div class="normal">
-    So we had concerns about understanding curvature in three dimensions, but the real target is to get to four.
-    Are we lost? Not really, because gravitation effects are really intuitive and easy to grasp.
-    All we need to do is to take what we know about how gravitation affects objects and translate it into geometry.
+    We will examine these paths below, where on the right there will be an animation of the motion like it look in our
+    three-dimensional world, while the left is the space-time view of a 2&nbsp;+&nbsp;1 dimensions.
+</div>
+<div class="normal">
+    <b>Earth vs. apple</b> -
 </div>
 <div>
     <div>
         <div class="butTab">Apples</div>
-        <span class="animButton" onclick="worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0, - 0.05, 3), 'apple', 3);">Fall</span>
-        <span class="animButton" onclick="worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0.1, - 0.05, 6), 'apple', 6);">Throw</span>
+        <span class="animButton" onclick="animFall();">Fall</span>
+        <span class="animButton" onclick="animThrow();">Throw</span>
+        <span class="animButton" onclick="animThrowDown();">Throw Down</span>
     </div>
     <div>
         <div class="butTab">Planets</div>
@@ -263,11 +271,22 @@
     </div>
 </div>
 <div class="containerFlex">
-    <canvas width="700" height="700" id="solar_Canvas2D" class="canvasWebGl webGlGuide" tabindex="0"></canvas>
+    <div>
+        <div>
+            <span class="animButton" onclick="worldSolar2D.activateView('side')">Side view</span>
+            <span class="animButton" onclick="worldSolar2D.activateView('top')">Top view</span>
+        </div>
+        <canvas width="700" height="700" id="solar_Canvas2D" class="canvasWebGl webGlGuide" tabindex="0"></canvas>
+    </div>
     <canvas width="550" height="700" id="solar_Canvas" class="canvasWebGl " tabindex="0"></canvas>
 </div>
 <div>
     <div class="animButton" onclick="worldSolar.animate('moveBy', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
+</div>
+<div class="normal">
+    So we had concerns about understanding curvature in three dimensions, but the real target is to get to four.
+    Are we lost? Not really, because gravitation effects are really intuitive and easy to grasp.
+    All we need to do is to take what we know about how gravitation affects objects and translate it into geometry.
 </div>
 <div class="container">
     <div>
@@ -287,7 +306,7 @@
     worldSurf.addToRoot('sineS', glBuild.sineSurface(0.25, 0.09, [-0.2, 0, 0, 0, 0, 0], [1, 0.6, 0.6]));
     worldSurf.addToRoot('flatS', glBuild.flatSurface(0.25, [0.2, 0, 0, 0, 0, 0], [0.6, 0.6, 1]));
 
-    const hideOptions = { show: false };
+    let hideOptions = { show: false };
     worldSurf.addToRoot('sGL', glBuild.geodesicOnSurface(worldSurf.getObjectByName('sineS'), 0.2, 0.1, 0.000, 0.02, 100, [0.8, 1, 0], 0.001), hideOptions);
     worldSurf.addToRoot('fGL', glBuild.geodesicOnSurface(worldSurf.getObjectByName('flatS'), 0.2, 0.1, 0.000, 0.02, 100, [0.8, 1, 0], 0.001), hideOptions);
     worldSurf.addToRoot('sGL', glBuild.geodesicOnSurface(worldSurf.getObjectByName('sineS'), 0.8, 0.4, -0.03, 0.02, 100, [0.8, 1, 0], 0.001), hideOptions);
@@ -327,6 +346,19 @@
     world2dPlus1.startAnimation();
 
 
+    let worldSolar = new glWorld();
+    worldSolar.addToRoot('sun', glBuild.sphere(0.035, 20, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.0]));
+    worldSolar.addToRoot('earth1', glBuild.sphere(0.005, 20, [0.2, 0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
+    //worldSolar.addToRoot('earth2', glBuild.sphere(0.6, 150, [-0.6, 0.0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
+    //worldSolar.addToRoot('apple', glBuild.sphere(0.005, 20, [0.2, 0.0, 0.0, 0, 0, 0], [1, 0.3, 0.1]));
+    //worldSolar.addToRoot('orbit', glBuild.ellipse(0.4, 0.346, 0.001, [0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 1, 0, 1, 0, 0]));
+    //    worldSolar.addToRoot('orbit', glBuild.ellipse(0.24, 0.16, 0.001, [0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 0, 1]));
+    //    worldSolar.addToRoot('orbit', glBuild.ellipse(0.3, 0.16, 0.001, [0, 0, 0, 0, 0, 90], [0, 1, 1]));
+    //    worldSolar.addToRoot('orbit', glBuild.ellipse(0.4, 0.16, 0.001, [0, 0, 0, 0, 0, 160], [1, 1, 0, 1, 0, 0]));
+    worldSolar.prepare(document.getElementById('solar_Canvas'))
+    worldSolar.startAnimation();
+
+    hideOptions = { show: true };
     let worldSolar2D = new glWorld();
     worldSolar2D.addToRoot('fl', glBuild.segmentCurve([- 0.4, 0, 0], [0.4, 0, 0], 0.0005, [0, 0, 0, 0, 0, 0], [0.2, 0.2, 0.2]));
     worldSolar2D.addToRoot(`@flx`, glBuild.makeClone([0, 0, 0, 0, 0, 90], worldSolar2D.getObjectByName(`fl`)));
@@ -338,32 +370,60 @@
     }
     worldSolar2D.addToRoot('arrow', glBuild.arrow(0.5, 0.05, 0.005, 0.02, [- 0.25, 0.25, 0, 0, 0, 0], [0, 1, 0]));
 
-
     worldSolar2D.addToRoot('sun', glBuild.sphere(0.035, 20, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.0]));
     worldSolar2D.addToRoot('earth1', glBuild.sphere(0.005, 20, [0.2, 0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
     //worldSolar2D.addToRoot('earth2', glBuild.sphere(0.03, 20, [0, 0.0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
     //worldSolar2D.addToRoot('apple', glBuild.sphere(0.005, 20, [0.2, 0.0, 0.0, 0, 0, 0], [1, 0.3, 0.1]));
-    worldSolar2D.addToRoot('fall', glBuild.freeFallCurve(0.2, 0, - 0.05, 3, 0.001, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.9]));
-    worldSolar2D.addToRoot('throw', glBuild.freeFallCurve(0.2, 0.1, - 0.05, 6, 0.001, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.9]));
 
-        worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.2, 0.2, 0.001, [0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 1, 0, 1, 0, 0]));
-        worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.24, 0.16, 0.001, [0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 0, 1]));
-        worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.3, 0.16, 0.001, [0, 0, 0, 0, 0, 90], [0, 1, 1]));
-        worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.4, 0.16, 0.001, [0, 0, 0, 0, 0, 160], [1, 1, 0, 1, 0, 0]));
+    hideOptions = { show: false };
+
+    worldSolar2D.addToRoot('fall', glBuild.freeFallSpaceTimeCurve(0.2, 0, - 0.05, 3, 0.001, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.9]), hideOptions);
+    worldSolar2D.addToRoot('throw', glBuild.freeFallSpaceTimeCurve(0.2, 0.1, - 0.05, 6, 0.001, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.9]), hideOptions);
+    worldSolar2D.addToRoot('throwDown', glBuild.freeFallSpaceTimeCurve(0.2, -0.1, - 0.05, 1.6, 0.001, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.9]), hideOptions);
+    worldSolar2D.addLabelView('side', [0, -0.3, 0, -90, 0, 0], true);
+    worldSolar2D.addLabelView('top', [0, 0, 0, 0, 0, 0], true);
+
+    const animFall = () => {
+        worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0, - 0.05, 3), 'earth1', 3).then((r) => {
+            console.log('resolved');
+            worldSolar2D.showObjects('fall');
+        });
+    }
+    const animThrow = () => {
+        worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0.1, - 0.05, 3), 'earth1', 3).then((r) => {
+            console.log('resolved');
+            worldSolar2D.showObjects('throw');
+        });
+    }
+    const animThrowDown = () => {
+        worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, - 0.1, - 0.05, 3), 'earth1', 3).then((r) => {
+            console.log('resolved');
+            worldSolar2D.showObjects('throwDown');
+        });
+    }
+
+    worldSolar2D.addToRoot('orbitEllipse', glBuild.ellipseSpaceTimeCurve(0.24, 0.16, 6, 0.005, [0.0, 0, 0.0, 0, 0, 0], [0.1, 0.1, 0.1, 0.4, 0.4, 1]), hideOptions);
+    worldSolar2D.addToRoot('orbitCircle', glBuild.ellipseSpaceTimeCurve(0.2, 0.2, 6, 0.003, [0, 0, 0.0, 0, 0, 0], [1.0, 0.3, 0.3, 0.6, 0.1, 0.1]), hideOptions);
+    worldSolar2D.addToRoot('orbitCircleRev', glBuild.ellipseSpaceTimeCurve(- 0.2, 0.2, 6, 0.003, [0.0, 0, 0.0, 0, 0, 0], [0.3, 1., 0.3, 0.1, 0.6, 0.1]), hideOptions);
+    for (let i = 30; i < 360; i += 30) {
+        worldSolar2D.addToRoot(`@orbitCircleClonesRotate`, glBuild.makeClone([0, 0, 0, 0, 0, i], worldSolar2D.getObjectByName(`orbitCircle`)), hideOptions);
+        worldSolar2D.addToRoot(`@orbitCircleRevClonesRotate`, glBuild.makeClone([0, 0, 0, 0, 0, i], worldSolar2D.getObjectByName(`orbitCircleRev`)), hideOptions);
+        worldSolar2D.addToRoot(`@orbitEllipseClonesRotate`, glBuild.makeClone([0, 0, 0, 0, 0, i], worldSolar2D.getObjectByName(`orbitEllipse`)), hideOptions);
+    }
+    for (let i = 0; i < 5; i++) {
+        worldSolar2D.addToRoot(`@fallClonesTime`, glBuild.makeClone([0, 0, 0.1 * i, 0, 0, 0], worldSolar2D.getObjectByName(`fall`)), hideOptions);
+        worldSolar2D.addToRoot(`@fallClonesTime`, glBuild.makeClone([0, 0, -0.1 * i, 0, 0, 0], worldSolar2D.getObjectByName(`fall`)), hideOptions);
+        worldSolar2D.addToRoot(`@throwClonesTime`, glBuild.makeClone([0, 0, 0.1 * i, 0, 0, 0], worldSolar2D.getObjectByName(`throw`)), hideOptions);
+        worldSolar2D.addToRoot(`@throwClonesTime`, glBuild.makeClone([0, 0, -0.1 * i, 0, 0, 0], worldSolar2D.getObjectByName(`throw`)), hideOptions);
+    }
+
+  //      worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.2, 0.2, 0.001, [0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 1, 0, 1, 0, 0]));
+  //      worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.24, 0.16, 0.001, [0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 0, 1]));
+  //      worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.3, 0.16, 0.001, [0, 0, 0, 0, 0, 90], [0, 1, 1]));
+  //      worldSolar2D.addToRoot('orbit', glBuild.ellipse(0.4, 0.16, 0.001, [0, 0, 0, 0, 0, 160], [1, 1, 0, 1, 0, 0]));
+
     worldSolar2D.prepare(document.getElementById('solar_Canvas2D'))
     worldSolar2D.startAnimation();
-
-    let worldSolar = new glWorld();
-    //worldSolar.addToRoot('sun', glBuild.sphere(0.035, 20, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.9, 0.0]));
-    //worldSolar.addToRoot('earth1', glBuild.sphere(0.005, 20, [0.2, 0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
-    worldSolar.addToRoot('earth2', glBuild.sphere(0.6, 150, [-0.6, 0.0, 0.0, 0, 0, 0], [0.34, 0.72, 0.89]));
-    worldSolar.addToRoot('apple', glBuild.sphere(0.005, 20, [0.2, 0.0, 0.0, 0, 0, 0], [1, 0.3, 0.1]));
-    //worldSolar.addToRoot('orbit', glBuild.ellipse(0.4, 0.346, 0.001, [0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 1, 0, 1, 0, 0]));
-//    worldSolar.addToRoot('orbit', glBuild.ellipse(0.24, 0.16, 0.001, [0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 0, 1]));
-//    worldSolar.addToRoot('orbit', glBuild.ellipse(0.3, 0.16, 0.001, [0, 0, 0, 0, 0, 90], [0, 1, 1]));
-//    worldSolar.addToRoot('orbit', glBuild.ellipse(0.4, 0.16, 0.001, [0, 0, 0, 0, 0, 160], [1, 1, 0, 1, 0, 0]));
-    worldSolar.prepare(document.getElementById('solar_Canvas'))
-    worldSolar.startAnimation();
 
     let world = new glWorld();
     world.addToRoot('floor', glBuild.floor(4, 0.1));
