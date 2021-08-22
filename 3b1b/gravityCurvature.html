@@ -257,48 +257,57 @@
     We will examine these paths below, where on the right there will be an animation of the motion like it look in our
     three-dimensional world, while the left is the space-time view of a 2&nbsp;+&nbsp;1 dimensions.
 </div>
-<div class="normal">
-    <b>Earth vs. apple</b> -
-</div>
 <div>
-    <div id="segmentApples" class="structNav" onclick="onNavigateSegment(event)">Falling Apples</div>
-    <div id="segmentPlanets" class="structNav" onclick="onNavigateSegment(event)">Orbiting Planets</div>
-    <div id="segmentOthers" class="structNav" onclick="onNavigateSegment(event)">Other Motions</div>
-    <div id="segmentOptions"></div>
-    <div id="mainFall" class="mainPart segmentApples">
-        <span class="mainHeader">Apples in free fall</span>
-        We know what happens to an apple when we hold and apple on our hand and let go.
-        It moves straight down towards the earth in a growing speed.
-        Click <span class="animButton" onclick="animFall();">Fall</span> to see the simulation of the motion on
-        the right simulation window then look at the path in the space-time on the left side.
-        Did you notice that the initial direction of the apple in the space-time view is vertical.
-        This is because the apple was at rest at the beginning.
-    </div>
-    <div id="mainThrow" class="mainPart segmentApples">
-        <span class="mainHeader">Throw the apple up in the air</span>
-        <span class="animButton" onclick="animThrow();">Throw</span>
-    </div>
-    <div id="mainThrowDown" class="mainPart segmentApples">
-        <span class="animButton" onclick="animThrowDown();">Throw Down</span>
-    </div>
-    <div>
-        <div class="butTab">Planets</div>
-        <span class="animButton" onclick="worldSolar.animatePath(glBuild.getEllipseFunction(0.2, 0.2), 'earth1', 5);">Circular Orbit</span>
-        <span class="animButton" onclick="worldSolar.animatePath(glBuild.getEllipseFunction(0.4, 0.346), 'earth1', 5);">Elliptic</span>
+    <div class="structNavBlock">
+        <div id="segmentApples" class="structNav" onclick="onNavigateSegment(event)">Falling Apples</div>
+        <div id="segmentPlanets" class="structNav" onclick="onNavigateSegment(event)">Orbiting Planets</div>
+        <div id="segmentOthers" class="structNav" onclick="onNavigateSegment(event)">Other Motions</div>
+        <div id="segmentOptions"></div>
+        <div id="mainFall" class="mainPart segmentApples">
+            <span class="mainHeader">Apples in free fall</span>
+            We know what happens to an apple when we hold and apple on our hand and let go.
+            It moves straight down towards the earth in a growing speed.
+            Click <span class="animButton" onclick="animFall();">Fall</span> to see the simulation of the motion on
+            the right simulation window then look at the path in the space-time on the left side.
+            Did you notice that the initial direction of the apple in the space-time view is vertical.
+            This is because the apple was at rest at the beginning.
+        </div>
+        <div id="mainThrow" class="mainPart segmentApples">
+            <span class="mainHeader">Throw the apple up in the air</span>
+            Another well know path of our apple is to throw it up un the air. We know what's going to happen. The apple
+            will climb while loosing speed. Then from the top of the path, it will continue to accelerate down just as before.
+            Click <span class="animButton" onclick="animThrow();">Throw</span> to see that simulation and see how this new
+            path differs from the previous one, of just dropping the apple.
+        </div>
+        <div id="mainThrowDown" class="mainPart segmentApples">
+            <span class="mainHeader">Throw the apple down to the ground</span>
+            In a similar manner we can also ask what happens if we throw the apple down.
+            <span class="animButton" onclick="animThrowDown();">Throw Down</span>
+        </div>
+        <div id="mainThrowLater" class="mainPart segmentApples">
+            <span class="mainHeader">Drop the apple, but at a later time</span>
+            Remember that we are looking for straight lines in space-time experiencing gravitation. In that sense, the paths
+            of an apple that is being dropped now is different from the path of making the drop a bit later or a bit earlier
+            from now.
+            <span class="animButton" onclick="animFallLater();">Drop Later/Earlier</span>
+        </div>
+        <div id="mainCircular" class="mainPart segmentPlanets">
+            <span class="animButton" onclick="worldSolar.animatePath(glBuild.getEllipseFunction(0.2, 0.2), 'earth1', 5);">Circular Orbit</span>
+        </div>
+        <div id="mainElliptic" class="mainPart segmentPlanets">
+            <span class="animButton" onclick="worldSolar.animatePath(glBuild.getEllipseFunction(0.4, 0.346), 'earth1', 5);">Elliptic</span>
+        </div>
     </div>
 </div>
 <div class="containerFlex">
     <div>
-        <div>
-            <span class="animButton" onclick="worldSolar2D.activateView('side')">Side view</span>
-            <span class="animButton" onclick="worldSolar2D.activateView('top')">Top view</span>
-        </div>
-        <canvas width="500" height="400" id="solar_Canvas2D" class="canvasWebGl webGlGuide" tabindex="0"></canvas>
+        <canvas width="500" height="400" id="solar_Canvas2D" class="canvasWebGl" tabindex="0"></canvas>
+        <span class="animButton" onclick="worldSolar2D.activateView('side')">Side view</span>
+        <span class="animButton" onclick="worldSolar2D.activateView('top')">Top view</span>
     </div>
-    <canvas width="400" height="400" id="solar_Canvas" class="canvasWebGl " tabindex="0"></canvas>
+    <canvas width="480" height="400" id="solar_Canvas" class="canvasWebGl " tabindex="0"></canvas>
 </div>
 <div>
-    <div class="animButton" onclick="worldSolar.animate('moveBy', [0.0, 0, 0, 0, 0.8, 0], 'earth', 8)">turn</div>
 </div>
 <div class="normal">
     So we had concerns about understanding curvature in three dimensions, but the real target is to get to four.
@@ -398,23 +407,22 @@
 
     const animFall = () => {
         worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0, - 0.05, 3), 'earth1', 3).then((r) => {
-            console.log('resolved');
             worldSolar2D.showObjects('fall');
         });
     }
     const animThrow = () => {
-        worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0.1, - 0.05, 3), 'earth1', 3).then((r) => {
-            console.log('resolved');
+        worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, 0.1, - 0.05, 6), 'earth1', 3).then((r) => {
             worldSolar2D.showObjects('throw');
         });
     }
     const animThrowDown = () => {
-        worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, - 0.1, - 0.05, 3), 'earth1', 3).then((r) => {
-            console.log('resolved');
+        worldSolar.animatePath(glBuild.getFreeFallFunction(0.2, - 0.1, - 0.05, 2), 'earth1', 3).then((r) => {
             worldSolar2D.showObjects('throwDown');
         });
     }
-
+    const animFallLater = () => {
+        worldSolar2D.showObjects('@fallClonesTime');
+    }
     worldSolar2D.addToRoot('orbitEllipse', glBuild.ellipseSpaceTimeCurve(0.24, 0.16, 6, 0.005, [0.0, 0, 0.0, 0, 0, 0], [0.1, 0.1, 0.1, 0.4, 0.4, 1]), hideOptions);
     worldSolar2D.addToRoot('orbitCircle', glBuild.ellipseSpaceTimeCurve(0.2, 0.2, 6, 0.003, [0, 0, 0.0, 0, 0, 0], [1.0, 0.3, 0.3, 0.6, 0.1, 0.1]), hideOptions);
     worldSolar2D.addToRoot('orbitCircleRev', glBuild.ellipseSpaceTimeCurve(- 0.2, 0.2, 6, 0.003, [0.0, 0, 0.0, 0, 0, 0], [0.3, 1., 0.3, 0.1, 0.6, 0.1]), hideOptions);
@@ -441,12 +449,6 @@
     let world = new glWorld();
     world.addToRoot('floor', glBuild.floor(4, 0.1));
     //world.addToRoot('helix', glBuild.helixCurve(0.2, 0.1, 6, 0.001, [0, 0, 0, 0, 45, 0], [0, 1, 0]));
-    //world.addToRoot('arrow', glBuild.arrow(0.07, 0.03, 0.005, 0.01, [0, 0, 0, 0, 0, 0], [0, 1, 0]));
-    //for (let i = 0; i < 4; i++) {
-    //    for (let j = 0; j < 4; j++) {
-    //        world.addToRoot(`@ar${i}${j}`, glBuild.makeClone([i * 0.1, j * 0.1, 0, 0, 0, 0], world.getObjectByName(`arrow`)));
-    //    }
-    //}
     world.addToRoot('helix1', glBuild.helixCurve(0.05, 0.1, 12, 0.001, [0.0, 0, 0, 0, 0, 0], [1, 0, 0]));
     world.addToRoot('helix2', glBuild.helixCurve(0.1, 0.1 * 1.58740, 6, 0.001, [0.0, 0, 0, 0, 0, 0], [1, 1, 0]));
     world.addToRoot('helix3', glBuild.helixCurve(0.15, 0.1 * 2.08008, 4, 0.001, [0.0, 0, 0, 0, 0, 0], [1, 0, 1]));
@@ -476,18 +478,22 @@
     world.prepare(document.getElementById('my_Canvas'))
     world.startAnimation();
 
-    const showMainPart = (id) => {
-        getArrayByClass("mainPart").forEach(el => {
-            el.style.backgroundColor = 'red';
+    const showMainPart = (e, id) => {
+        getArrayByClass("structNavSub").forEach(el => {
+            el.classList.remove('structNavSubOn');
         });
-        document.getElementById(id).style.backgroundColor = 'yellow';
+        e.target.classList.add('structNavSubOn')
+        getArrayByClass("mainPart").forEach(el => {
+            el.style.display = 'none';
+        });
+        document.getElementById(id).style.display = 'block';
     }
     const onNavigateSegment = (e) => {
         getArrayByClass("structNav").forEach(el => {
             el.classList.remove('structNavOn');
         });
         getArrayByClass("mainPart").forEach(el => {
-            el.style.backgroundColor = 'red';
+            el.style.display = 'none';
         });
         e.target.classList.add('structNavOn')
         const options = [];
@@ -495,7 +501,7 @@
             options.push({id: el.id, label: el.id.slice(4)});
         });
         document.getElementById("segmentOptions").innerHTML =
-            options.map(o => `<span onclick="showMainPart('${o.id}')">${o.label}</span>`).join(' - ');
+            options.map(o => `<span class="structNavSub" onclick="showMainPart(event, '${o.id}')">${o.label}</span>`).join(' ');
     }
 </script>
 

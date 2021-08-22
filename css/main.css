@@ -155,7 +155,6 @@ a {
 }
 .structNav {
     display: inline-block;
-    margin: 0 2px;
     background-color: #7fff7f;
     color: darkred;
     padding: 3px 10px;
@@ -166,6 +165,24 @@ a {
 .mainHeader {
     font-weight: bold;
     color: #b43519;
+}
+.structNavSub {
+    display: inline-block;
+    background-color: #7fff7f;
+    color: darkred;
+    padding: 3px 10px;
+    margin: 4px 0px;
+}
+.structNavSubOn {
+    background-color: #eee18b;
+}
+.structNavBlock {
+    border-left: 4px solid blue;
+    padding: 0 10px;
+    margin: 6px;
+}
+.mainPart {
+    display: none;
 }
 .optionalOpening {
     border-left: 2px solid #808080;
