@@ -153,6 +153,20 @@ a {
 .matIcon {
 
 }
+.structNav {
+    display: inline-block;
+    margin: 0 2px;
+    background-color: #7fff7f;
+    color: darkred;
+    padding: 3px 10px;
+}
+.structNavOn {
+    background-color: #eee18b;
+}
+.mainHeader {
+    font-weight: bold;
+    color: #b43519;
+}
 .optionalOpening {
     border-left: 2px solid #808080;
     border-right: 2px solid #808080;
