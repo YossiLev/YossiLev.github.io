@@ -2,8 +2,8 @@ addMasthead = () => {
     const header = document.createElement("div");
     header.innerHTML = '<a style="color: white; float:left;" href="/index.html"><i onclick="" class="material-icons">home</i></a>' +
         'The site of new ideas' +
-        '<i style="float:right;" onclick="" class="material-icons">mail</i>' +
-        '<i style="float:right;" onclick="" class="material-icons">print</i>'
+        '<i style="float:right; cursor: pointer;" onclick="openMailMessage()" class="material-icons">mail</i>' ;//+
+       // '<i style="float:right;" onclick="" class="material-icons">print</i>'
     ;
     header.classList.add('header');
 
@@ -153,7 +153,23 @@ getArrayByClass = (className) => {
     }
     return ar;
 }
+const mailFrameClose = (ide) => {
+    const el = document.getElementById(ide);
+    el.parentElement.removeChild(el);
+}
 
+openMailMessage = () => {
+    const mailId = 'mailMessage';
+    const mailFrame = document.createElement("div");
+    mailFrame.classList.add('mailFrame');
+    mailFrame.id = mailId;
+
+    mailFrame.innerHTML =
+            `<i class="material-icons closeButton" onclick="mailFrameClose('${mailId}');" style="cursor: pointer; float:right; margin-top: -20px;" >close</i>`
+            + `<div>Comments, questions are welcomed at yossi.lev.home@gmail.com</div>`;
+    const body = document.getElementsByTagName("BODY")[0];
+    body.insertBefore(mailFrame, body.firstChild);
+}
 initActions = () => {
     getArrayByClass("action").forEach(el => {
         el.style.color = "blue";
@@ -193,16 +209,17 @@ webGlGuide = () => {
         el.parentElement.insertBefore(guideButton, el);
     });
 }
+webGlCloseGuide = (ide) => {
+    const el = document.getElementById(ide);
+    el.parentElement.removeChild(el);
+}
 webGlPresentGuide = (e, id) => {
     const glElement = document.getElementById(id);
     const guideId = 'guideOf_' + id;
     const guideFrame = document.createElement("div");
     guideFrame.classList.add('guideFrame');
     guideFrame.id = guideId;
-    webGlCloseGuide = (ide) => {
-        const el = document.getElementById(ide);
-        el.parentElement.removeChild(el);
-    }
+
     guideFrame.innerHTML =
         `<i class="material-icons closeButton" onclick="webGlCloseGuide('${guideId}');" style="cursor: pointer; float:right; margin-top: -20px;" >close</i>`
         + glWorld.getGuide().map(l => `<div>${l}</div>`).join('');

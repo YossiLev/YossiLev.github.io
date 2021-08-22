@@ -230,6 +230,21 @@ a {
     cursor: pointer;
     color: #1c74c1;
 }
+.pointer {
+    cursor: pointer;
+}
+.mailFrame {
+    position: fixed;
+    right: 100px;
+    top: 100px;
+    background-color: white;
+    border: 2px solid gray;
+    border-radius: 4px;
+    z-index: 100;
+    padding: 8px 10px;
+    margin: 8px 10px;
+    color: #56b9e5;
+}
 .guideFrame {
     position: absolute;
     right: 20px;
