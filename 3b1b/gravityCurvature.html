@@ -257,11 +257,17 @@
     travel along a straight path in the unchanging curved space&#8209;time.
 </div>
 <div class="normal">
-    We will examine these paths below, where on the right there will be an animation of the motion like it look in our
+    We will explore these paths below, where on the right there will be an animation of the motion like it look in our
     three&#8209;dimensional world, while the left is the space&#8209;time view of a 2&nbsp;+&nbsp;1 dimensions.
+    So pick a category from the tabs below. Then pick a path type to explore, read the description and press the activation button.
+    When the path is seen, look at it from various points of view, and make sure you understand what's going on.
+    And when the paths become cluttered, use "Clear Paths" below.
+</div>
+<div class="normal">
+    So pick a category and have fun!
 </div>
 <div>
-    <div class="structNavBlock">
+    <div id="structNavBlock" class="structNavBlock">
         <div id="segmentApples" class="structNav" onclick="onNavigateSegment(event)">Falling Apples</div>
         <div id="segmentPlanets" class="structNav" onclick="onNavigateSegment(event)">Orbiting Planets</div>
         <div id="segmentOthers" class="structNav" onclick="onNavigateSegment(event)">Other Motions</div>
@@ -269,17 +275,17 @@
         <div id="mainFall" class="mainPart segmentApples">
             <span class="mainHeader">Apples in free fall</span>
             We know what happens to an apple when we hold and apple on our hand and let go.
-            It moves straight down towards the earth in a growing speed.
+            It moves straight down towards the earth with growing speed.</br>
             Click <span class="animButton" onclick="animFall();">Fall</span> to see the simulation of the motion on
-            the right simulation window then look at the path in the space&#8209;time on the left side.
+            the right simulation window, then look at the path in the space&#8209;time on the left side.
             Did you notice that the initial direction of the apple in the space&#8209;time view is vertical.
             This is because the apple was at rest at the beginning.
         </div>
         <div id="mainThrow" class="mainPart segmentApples">
             <span class="mainHeader">Throw the apple up in the air</span>
-            Another well know path of our apple is to throw it up un the air. We know what's going to happen. The apple
-            will climb while loosing speed. Then from the top of the path, it will continue to accelerate down just as before.
-            Click <span class="animButton" onclick="animThrow();">Throw</span> to see that simulation and see how this new
+            Another well known path of our apple is to throw it up un the air. We know what's going to happen. The apple
+            will climb while loosing speed. Then from the top of the path, it will continue to accelerate down just as before.</br>
+            Click <span class="animButton" onclick="animThrow();">Throw</span> to see that simulation, and then see how this new
             path differs from the previous one, of just dropping the apple.
         </div>
         <div id="mainThrowDown" class="mainPart segmentApples">
@@ -295,17 +301,48 @@
             <span class="animButton" onclick="animFallLater();">Drop Later/Earlier</span>
         </div>
         <div id="mainCircular" class="mainPart segmentPlanets">
-            <span class="animButton" onclick="animCircular();">Circular Orbit</span>
+            <span class="mainHeader">The simplest orbit - circular path</span>
+            The exact circular orbit at a constant speed is pretty rare in nature, but it is the simplest orbit.
+            The orbit of the Earth around the Sun, where the Sun stands in the middle of the circle,
+            is an example of an orbit very close to circular.</br>
+            Click <span class="animButton" onclick="animCircular();">Circular Orbit</span> to see the simulation, then
+            the path in space&#8209;time. The path has a helix shape. Look at the path from the side, then rotate it around to convince yourself
+            that the speed is constant (same slope everywhere).
         </div>
         <div id="mainCircularRev" class="mainPart segmentPlanets">
-            <span class="animButton" onclick="animCircularRev();">Other Way</span>
+            <span class="mainHeader">Same circle opposite direction</span>
+            The circular orbit can go in both directions.</br>
+            Click <span class="animButton" onclick="animCircularRev();">Other Way</span> to see the opposite direction circle.
+            Compare the space&#8209;time paths ob both circles.
+
         </div>
         <div id="mainElliptic" class="mainPart segmentPlanets">
-            <span class="animButton" onclick="animElliptic();">Elliptic</span>
+            <span class="mainHeader">Elliptic orbits</span>
+            The most common shape of an orbit is the ellipse.
+            The Sun is longer in the center, but rather at one of the two foci of the ellipse.
+            The speed along the path is no longer constant.
+            Speed is the highest near the Sun, and the slowest on the far edge (see if you can spot it in the space&#8209;time path).</br>
+            Click <span class="animButton" onclick="animElliptic();">Elliptic</span> to start the path.
         </div>
         <div id="mainAllAround" class="mainPart segmentPlanets">
-            <span class="animButton" onclick="animAllAround();">Circles</span>
-            <span class="animButton" onclick="animEllipticAround();">Elliptic</span>
+            <span class="mainHeader">Changing the starting point</span>
+            The circular path that you see, represents a lot of paths with a similar shape, but different starting point.
+            In space&#8209;time we can set the starting point (when time is zero) to be every point of the circle.</br>
+            Click <span class="animButton" onclick="animAllAround();">Circles</span> to see a bunch of these circular paths,
+            and notice the relation between them and the shape they all make.</br>
+            Click <span class="animButton" onclick="animEllipticAround();">Elliptic</span> to see that same for the
+            elliptic path. Look at it from Top View.
+        </div>
+        <div id="mainHyperbolic" class="mainPart segmentOthers">
+            <span class="mainHeader">Hyperbolic path (not an orbit)</span>
+            These paths represent motions of objects that are not orbiting the center (the Sun).
+            The motion is merely diverted a bit. The visiting object is coming from far away at a certain direction,
+            and leaves at a different direction, influenced byt the gravity of the sun.
+        </div>
+        <div id="mainParabolic" class="mainPart segmentOthers">
+            <span class="mainHeader">Parabolic path (not an orbit)</span>
+            This path is very similar to the Hyperbolic path, but represents a case where the incoming object is coming
+            with less energy, so it never leaves the gravity of the sun. However, the path does not make an orbit.
         </div>
     </div>
 </div>
@@ -314,6 +351,12 @@
         <canvas width="500" height="400" id="solar_Canvas2D" class="canvasWebGl" tabindex="0"></canvas>
         <span class="animButton" onclick="worldSolar2D.activateView('side')">Side view</span>
         <span class="animButton" onclick="worldSolar2D.activateView('top')">Top view</span>
+        <span class="animButton" onclick="worldSolar2D.hideObjects(
+            ['fall ', 'throw', 'ethrowDown', '@fallClonesTime',
+             'orbitCircle', 'orbitCircleRev', 'orbitEllipse',
+             '@orbitCircleClonesRotate', '@orbitCircleRevClonesRotate', '@orbitEllipseClonesRotate'].join(' ')
+         )">Clear All Paths</span>
+
     </div>
     <canvas width="480" height="400" id="solar_Canvas" class="canvasWebGl " tabindex="0"></canvas>
 </div>
@@ -321,10 +364,13 @@
     Final Words
 </div>
 <div class="normal">
-
+    Gravity warping space&#8209;time is both easy and complicated at the same time.
+    The guiding principle of going along the shortest path is so elegant and natural, however to
+    see and understand the pull entangled picture is close to impossible.
+    Much like the Einstein's gravity equation \(G=T\). I hope I contributed a little to clarify the picture.
 </div>
 <div class="normal">
-    Many thing were not covered in this presentation
+    Many things were not covered in this presentation
     <div class="list">
         <div class="listItem">
             How does space&#8209;time geometry look in cases where it is not constant?
@@ -558,7 +604,10 @@
         });
         document.getElementById("segmentOptions").innerHTML =
             options.map(o => `<span class="structNavSub" onclick="showMainPart(event, '${o.id}')">${o.label}</span>`).join(' ');
-        document.getElementById("structNavBlock").scrollIntoView(true)
+
+        let vv = document.getElementById("structNavBlock");
+        console.log(vv);
+        vv.scrollIntoView(true);
     }
 </script>
 

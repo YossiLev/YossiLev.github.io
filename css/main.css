@@ -162,7 +162,10 @@ a {
     display: inline-block;
     background-color: #f7f0f0;
     color: darkred;
-    padding: 3px 10px;
+    padding: 5px 12px;
+    cursor: pointer;
+    user-select: none;
+    font-size: larger;
 }
 .structNavOn {
     background-color: #eee18b;
@@ -174,16 +177,18 @@ a {
 .structNavSub {
     display: inline-block;
     background-color: #f7f0f0;
-    color: darkred;
+    color: #cc4848;
     padding: 3px 10px;
     margin: 4px 0px;
+    cursor: pointer;
+    user-select: none;
 }
 .structNavSubOn {
     background-color: #eee18b;
 }
 .structNavBlock {
     border-left: 4px solid blue;
-    padding: 0 10px;
+    padding: 10px 10px;
     margin: 6px;
 }
 .mainPart {
