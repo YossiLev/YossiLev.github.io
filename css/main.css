@@ -313,8 +313,21 @@ a {
     float: left;
     padding: 10px 24px 10px 0px;
 }
+.containerRight {
+     position: relative;
+     float: right;
+     padding: 10px 0px 10px 24px;
+}
 .containerFlex {
      display: flex;
+}
+.borderBox {
+    border: 1px solid black;
+    display: inline-block;
+    padding: 0 20px;
+}
+.centerContent {
+    text-align: center;
 }
 .fullWidth {
     width: 100%;
@@ -354,4 +367,32 @@ a {
 }
 .animButton::before {
     content: "> ";
+}
+.toolTipView {
+   // background-color: #56b9e5;
+}
+.toolTipContent {
+    visibility: hidden;
+    z-index: 10;
+    position: fixed;
+    width: 80%;
+    height: 80%;
+    top: 10%;
+    left: 10%;
+    color: #5f5c5c;
+    background-color: #f3f3f3;
+    border-radius: 10px;
+    border: 2px solid blue;
+    padding: 20px;
+    overflow-y: scroll;
+}
+.clButton {
+    float: right;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 10px 15px;
+    background: black;
+    border-radius: 50%;
+    color: white;
 }

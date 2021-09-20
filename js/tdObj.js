@@ -32,6 +32,19 @@ const tdObjLine = 1;
 const tdObjArc = 2;
 const tdObjEllipse = 3;
 const tdObjRect = 4;
+const tdObjCoordinates = 10;
+const tdObjHyperGeometric = 12;
+
+const calcHyperGeometric = (a, b, c, z, n) => {
+    let y = 1, r = 1;
+    let ra = a, rb = b, rc = c, rz = 1;
+    for (let i = 1; i < n; i++) {
+        r *= ra * rb * z / (rc * i);
+        y += r;
+        ra++; rb++; rc++;
+    }
+    return y;
+}
 
 class tdObj {
     constructor(typ, params, pos) {
@@ -42,7 +55,8 @@ class tdObj {
     deepCopy() {
         return JSON.parse(JSON.stringify(this));
     }
-    draw(ctx) {
+    draw(ctx, ctxT) {
+
         switch (this.typ) {
             case tdObjLine:
                 ctx.beginPath();
@@ -60,11 +74,42 @@ class tdObj {
                 ctx.ellipse(...this.pos.pos, ...this.params);
                 ctx.stroke();
                 break;
-
+            case tdObjCoordinates:
+                ctx.beginPath();
+                tdObj.m(-100, 0, ctxT);
+                tdObj.l(100, 0, ctxT);
+                tdObj.m(0, -10000, ctxT);
+                tdObj.l(0, 10000, ctxT);
+                ctx.stroke();
+                break;
+            case tdObjHyperGeometric:
+                let [a, b, c, xs, xe, st] = this.params;
+                ctx.beginPath();
+                for (let x = xs; x < xe; x += st) {
+                    const y = calcHyperGeometric(a, b, c, x, 20);
+                    if (x === xs) {
+                        tdObj.m(x, y, ctxT);
+                    } else {
+                        tdObj.l(x, y, ctxT);
+                    }
+                }
+                ctx.stroke();
+                break;
         }
+    }
+    static m(x, y, t) {
+        let [ctx, sx, sy, zx, zy, h] = t;
+        ctx.moveTo(sx + x * zx, h - (sy + zy * y));
+    }
+    static l(x, y, t) {
+        let [ctx, sx, sy, zx, zy, h] = t;
+        ctx.lineTo(sx + x * zx, h - (sy + zy * y));
     }
     shift(x, y) {
         this.pos.shift(x, y);
+    }
+    static buildCoordinates() {
+        return new tdObj(tdObjCoordinates, [], tdPos.PosXY(0, 0));
     }
     static buildLine(x1, y1, x2, y2) {
         return new tdObj(tdObjLine, tdPos.PosXY(x2 - x1, y2 - y1), tdPos.PosXY(x1, y1));
@@ -77,6 +122,9 @@ class tdObj {
     }
     static buildEllipse(x, y, rx, ry, rot, t1 = 0, t2 = Math.PI * 2) {
         return new tdObj(tdObjEllipse, [rx, ry, rot, t1, t2], tdPos.PosXY(x, y));
+    }
+    static buildHyperGeometric(a, b, c, xs, xe, st) {
+        return new tdObj(tdObjHyperGeometric, [a, b, c, xs, xe, st], tdPos.PosXY(0, 0));
     }
 }
 
@@ -98,6 +146,7 @@ class tdUI {
         this.name = name;
         this.typ = typ;
         this.params = params;
+        this.trans = [0, 0, 1, 1];
     }
 }
 
@@ -108,6 +157,9 @@ class tdWorld {
     clear() {
         this.objects = [];
         this.animations = [];
+    }
+    setTrans(sx, sy, zx, zy) {
+        this.trans = [sx, sy, zx, zy];
     }
     clone(n, nn) {
         const oc = this.objects.find(o => o.name === n);
@@ -121,12 +173,13 @@ class tdWorld {
         ctx.strokeStyle = style.color ? style.color : "black";
         ctx.lineWidth = style.width ? style.width : 1;
     }
-    static drawObject(o, ctx) {
+    static drawObject(o, ctx, ctxT) {
         tdWorld.setStyle(ctx, o.style);
-        o.obj.draw(ctx);
+        o.obj.draw(ctx, ctxT);
     }
     draw(ctx) {
-        this.objects.forEach(o => tdWorld.drawObject(o, ctx));
+        let ctxT = [ctx, ...this.trans, ctx.canvas.height];
+        this.objects.forEach(o => tdWorld.drawObject(o, ctx, ctxT));
     }
     drawC(ctx) {
         const can = ctx.canvas;

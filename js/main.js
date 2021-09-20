@@ -179,6 +179,27 @@ initActions = () => {
     });
 }
 
+initToolTipView = () => {
+    getArrayByClass("toolTipView").forEach(el => {
+        el.style.color = "blue";
+        el.style.textDecoration = "underline";
+        const ch = Array.from(el.children).find(c => c.classList.contains('toolTipContent'));
+        el.onclick = (e) => {
+            ch.style.visibility = 'visible';
+        }
+        const clButton = document.createElement("div");
+        ch.insertBefore(clButton, ch.firstChild);
+        clButton.classList.add('clButton');
+        clButton.innerHTML = "X";
+        clButton.onclick = (e) => {
+            ch.style.visibility = 'hidden';
+            e.stopPropagation();
+        }
+
+//        el.onmousemove = (e) => clickAction(e, document.getElementById(el.dataset.canvas), el.dataset.action)
+    });
+}
+
 addTts = () => {
     getArrayByClass("tts").forEach(el => {
         const tts = document.createElement("span");
@@ -240,7 +261,7 @@ embedVideo = (label) => {
     body.insertBefore(vidFrame, body.firstChild);
 }
 window.onloadFuncs = [addHeader, fillAppendixOrder, optionalOpenClose, equationsLabels,
-    zoomOnImages, initActions, addTts, webGlFocus, webGlGuide];
+    zoomOnImages, initActions, addTts, webGlFocus, webGlGuide, initToolTipView];
 
 window.onload = function()
 {

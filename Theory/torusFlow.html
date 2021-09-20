@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Toroidal Ether</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16x16.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <script src="../js/main.js"></script>
+    <script type="text/javascript" src="../js/linesGeo.js"></script>
+    <script type="text/javascript" src="../js/glWorld.js"></script>
+    <script type="text/javascript" src="../js/glObj.js"></script>
+    <script type="text/javascript" src="../js/glMat.js"></script>
+    <script type="text/javascript" src="../js/tdObj.js"></script>
+    <script type="text/javascript" src="../js/tex/tex-mml-chtml.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <!-- <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script> -->
+
+    <script defer>
+        const sqrtPi = Math.sqrt(Math.PI);
+        /*
+        const calcHyperGeometric = (a, b, c, z, n) => {
+            let y = 1, r = 1;
+            let ra = a, rb = b, rc = c, rz = 1;
+            for (let i = 1; i < n; i++) {
+                r *= ra * rb * z / (rc * i);
+                y += r;
+                ra++; rb++; rc++;
+            }
+            return y;
+        }
+        */
+        const calcHyperGeometric$0_5$0_5$1 = (z, n) => {
+            let y = 1, r = 1;
+            let ra = 0.5, rc = 1, rz = 1;
+            for (let i = 1; i < n; i++) {
+                r *= ra * ra * z / (i * i);
+                y += r;
+                ra++;
+            }
+            return y;
+        }
+        const calcP$0$m0_5$cosh_eta = (eta) => {
+            const z = Math.exp(- 2 * eta);
+            const den = Math.exp(0.5 * eta)
+            return calcHyperGeometric$0_5$0_5$1(z, 20) / den;
+        }
+        const calcQ$0$m0_5$cosh_eta = (eta) => {
+            const z = 1 - Math.exp(- 2 * eta);
+            const den = Math.exp(0.5 * eta)
+            return calcHyperGeometric$0_5$0_5$1(z, 20) * sqrtPi / den;
+        }
+        const putHyperGeometricLine = (ctx, a, b, c, xs, xe, factorX, factorY) => {
+            const old = ctx.strokeStyle;
+            ctx.strokeStyle = "black";
+            const center = [ctx.canvas.width / 2, ctx.canvas.height / 2];
+            ctx.beginPath();
+            ctx.moveTo(xs * factorX + center[0], center[1]);
+            ctx.lineTo(xe * factorX + center[0], center[1]);
+            ctx.moveTo(center[0], 0);
+            ctx.lineTo(center[0], center[1] * 2);
+            for (let yl = -10; yl <= 10; yl++) {
+                ctx.moveTo(center[0], factorY * yl + center[1]);
+                ctx.lineTo(center[0] + 10, factorY * yl + center[1]);
+            }
+            ctx.stroke();
+            ctx.strokeStyle = old;
+            const nn = [20, 500];
+            nn.forEach(n => {
+                ctx.beginPath();
+                for (let x = xs; x < xe; x += 0.01) {
+                    const v = calcHyperGeometric(a, b, c, x, n);
+                    if (x === xs) {
+                        ctx.moveTo(factorX * x + center[0], -factorY * v + center[1]);
+                    } else {
+                        ctx.lineTo(factorX * x + center[0], -factorY * v + center[1]);
+                    }
+                }
+                ctx.stroke();
+            });
+        }
+        const putFuncLine = (ctx, func, xs, xe, step, factorX, factorY) => {
+            const old = ctx.strokeStyle;
+            ctx.strokeStyle = "black";
+            const center = [ctx.canvas.width / 2, ctx.canvas.height / 2];
+            ctx.beginPath();
+            ctx.moveTo(xs * factorX + center[0], center[1]);
+            ctx.lineTo(xe * factorX + center[0], center[1]);
+            ctx.moveTo(center[0], 0);
+            ctx.lineTo(center[0], center[1] * 2);
+            for (let yl = -10; yl <= 10; yl++) {
+                ctx.moveTo(center[0], factorY * yl + center[1]);
+                ctx.lineTo(center[0] + 10, factorY * yl + center[1]);
+            }
+            ctx.stroke();
+            ctx.strokeStyle = old;
+            ctx.beginPath();
+            for (let x = xs; x < xe; x += step) {
+                const y = func(x);
+                if (x === xs) {
+                    ctx.moveTo(factorX * x + center[0], -factorY * y + center[1]);
+                } else {
+                    ctx.lineTo(factorX * x + center[0], -factorY * y + center[1]);
+                }
+            }
+            ctx.stroke();
+        }
+        const putP$0$m0_5$cosh_etaLine = (ctx, xs, xe, step, factorX, factorY) => {
+            putFuncLine(ctx, calcP$0$m0_5$cosh_eta, xs, xe, step, factorX, factorY);
+        }
+        const putQ$0$m0_5$cosh_etaLine = (ctx, xs, xe, step, factorX, factorY) => {
+            putFuncLine(ctx, calcQ$0$m0_5$cosh_eta, xs, xe, step, factorX, factorY);
+        }
+
+        const calcToroidal = (a, eta, theta, phi) => {
+            try {
+                const den = a / (Math.cosh(eta) - Math.cos(theta));
+                const x = Math.sinh(eta) * Math.cos(phi) * den;
+                const y = Math.sinh(eta) * Math.sin(phi) * den;
+                const z = Math.sin(theta) * den;
+                return [x, y, z];
+            } catch (e) {
+                console.log('aaaaaa')
+            }
+        }
+        const putToroidLine = (ctx, type, a, eta, theta, phi) => {
+            const center = [ctx.canvas.width / 2, ctx.canvas.height / 2];
+            ctx.beginPath();
+            const n = 100;
+            for (let i = 0; i < 1.1; i += 1 / n) {
+                const pa = i;
+                switch (type) {
+                    case 1:
+                        eta = pa < 0.9 ? 2 * pa : 1.8 + 25 * (pa - 0.9);
+                        break;
+                    case 2:
+                        theta = -Math.PI + pa * 2 * Math.PI;
+                        break;
+                    case 3:
+                        phi = pa * 2 * Math.PI;
+                        break;
+                }
+                const v = calcToroidal(a, eta, theta, phi);
+                //console.log(pa, v, center,a, eta, theta, phi);
+                if (i === 0) {
+                    ctx.moveTo(v[0] + center[0], v[2] + center[1]);
+                } else {
+                    ctx.lineTo(v[0] + center[0], v[2] + center[1]);
+                }
+            }
+            ctx.stroke();
+        }
+        const buildToroidalCurve = (a, type, eta, theta, phi,  width, pos, col, colorFunc = null) => {
+            const toroidalFunc = (pa) => {
+                switch (type) {
+                    case 1: eta = pa < 0.9 ? 2 * pa : 1.8 + 25 * (pa - 0.9); break;
+                    case 2: theta = - Math.PI + pa * 2 * Math.PI; break;
+                    case 3: phi = pa * 2 * Math.PI; break;
+                }
+                return calcToroidal(a, eta, theta, phi);
+            };
+            return glBuild.parametricCurve((p, lf) => glBuild.curveFrame(toroidalFunc, p, lf), 100, width, pos, col, colorFunc);
+        }
+        const makeTorusWorld = () => {
+
+            /*
+            let worldToroidal = new glWorld();
+            //worldToroidal.addToRoot('floor', glBuild.floor(3, 0.1));
+            const colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [0, 1, 1], [1, 0, 1], [1, 0, 1]];
+            const w = 0.001;
+            for (let i = 1; i < 16; i ++) {
+                const col1 = colors[i % 6].concat(colors[i % 7]);
+                worldToroidal.addToRoot(`torp1${i}`, buildToroidalCurve(0.1, 1, 1, i / 5, 0, w, [0.0, 0, 0.0, 0, 0, 0], col1));
+                worldToroidal.addToRoot(`torp2${i}`, buildToroidalCurve(0.1, 1, 1, - Math.PI + i / 5, 0, w, [0.0, 0, 0.0, 0, 0, 0], col1));
+                for (let phi = 180; phi < 360; phi += 180) {
+                    worldToroidal.addToRoot(`@torp1`, glBuild.makeClone([0, 0, 0, 0, 0, phi], worldToroidal.getObjectByName(`torp1${i}`)));
+                    worldToroidal.addToRoot(`@torp2`, glBuild.makeClone([0, 0, 0, 0, 0, phi], worldToroidal.getObjectByName(`torp2${i}`)));
+                }
+            }
+
+            for (let i = 1; i < 12; i ++) {
+                worldToroidal.addToRoot(`tore1${i}`, buildToroidalCurve(0.1, 2, i / 4, 0, 0, w, [0.0, 0, 0.0, 0, 0, 0], [0.9, 0.3, 0.3]));
+                for (let phi = 180; phi < 360; phi += 180) {
+                    worldToroidal.addToRoot(`@tore1`, glBuild.makeClone([0, 0, 0, 0, 0, phi], worldToroidal.getObjectByName(`tore1${i}`)));
+                }
+            }
+
+            worldToroidal.addLabelView('side', [1.3737387097273113, 0, 0, 0, 0, 2.060608064590967, 0, 0, 0, 0, -0.10512820512820514, -0.1, 0, 0, -0.20512820512820512, 0, 0.7979692814719299, 0.015673130987568354, 0.021208367022687757, 0, 0.016451174081033717, 0.20598210736720665, -0.7712011062981364, 0, -0.020610694750008526, 0.7712173107815729, 0.20554677047404754, 0, 0, 0, 0, 1], true);
+            worldToroidal.addLabelView('side2', [1.3737387097273113, 0, 0, 0, 0, 1.8316516129697482, 0, 0, 0.014400000000000007, 0.006799999999999999, -0.10512820512820514, -0.1, 0, 0, -0.20512820512820512, 0, -0.00011476577432064598, 0.03376738565353887, 1.1071784366887378, 0, 1.1076782514861845, -0.0057573449591303855, 0.00029040850973000715, 0, 0.005763522091394224, 1.107163473394389, -0.03376633187000353, 0, 0.05727200019719762, -0.24405824076043903, 0.007449369794265681, 1]);
+            worldToroidal.prepare(document.getElementById('torus_Canvas'));
+            worldToroidal.startAnimation();
+*/
+            let ctx = document.getElementById("torus_2d").getContext('2d');
+            ctx.strokeStyle = "green";
+            for (let i = 0; i < 16; i ++) {
+                putToroidLine(ctx, 1, 100, 1, i / 5, 0.0);
+                putToroidLine(ctx, 1, 100, 1, i / 5, Math.PI);
+                if (i > 0) {
+                    putToroidLine(ctx, 2, 100, i / 6, 0, 0.0);
+                    putToroidLine(ctx, 2, 100, i / 6, 0, Math.PI);
+                    putToroidLine(ctx, 1, 100, 1, - i / 5, Math.PI);
+                    putToroidLine(ctx, 1, 100, 1, - i / 5, 0.0);
+                }
+            }
+
+
+            ctx = document.getElementById("hyper_Canvas").getContext('2d');
+            let tdwh = new tdWorld();
+            let [a, b, c, xs, xe, st] = [5, -10, 1, -1, 1, 0.01];
+            tdwh.push(tdObj.buildCoordinates(), {color: "lightgray", width: 1});
+            tdwh.push(tdObj.buildHyperGeometric(a, b, c, xs, xe, st), {color: "orange", width: 2});
+            tdwh.push(tdObj.buildHyperGeometric(5, 10, 1, -1, 1, 0.01), {color: "red", width: 2});
+            tdwh.push(tdObj.buildHyperGeometric(0.5, 0.5, 1, -1, 1, 0.01), {color: "green", width: 2});
+            tdwh.push(tdObj.buildHyperGeometric(0.5, 0.5, 1, -1, 1, 0.01), {color: "green", width: 2});
+            tdwh.setTrans(400, 300, 300, 100);
+            tdwh.drawC(ctx);
+/*
+            ctx.strokeStyle = "red";
+            //putHyperGeometricLine(ctx, 5, -10, 1, -1, 1, 200, 100);
+            ctx.strokeStyle = "blue";
+            //putHyperGeometricLine(ctx, 0.5, 0.5, 1, -1, 1, 200, 100);
+            ctx.strokeStyle = "green";
+            putP$0$m0_5$cosh_etaLine(ctx, 0, 3, 0.01, 200, 100);
+            ctx.strokeStyle = "red";
+            putQ$0$m0_5$cosh_etaLine(ctx, 0, 3, 0.01, 200, 100);
+*/
+        }
+        window.onloadFuncs.push(makeTorusWorld);
+
+    </script>
+</head>
+<body>
+<div class="headLine">
+    <div class="appendHead"> - Ether Flow Around a Torus</div>
+</div>
+<div class="normal">
+    We are looking for steady state ether flow around the torus. The element that creates the flow is a ring of radius
+    \(a\). This means that the whole situation has a toroidal symmetry.
+</div>s
+<div class="normal">
+    We will assume that this is a potential flow, and look for the potential \(\phi(x, y, z)\).
+    This will be the potential for the ether flow \(\rho\overline{\nu}=\triangledown\phi\).
+    Due to the toroidal symmetry, we solve it using toroidal coordinates,
+</div>
+<div class="normal">
+    Note that our solutions for \(\phi\) describe a flow around the torus,
+    so \(\phi\) is has some discontinuity as we go around the torus.
+    However, the flow \(\rho\overline{\nu}=\triangledown\phi\) is continuous and also rotation free outside the torus,
+    i.e. \(\triangledown\times\rho\overline{\nu}=0\).
+</div>
+<div class="containerRight" style="width: 450px;">
+    <canvas style="border:1px solid lightgray;" width="450" height="400" id="torus_2d" tabindex="0"></canvas>
+</div>
+<div class="normal">
+    From Moon & Spencer [5] we take the Toroidal coordinates
+    \[0\leq\eta<+\infty,\quad-\pi<\theta\leq+\pi,\quad0\leq\psi<2\pi\]
+    \[x=\frac{a\sinh\eta\cos\psi}{\cosh\eta-\cos\theta}\]
+    \[y=\frac{a\sinh\eta\sin\psi}{\cosh\eta-\cos\theta}\]
+    \[z=\frac{a\sin\theta}{\cosh\eta-\cos\theta}\]
+</div>
+<div class="normal">
+    A section of these toroidal coordinates is shown here. This coordinate system is quite confusing.
+</div>
+<div class="normal">
+    In these coordinates the laplacian becomes
+    \[\triangledown^2\phi=\frac{(\cosh\eta-\cos\theta)^3}{a^2\sinh\eta}\left\{\frac{\partial}{\partial\eta}
+    \left(\frac{\sinh\eta}{\cosh\eta-\cos\theta}\right)+
+    \sinh\eta\frac{\partial}{\partial\theta}\left(\frac{1}{\cosh\eta-\cos\theta}\frac{\partial\phi}{\partial\theta}\right)\right\}+
+    \frac{(\cosh\eta-\cos\theta)^2}{a^2\sinh^2\eta}\frac{\partial^2\phi}{\partial\psi^2}\]
+    The equation can be separated into
+    \[\phi=(\cosh\eta-\cos\theta)^{\frac{1}{2}}H(\eta)\Theta(\theta)\Psi(\psi)\]
+    \[\frac{\partial^2H}{\partial\eta^2}+\coth\eta\frac{\partial H}{\partial\eta}+\left(\frac{1}{4}-\alpha_2-\frac{\alpha_3}{sinh^2\eta}\right)H=0\]
+    \[\frac{\partial^2\Theta}{\partial\theta^2}+\alpha_2\Theta=0\] \[\frac{\partial^2\Psi}{\partial\psi^2}+\alpha_3\Psi=0\]
+</div>
+<div class="normal">
+    The equations for \(\Theta\) and \(\Psi\) lead us to define \[\alpha_2=p^2\quad\alpha_3=q^2\]
+    and if we define \(\xi=\cosh\eta\) then we get
+    \[\frac{\partial H}{\partial\eta}=\frac{\partial H}{\partial\xi}\frac{\partial\xi}{\partial\eta}=\frac{\partial H}{\partial\xi}\sinh\eta\]
+    \[\frac{\partial^2H}{\partial\eta^2}=\frac{\partial}{\partial\eta}\left(\frac{\partial H}{\partial\xi}\frac{\partial\xi}{\partial\eta}\right)=
+    \frac{\partial^2H}{\partial\xi^2}\sinh^2\eta+\frac{\partial H}{\partial\xi}\cosh\eta\]
+    we can change the equation for \(\eta\) into and equation for \(\xi\) as
+    \[\left(\xi^2-1\right)\frac{d^2H}{d\xi^2}+2\xi\frac{dH}{d\xi}-\left[\frac{q^2}{\xi^2-1}+\left(p^2-\frac{1}{4}\right)\right] H=0\]
+    with the general solution
+
+    \[H=A\mathcal{P}^q_{p-\frac{1}{2}}(\cosh\eta)+B\mathcal{Q}^q_{p-\frac{1}{2}}(\cosh\eta)\]
+    where
+    \[P^{q}_{p-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\Gamma\left(\frac{1}{2}-q\right)}{\pi^{1/2}\left(1-e^{-2\eta}\right)^{q}e^{(p+(1/2))\eta}}\mathbf{F}\left(\tfrac{1}{2}-q,\tfrac{1}{2}+p-q;1-2q;1-e^{-2\eta}\right)\]
+    \[\boldsymbol{Q}^{q}_{p-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\pi^{1/2}\left(1-e^{-2\eta}\right)^{q}}{e^{(p+(1/2))\eta}}\mathbf{F}\left(q+\tfrac{1}{2},p+q+\tfrac{1}{2};p+1;e^{-2\eta}\right)\]
+</div>
+<div class="normal">
+    The other two equations get solutions like
+    \[\frac{\partial^2\Theta}{\partial\theta^2}+p^2\Theta=0\quad\Rightarrow\quad\Theta=A\sin p\theta+B\cos p\theta\]
+    \[\frac{\partial^2\Psi}{\partial\psi^2}+q^2\Psi=0\quad\Rightarrow\quad\Psi=A\sin p\psi+B\cos p\psi\]
+</div>
+<div class="normal">
+    We will examine first the solution in the case \(p=q=0\) where we get
+    \[\left(\xi^2-1\right)\frac{d^2H}{d\xi^2}+2\xi\frac{dH}{d\xi}+\frac{1}{4}H=0\]
+    with the general solution
+    <span class="toolTipView">How to solve?
+        <div class="toolTipContent">
+            How do we solve an equation like  \[\left(\xi^2-1\right)\frac{d^2H}{d\xi^2}+2\xi\frac{dH}{d\xi}+\frac{1}{4}H=0\]
+            We start by guessing a solution function of the form \[H(\xi)=\sum_{n=0}^{\infty}a_n\xi^n\quad\Rightarrow\quad\frac{dH}{d\xi}=
+            \sum_{n=1}^{\infty}n a_n\xi^{n-1}\quad\Rightarrow\quad\frac{d^2H}{d\xi^2}=\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2} \]
+            Put into the equation
+             \[\left(\xi^2-1\right)\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2}+2\xi\sum_{n=1}^{\infty}n a_n\xi^{n-1}+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
+             \[-\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2}+\sum_{n=2}^{\infty}n(n-1)a_n\xi^n +2\sum_{n=1}^{\infty}n a_n\xi^n+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
+             \[-\sum_{n=0}^{\infty}(n+2)(n+1)a_{n+2}\xi^n+\sum_{n=0}^{\infty}n(n-1)a_n\xi^n +2\sum_{n=0}^{\infty}n a_n\xi^n+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
+             \[\sum_{n=0}^{\infty}\xi^n\left[-(n+2)(n+1)a_{n+2}+n(n-1)a_n+2n a_n+\frac{1}{4}a_n\right]=0\]
+            So, for every \(n\) we get the relation
+             \[-(n+2)(n+1)a_{n+2}+n(n-1)a_n+2n a_n+\frac{1}{4}a_n=0\]
+             \[a_{n+2}=\frac{n(n+1)+\frac{1}{4}}{(n+2)(n+1)}a_n\]
+             \[a_{n+2}=\frac{(n+\frac{1}{2})(n+\frac{1}{2})}{(n+2)(n+1)}a_n\]
+            Setting \(a_0=A, a_1=B\) and defining\[(x)_{n,d}\equiv(1)(x)(x+d)(x+2d)...(x+(n-1)d)\quad(x)_n=(x)_{n,1}\]
+            We can write the solution
+            \[H(\xi)=A\sum_{n=0}^{\infty}\frac{(1/2)_{n,2}(1/2)_{n,2}}{(2n)!}\xi^{2n}+B\sum_{n=0}^{\infty}\frac{(3/2)_{n,2}(3/2)_{n,2}}{(2n+1)!}\xi^{2n+1}\]
+            We use the identities \[(x)_{n,2}=2^n(x/2)_n\quad(2n)!=(1)_{n,2}(2)_{n,2}\quad(2n+1)!=(2)_{n,2}(3)_{n,2}\]
+            To get
+            \[H(\xi)=A\sum_{n=0}^{\infty}\frac{(1/4)_n(1/4)_n}{(1/2)_n(1)_n}\xi^{2n}+B\sum_{n=0}^{\infty}\frac{(3/4)_n(3/4)_n}{(1)_n(3/2)_n}\xi^{2n+1}\]
+
+        </div>
+    </span>
+    \[H=A\mathcal{P}_{-\frac{1}{2}}(\cosh\eta)+B\mathcal{Q}_{-\frac{1}{2}}(\cosh\eta)\]
+    \[P_{-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\Gamma\left(\frac{1}{2}\right)}{\pi^{1/2}e^{(1/2)\eta}}\mathbf{F}\left(\tfrac{1}{2},\tfrac{1}{2};1;1-e^{-2\eta}\right)\]
+    \[\boldsymbol{Q}_{-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\pi^{1/2}}{e^{(1/2)\eta}}\mathbf{F}\left(\tfrac{1}{2},\tfrac{1}{2};1;e^{-2\eta}\right)\]
+    \[\frac{\partial^2\Theta}{\partial\theta^2}=0\quad\Rightarrow\quad\Theta=A+B\theta\]
+    \[\frac{\partial^2\Psi}{\partial\psi^2}=0\quad\Rightarrow\quad\Psi=A+B\psi\]
+</div>
+<div class="container">
+    <canvas width="900" height="600" id="hyper_Canvas"></canvas>
+</div>
+<!--
+<div class="container">
+    <canvas width="900" height="600" id="torus_Canvas" class="canvasWebGl webGlGuide"></canvas>
+</div>
+-->
+</body>
+</html>
