@@ -19,18 +19,20 @@
 
     <script defer>
         const sqrtPi = Math.sqrt(Math.PI);
-        /*
-        const calcHyperGeometric = (a, b, c, z, n) => {
+
+        const calcHyperGeometricQ_05 = (z, n) => {
             let y = 1, r = 1;
-            let ra = a, rb = b, rc = c, rz = 1;
+            let zz = 1 / (z * z);
+            let sz = 1 / Math.sqrt(z);
+            let ra = 0.25, rb = 0.75, rc = 1, rz = 1;
             for (let i = 1; i < n; i++) {
-                r *= ra * rb * z / (rc * i);
+                r *= ra * rb * zz / (i * i);
                 y += r;
-                ra++; rb++; rc++;
+                ra++;
+                rb++;
             }
-            return y;
+            return y * sz;
         }
-        */
         const calcHyperGeometric$0_5$0_5$1 = (z, n) => {
             let y = 1, r = 1;
             let ra = 0.5, rc = 1, rz = 1;
@@ -41,15 +43,36 @@
             }
             return y;
         }
+        const calcHyperGeometric$0_25$0_75$1 = (z, n) => {
+            let y = 1, r = 1;
+            let ra = 0.25, rb = 0.75, rc = 1, rz = 1;
+            for (let i = 1; i < n; i++) {
+                r *= ra * ra * z / (i * i);
+                y += r;
+                ra++;
+                rb++;
+            }
+            //console.log(z, y);
+            return y;
+        }
         const calcP$0$m0_5$cosh_eta = (eta) => {
             const z = Math.exp(- 2 * eta);
             const den = Math.exp(0.5 * eta)
             return calcHyperGeometric$0_5$0_5$1(z, 20) / den;
         }
-        const calcQ$0$m0_5$cosh_eta = (eta) => {
-            const z = 1 - Math.exp(- 2 * eta);
-            const den = Math.exp(0.5 * eta)
-            return calcHyperGeometric$0_5$0_5$1(z, 20) * sqrtPi / den;
+        const calcQ$0$m0_5$cosh_etaOnR = (r, a) => {
+            const eta = Math.log((r + a) / (r - a));
+            const z = Math.cosh(eta);
+            return calcHyperGeometric$0_25$0_75$1(1 / (z * z), 40) / Math.sqrt(z);
+        }
+        const calcLegandreBasic = (r, a) => {
+            const eta = Math.log((r + a) / (r - a));
+            return Math.sqrt(Math.cosh(eta) - 1)
+        }
+        const calcLegandreTotal = (r, a) => {
+            const eta = Math.log((r + a) / (r - a));
+            const z = Math.cosh(eta);
+            return Math.sqrt(Math.cosh(eta) - 1) * calcHyperGeometric$0_25$0_75$1(1 / (z * z), 40) / Math.sqrt(z);
         }
         const putHyperGeometricLine = (ctx, a, b, c, xs, xe, factorX, factorY) => {
             const old = ctx.strokeStyle;
@@ -80,7 +103,7 @@
                 ctx.stroke();
             });
         }
-        const putFuncLine = (ctx, func, xs, xe, step, factorX, factorY) => {
+        const putFuncLine = (ctx, func, xs, xe, step, factorX, factorY, v = [], dbg = false) => {
             const old = ctx.strokeStyle;
             ctx.strokeStyle = "black";
             const center = [ctx.canvas.width / 2, ctx.canvas.height / 2];
@@ -97,7 +120,10 @@
             ctx.strokeStyle = old;
             ctx.beginPath();
             for (let x = xs; x < xe; x += step) {
-                const y = func(x);
+                const y = func(x, ...v);
+                if (dbg) {
+                    console.log(factorX * x + center[0], -factorY * y + center[1]);
+                }
                 if (x === xs) {
                     ctx.moveTo(factorX * x + center[0], -factorY * y + center[1]);
                 } else {
@@ -109,8 +135,14 @@
         const putP$0$m0_5$cosh_etaLine = (ctx, xs, xe, step, factorX, factorY) => {
             putFuncLine(ctx, calcP$0$m0_5$cosh_eta, xs, xe, step, factorX, factorY);
         }
-        const putQ$0$m0_5$cosh_etaLine = (ctx, xs, xe, step, factorX, factorY) => {
-            putFuncLine(ctx, calcQ$0$m0_5$cosh_eta, xs, xe, step, factorX, factorY);
+        const putQ$0$m0_5$cosh_etaOnRLine = (ctx, xs, xe, step, factorX, factorY, v) => {
+            putFuncLine(ctx, calcQ$0$m0_5$cosh_etaOnR, xs, xe, step, factorX, factorY, v);
+        }
+        const putLegandreBasic = (ctx, xs, xe, step, factorX, factorY, v = []) => {
+            putFuncLine(ctx, calcLegandreBasic, xs, xe, step, factorX, factorY, v);
+        }
+        const putLegandreTotal = (ctx, xs, xe, step, factorX, factorY, v = []) => {
+            putFuncLine(ctx, calcLegandreTotal, xs, xe, step, factorX, factorY, v);
         }
 
         const calcToroidal = (a, eta, theta, phi) => {
@@ -150,6 +182,27 @@
                 }
             }
             ctx.stroke();
+        }
+        const putToroidalPotential = (ctx, a, res) => {
+            const center = [ctx.canvas.width / 2, ctx.canvas.height / 2];
+            for (let xr = 0; xr < ctx.canvas.width; xr += res) {
+                const x = (xr - center[0]) / a;
+                for (let yr = 0; yr < ctx.canvas.height; yr += res) {
+                    const y = (yr - center[1]) / a;
+                    const d1s = (x + 1) * (x + 1) + y * y;
+                    const d2s = (x - 1) * (x - 1) + y * y;
+                    const xx = Math.sqrt(d1s / d2s);
+                    const coshEta = 0.5 * (xx + 1 / xx);
+                    const cosTheta = (d1s + d2s - 4) / (2 * Math.sqrt(d1s * d2s));
+                    const val = Math.sqrt(coshEta - cosTheta);
+                    let c = 255 - 80 * val;
+                    //const c = Math.floor(100 * Math.sqrt(x * x + y * y));
+                    if (c > 255) c = 255;
+                    if (c < 0) c = 0;
+                    ctx.fillStyle = `rgb(${c}, ${c}, ${c})`;
+                    ctx.fillRect(xr, yr, res, res)
+                }
+            }
         }
         const buildToroidalCurve = (a, type, eta, theta, phi,  width, pos, col, colorFunc = null) => {
             const toroidalFunc = (pa) => {
@@ -204,6 +257,26 @@
                 }
             }
 
+            let ctxq = document.getElementById("q_Canvas").getContext('2d');
+            ctxq.strokeStyle = "green";
+            putQ$0$m0_5$cosh_etaOnRLine(ctxq, 1.001, 100, 0.1, 5, 100, [1]);
+            putLegandreBasic(ctxq, 1.001, 100, 0.1, 5, 100, [1]);
+            putLegandreTotal(ctxq, 1.001, 100, 0.1, 5, 100, [1]);
+            /*
+            ctxq.strokeStyle = "red";
+            putQ$0$m0_5$cosh_etaOnRLine(ctxq, 2.001, 100, 0.1, 5, 100, [2]);
+            ctxq.strokeStyle = "blue";
+            putQ$0$m0_5$cosh_etaOnRLine(ctxq, 3.001, 100, 0.1, 5, 100, [3]);
+            ctxq.strokeStyle = "purple";
+            putQ$0$m0_5$cosh_etaOnRLine(ctxq, 4.001, 100, 0.1, 5, 100, [4]);
+             */
+            ctxq.strokeStyle = "orange";
+            putQ$0$m0_5$cosh_etaOnRLine(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
+            putLegandreBasic(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
+            putLegandreTotal(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
+
+            let ctxPot = document.getElementById("tor_pot").getContext('2d');
+            putToroidalPotential(ctxPot, 60, 4)
 
             ctx = document.getElementById("hyper_Canvas").getContext('2d');
             let tdwh = new tdWorld();
@@ -290,8 +363,8 @@
 </div>
 <div class="normal">
     The other two equations get solutions like
-    \[\frac{\partial^2\Theta}{\partial\theta^2}+p^2\Theta=0\quad\Rightarrow\quad\Theta=A\sin p\theta+B\cos p\theta\]
-    \[\frac{\partial^2\Psi}{\partial\psi^2}+q^2\Psi=0\quad\Rightarrow\quad\Psi=A\sin p\psi+B\cos p\psi\]
+    \[\frac{\partial^2\Theta}{\partial\theta^2}+p^2\Theta=0\quad\Rightarrow\quad\Theta=A_2\sin p\theta+B_2\cos p\theta\]
+    \[\frac{\partial^2\Psi}{\partial\psi^2}+q^2\Psi=0\quad\Rightarrow\quad\Psi=A_3\sin p\psi+B_3\cos p\psi\]
 </div>
 <div class="normal">
     We will examine first the solution in the case \(p=q=0\) where we get
@@ -299,32 +372,82 @@
     with the general solution
     <span class="toolTipView">How to solve?
         <div class="toolTipContent">
-            How do we solve an equation like  \[\left(\xi^2-1\right)\frac{d^2H}{d\xi^2}+2\xi\frac{dH}{d\xi}+\frac{1}{4}H=0\]
-            We start by guessing a solution function of the form \[H(\xi)=\sum_{n=0}^{\infty}a_n\xi^n\quad\Rightarrow\quad\frac{dH}{d\xi}=
-            \sum_{n=1}^{\infty}n a_n\xi^{n-1}\quad\Rightarrow\quad\frac{d^2H}{d\xi^2}=\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2} \]
-            Put into the equation
-             \[\left(\xi^2-1\right)\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2}+2\xi\sum_{n=1}^{\infty}n a_n\xi^{n-1}+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
-             \[-\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2}+\sum_{n=2}^{\infty}n(n-1)a_n\xi^n +2\sum_{n=1}^{\infty}n a_n\xi^n+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
-             \[-\sum_{n=0}^{\infty}(n+2)(n+1)a_{n+2}\xi^n+\sum_{n=0}^{\infty}n(n-1)a_n\xi^n +2\sum_{n=0}^{\infty}n a_n\xi^n+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
-             \[\sum_{n=0}^{\infty}\xi^n\left[-(n+2)(n+1)a_{n+2}+n(n-1)a_n+2n a_n+\frac{1}{4}a_n\right]=0\]
-            So, for every \(n\) we get the relation
-             \[-(n+2)(n+1)a_{n+2}+n(n-1)a_n+2n a_n+\frac{1}{4}a_n=0\]
-             \[a_{n+2}=\frac{n(n+1)+\frac{1}{4}}{(n+2)(n+1)}a_n\]
-             \[a_{n+2}=\frac{(n+\frac{1}{2})(n+\frac{1}{2})}{(n+2)(n+1)}a_n\]
-            Setting \(a_0=A, a_1=B\) and defining\[(x)_{n,d}\equiv(1)(x)(x+d)(x+2d)...(x+(n-1)d)\quad(x)_n=(x)_{n,1}\]
-            We can write the solution
-            \[H(\xi)=A\sum_{n=0}^{\infty}\frac{(1/2)_{n,2}(1/2)_{n,2}}{(2n)!}\xi^{2n}+B\sum_{n=0}^{\infty}\frac{(3/2)_{n,2}(3/2)_{n,2}}{(2n+1)!}\xi^{2n+1}\]
-            We use the identities \[(x)_{n,2}=2^n(x/2)_n\quad(2n)!=(1)_{n,2}(2)_{n,2}\quad(2n+1)!=(2)_{n,2}(3)_{n,2}\]
-            To get
-            \[H(\xi)=A\sum_{n=0}^{\infty}\frac{(1/4)_n(1/4)_n}{(1/2)_n(1)_n}\xi^{2n}+B\sum_{n=0}^{\infty}\frac{(3/4)_n(3/4)_n}{(1)_n(3/2)_n}\xi^{2n+1}\]
+            <div class="normal">
+                How do we solve an equation like  \[\left(\xi^2-1\right)\frac{d^2H}{d\xi^2}+2\xi\frac{dH}{d\xi}+\frac{1}{4}H=0\]
+            </div>
+            <div class="headLine3">
+                Solutions of a first kind
+            </div>
+            <div class="normal">
+                We first start with solutions of a first kind. It has the following form \[H(\xi)=\sum_{n=0}^{\infty}a_n\xi^n\quad\Rightarrow\quad\frac{dH}{d\xi}=
+                \sum_{n=1}^{\infty}n a_n\xi^{n-1}\quad\Rightarrow\quad\frac{d^2H}{d\xi^2}=\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2} \]
+                Put into the equation
+                 \[\left(\xi^2-1\right)\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2}+2\xi\sum_{n=1}^{\infty}n a_n\xi^{n-1}+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
+                 \[-\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2}+\sum_{n=2}^{\infty}n(n-1)a_n\xi^n +2\sum_{n=1}^{\infty}n a_n\xi^n+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
+                 \[-\sum_{n=0}^{\infty}(n+2)(n+1)a_{n+2}\xi^n+\sum_{n=0}^{\infty}n(n-1)a_n\xi^n +2\sum_{n=0}^{\infty}n a_n\xi^n+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
+                 \[\sum_{n=0}^{\infty}\xi^n\left[-(n+2)(n+1)a_{n+2}+n(n-1)a_n+2n a_n+\frac{1}{4}a_n\right]=0\]
+                So, for every \(n\) we get the relation
+                 \[-(n+2)(n+1)a_{n+2}+n(n-1)a_n+2n a_n+\frac{1}{4}a_n=0\]
+                 \[a_{n+2}=\frac{n(n+1)+\frac{1}{4}}{(n+2)(n+1)}a_n\]
+                 \[a_{n+2}=\frac{(n+\frac{1}{2})(n+\frac{1}{2})}{(n+2)(n+1)}a_n\]
+                Setting \(a_0=A, a_1=B\) and defining\[(x)_{n,d}\equiv(1)(x)(x+d)(x+2d)...(x+(n-1)d)\quad(x)_n=(x)_{n,1}\]
+                We can write the solution
+                \[H(\xi)=A\sum_{n=0}^{\infty}\frac{(1/2)_{n,2}(1/2)_{n,2}}{(2n)!}\xi^{2n}+B\sum_{n=0}^{\infty}\frac{(3/2)_{n,2}(3/2)_{n,2}}{(2n+1)!}\xi^{2n+1}\]
+                We use the identities \[(x)_{n,2}=2^n(x/2)_n\quad(2n)!=(1)_{n,2}(2)_{n,2}\quad(2n+1)!=(2)_{n,2}(3)_{n,2}\]
+                To get
+                \[H(\xi)=A\sum_{n=0}^{\infty}\frac{(1/4)_n(1/4)_n}{(1/2)_n(1)_n}\xi^{2n}+B\sum_{n=0}^{\infty}\frac{(3/4)_n(3/4)_n}{(1)_n(3/2)_n}\xi^{2n+1}\]
+                This can be written as
+                \[H(\xi)=A\cdot{}_2F_1\left(\frac{1}{4}, \frac{1}{4}; \frac{1}{2}; \xi^2\right) + B\xi\cdot{}_2F_1\left(\frac{3}{4}, \frac{3}{4}; \frac{3}{2};\xi^2\right)\]
+
+            </div>
+            <div class="headLine3">
+                Solutions of a second kind
+            </div>
+            <div class="normal">
+                We will be more interested with solutions of a second kind.
+                We look at a more general equation
+                \[\left(\xi^2-1\right)\frac{d^2H}{d\xi^2}+2\xi\frac{dH}{d\xi}-\nu(\nu+1)H=0\]
+                Solutions have the following form
+                \[H(\xi)=\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}\quad\Rightarrow\quad\frac{dH}{d\xi}=
+                \sum_{n=0}^{\infty}(-\nu-n) a_n\xi^{-\nu-n-1}\quad\Rightarrow\quad\frac{d^2H}{d\xi^2}=\sum_{n=0}^{\infty}(-\nu-n)(-\nu-n-1)a_n\xi^{-\nu-n-2} \]
+                Put into the equation
+                 \[\left(\xi^2-1\right)\sum_{n=0}^{\infty}(-\nu-n)(-\nu-n-1)a_n\xi^{-\nu-n-2}+2\xi\sum_{n=0}^{\infty}(-\nu-n) a_n\xi^{-\nu-n-1}-\nu(\nu+1)\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}=0\]
+                 \[-\sum_{n=0}^{\infty}(-\nu-n)(-\nu-n-1)a_n\xi^{-\nu-n-2}+\sum_{n=0}^{\infty}(-\nu-n)(-\nu-n-1)a_n\xi^{-\nu-n} +2\sum_{n=0}^{\infty}(-\nu-n) a_n\xi^{-\nu-n}-\nu(\nu+1)\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}=0\]
+                 \[-\sum_{n=0}^{\infty}(\nu+n)(\nu+n+1)a_n\xi^{-\nu-n-2}+\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}\left[(\nu+n)(\nu+n+1) -2(\nu+n)-\nu(\nu+1)\right]=0\]
+                 \[-\sum_{n=2}^{\infty}(\nu+n-2)(\nu+n-1)a_{n-2}\xi^{-\nu-n}+\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}\left[(\nu+n)(\nu+n-1)-\nu(\nu+1)\right]=0\]
+                 \[-\sum_{n=2}^{\infty}(\nu+n-2)(\nu+n-1)a_{n-2}\xi^{-\nu-n}+\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}\left[(n-1)(n+2\nu)\right]=0\]
+                And this amounts to:
+                 \[For\quad n=0,1\quad a_n(n-1)(n+2\nu)=0\quad\Rightarrow\quad a_0=0,\quad a_1 can be anything \]
+                 \[For\quad n>2\quad (\nu+n-2)(\nu+n-1)a_{n-2}=a_n(n-1)(n+2\nu)\quad\Rightarrow\quad a_n=a_{n-2}\frac{(\nu-2+n)(\nu-1+n)}{(-1+n)(2\nu+n)}\quad\Rightarrow\quad a_{n+2}=a_n\frac{(\nu+n)(\nu+1+n)}{(1+n)(2\nu+2+n)} \]
+                We can write the solution
+                \[H(\xi)=B\sum_{n=0}^{\infty}\frac{(\nu+1)_{n,2}(\nu+2)_{n,2}}{\left(2\nu+3\right)_{n,2}(2)_{n,2}}\xi^{-\nu-(2n+1)}\]
+
+                To get
+                \[H(\xi)=B\xi^{-\nu-1}\sum_{n=0}^{\infty}\frac{(\frac{\nu}{2}+\frac{1}{2})_n(\frac{\nu}{2}+1)_n}{\left(\nu+\frac{3}{2}\right)_nn!}\xi^{-2n}\]
+                This can be written as
+                \[H(\xi)=B\xi^{-\nu-1}\cdot{}_2F_1\left(\frac{\nu}{2}+\frac{1}{2}, \frac{\nu}{2}+1; \nu+\frac{3}{2};\xi^{-2}\right)\]
+                In out case \(\nu=-\frac{1}{2}\) which gives \(\nu(\nu+1)=-\frac{1}{4}\) so the function becomes
+                \[H(\xi)=B\xi^{-\frac{1}{2}}\cdot{}_2F_1\left(\frac{1}{4}, \frac{3}{4}; 1;\xi^{-2}\right)\]
+
+            </div>
+
 
         </div>
     </span>
     \[H=A\mathcal{P}_{-\frac{1}{2}}(\cosh\eta)+B\mathcal{Q}_{-\frac{1}{2}}(\cosh\eta)\]
     \[P_{-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\Gamma\left(\frac{1}{2}\right)}{\pi^{1/2}e^{(1/2)\eta}}\mathbf{F}\left(\tfrac{1}{2},\tfrac{1}{2};1;1-e^{-2\eta}\right)\]
     \[\boldsymbol{Q}_{-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\pi^{1/2}}{e^{(1/2)\eta}}\mathbf{F}\left(\tfrac{1}{2},\tfrac{1}{2};1;e^{-2\eta}\right)\]
-    \[\frac{\partial^2\Theta}{\partial\theta^2}=0\quad\Rightarrow\quad\Theta=A+B\theta\]
-    \[\frac{\partial^2\Psi}{\partial\psi^2}=0\quad\Rightarrow\quad\Psi=A+B\psi\]
+    \[\frac{\partial^2\Theta}{\partial\theta^2}=0\quad\Rightarrow\quad\Theta=A_2+B_2\theta\]
+    \[\frac{\partial^2\Psi}{\partial\psi^2}=0\quad\Rightarrow\quad\Psi=A_3+B_3\psi\]
+</div>
+<div class="containerRight" style="width: 450px;">
+    <canvas style="border:1px solid lightgray;" width="450" height="400" id="tor_pot" tabindex="0"></canvas>
+</div>
+<div class="normal">
+    We recall that the total potential has the form of  \[\phi=(\cosh\eta-\cos\theta)^{\frac{1}{2}}H(\eta)\Theta(\theta)\Psi(\psi)\]
+</div>
+<div class="container">
+    <canvas width="900" height="600" id="q_Canvas"></canvas>
 </div>
 <div class="container">
     <canvas width="900" height="600" id="hyper_Canvas"></canvas>
