@@ -61,18 +61,29 @@
             return calcHyperGeometric$0_5$0_5$1(z, 20) / den;
         }
         const calcQ$0$m0_5$cosh_etaOnR = (r, a) => {
-            const eta = Math.log((r + a) / (r - a));
+            const eta = Math.log(Math.abs((r + a) / (r - a)));
             const z = Math.cosh(eta);
             return calcHyperGeometric$0_25$0_75$1(1 / (z * z), 40) / Math.sqrt(z);
         }
         const calcLegandreBasic = (r, a) => {
-            const eta = Math.log((r + a) / (r - a));
+            const eta = Math.log(Math.abs((r + a) / (r - a)));
             return Math.sqrt(Math.cosh(eta) - 1)
         }
+        const calcLegandreBasic0To1 = (r, a) => {
+            const eta = Math.log(Math.abs((r + a) / (r - a)));
+            const cc =  Math.sqrt(Math.cosh(eta) + 1)
+            console.log(r, a, eta, cc);
+            return cc;
+        }
         const calcLegandreTotal = (r, a) => {
-            const eta = Math.log((r + a) / (r - a));
+            const eta = Math.log(Math.abs((r + a) / (r - a)));
             const z = Math.cosh(eta);
             return Math.sqrt(Math.cosh(eta) - 1) * calcHyperGeometric$0_25$0_75$1(1 / (z * z), 40) / Math.sqrt(z);
+        }
+        const calcLegandreTotal0To1 = (r, a) => {
+            const eta = Math.log(Math.abs((r + a) / (r - a)));
+            const z = Math.cosh(eta);
+            return Math.sqrt(Math.cosh(eta) + 1) * calcHyperGeometric$0_25$0_75$1(1 / (z * z), 40) / Math.sqrt(z);
         }
         const putHyperGeometricLine = (ctx, a, b, c, xs, xe, factorX, factorY) => {
             const old = ctx.strokeStyle;
@@ -141,10 +152,15 @@
         const putLegandreBasic = (ctx, xs, xe, step, factorX, factorY, v = []) => {
             putFuncLine(ctx, calcLegandreBasic, xs, xe, step, factorX, factorY, v);
         }
+        const putLegandreBasic0To1 = (ctx, xs, xe, step, factorX, factorY, v = []) => {
+            putFuncLine(ctx, calcLegandreBasic0To1, xs, xe, step, factorX, factorY, v);
+        }
         const putLegandreTotal = (ctx, xs, xe, step, factorX, factorY, v = []) => {
             putFuncLine(ctx, calcLegandreTotal, xs, xe, step, factorX, factorY, v);
         }
-
+        const putLegandreTotal0To1 = (ctx, xs, xe, step, factorX, factorY, v = []) => {
+            putFuncLine(ctx, calcLegandreTotal0To1, xs, xe, step, factorX, factorY, v);
+        }
         const calcToroidal = (a, eta, theta, phi) => {
             try {
                 const den = a / (Math.cosh(eta) - Math.cos(theta));
@@ -259,9 +275,13 @@
 
             let ctxq = document.getElementById("q_Canvas").getContext('2d');
             ctxq.strokeStyle = "green";
-            putQ$0$m0_5$cosh_etaOnRLine(ctxq, 1.001, 100, 0.1, 5, 100, [1]);
-            putLegandreBasic(ctxq, 1.001, 100, 0.1, 5, 100, [1]);
-            putLegandreTotal(ctxq, 1.001, 100, 0.1, 5, 100, [1]);
+            putQ$0$m0_5$cosh_etaOnRLine(ctxq, 0.001, 100, 0.1, 5, 100, [5]);
+            ctxq.strokeStyle = "red";
+            putLegandreBasic(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
+            putLegandreTotal(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
+            ctxq.strokeStyle = "blue";
+            putLegandreBasic0To1(ctxq, 0, 4.999, 0.1, 5, 100, [5]);
+            putLegandreTotal0To1(ctxq, 0, 4.999, 0.1, 5, 100, [5]);
             /*
             ctxq.strokeStyle = "red";
             putQ$0$m0_5$cosh_etaOnRLine(ctxq, 2.001, 100, 0.1, 5, 100, [2]);
@@ -270,10 +290,10 @@
             ctxq.strokeStyle = "purple";
             putQ$0$m0_5$cosh_etaOnRLine(ctxq, 4.001, 100, 0.1, 5, 100, [4]);
              */
-            ctxq.strokeStyle = "orange";
-            putQ$0$m0_5$cosh_etaOnRLine(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
-            putLegandreBasic(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
-            putLegandreTotal(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
+            //ctxq.strokeStyle = "orange";
+            //putQ$0$m0_5$cosh_etaOnRLine(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
+            //putLegandreBasic(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
+            //putLegandreTotal(ctxq, 5.001, 100, 0.1, 5, 100, [5]);
 
             let ctxPot = document.getElementById("tor_pot").getContext('2d');
             putToroidalPotential(ctxPot, 60, 4)
@@ -333,7 +353,21 @@
     \[z=\frac{a\sin\theta}{\cosh\eta-\cos\theta}\]
 </div>
 <div class="normal">
+    The inverse coordinates calculation is
+    \[\eta=\frac{1}{2}\ln\frac{\left(\sqrt{x^2+y^2}+a\right)^2+z^2}{\left(\sqrt{x^2+y^2}-a\right)^2+z^2}\]
+    \[\theta=\arcsin\frac{\left(\sqrt{x^2+y^2}+a\right)^2+z^2+\left(\sqrt{x^2+y^2}-a\right)^2+z^2-4a^2}
+    {2\sqrt{\left(\left(\sqrt{x^2+y^2}+a\right)^2+z^2\right)\left(\left(\sqrt{x^2+y^2}-a\right)^2+z^2\right)}}=
+    \arcsin\frac{x^2+y^2+z^2-a^2}
+    {\sqrt{\left(\left(\sqrt{x^2+y^2}+a\right)^2+z^2\right)\left(\left(\sqrt{x^2+y^2}-a\right)^2+z^2\right)}}
+
+    \]
+    \[\psi=\arctan\frac{y}{x}\]
+</div>
+<div class="normal">
     A section of these toroidal coordinates is shown here. This coordinate system is quite confusing.
+</div>
+<div class="headLine2">
+    Solving the Laplace equation
 </div>
 <div class="normal">
     In these coordinates the laplacian becomes
@@ -341,14 +375,18 @@
     \left(\frac{\sinh\eta}{\cosh\eta-\cos\theta}\right)+
     \sinh\eta\frac{\partial}{\partial\theta}\left(\frac{1}{\cosh\eta-\cos\theta}\frac{\partial\phi}{\partial\theta}\right)\right\}+
     \frac{(\cosh\eta-\cos\theta)^2}{a^2\sinh^2\eta}\frac{\partial^2\phi}{\partial\psi^2}\]
-    The equation can be separated into
+    In order to solve the equation \(\triangledown^2\phi=0\) we set
     \[\phi=(\cosh\eta-\cos\theta)^{\frac{1}{2}}H(\eta)\Theta(\theta)\Psi(\psi)\]
+    So the equation can be separated into three equations, and we get
     \[\frac{\partial^2H}{\partial\eta^2}+\coth\eta\frac{\partial H}{\partial\eta}+\left(\frac{1}{4}-\alpha_2-\frac{\alpha_3}{sinh^2\eta}\right)H=0\]
     \[\frac{\partial^2\Theta}{\partial\theta^2}+\alpha_2\Theta=0\] \[\frac{\partial^2\Psi}{\partial\psi^2}+\alpha_3\Psi=0\]
 </div>
 <div class="normal">
-    The equations for \(\Theta\) and \(\Psi\) lead us to define \[\alpha_2=p^2\quad\alpha_3=q^2\]
-    and if we define \(\xi=\cosh\eta\) then we get
+    The equations for \(\Theta\) and \(\Psi\) lead us to define \[\alpha_2=p^2\quad\alpha_3=q^2\] with \(p\) and \(q\)
+    as integer numbers, so we end with the following solutions
+    \[\frac{\partial^2\Theta}{\partial\theta^2}+p^2\Theta=0\quad\Rightarrow\quad\Theta=A_2\sin p\theta+B_2\cos p\theta\]
+    \[\frac{\partial^2\Psi}{\partial\psi^2}+q^2\Psi=0\quad\Rightarrow\quad\Psi=A_3\sin p\psi+B_3\cos p\psi\]
+    As for the \(\eta\), we define \(\xi=\cosh\eta\) then we get
     \[\frac{\partial H}{\partial\eta}=\frac{\partial H}{\partial\xi}\frac{\partial\xi}{\partial\eta}=\frac{\partial H}{\partial\xi}\sinh\eta\]
     \[\frac{\partial^2H}{\partial\eta^2}=\frac{\partial}{\partial\eta}\left(\frac{\partial H}{\partial\xi}\frac{\partial\xi}{\partial\eta}\right)=
     \frac{\partial^2H}{\partial\xi^2}\sinh^2\eta+\frac{\partial H}{\partial\xi}\cosh\eta\]
@@ -360,11 +398,6 @@
     where
     \[P^{q}_{p-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\Gamma\left(\frac{1}{2}-q\right)}{\pi^{1/2}\left(1-e^{-2\eta}\right)^{q}e^{(p+(1/2))\eta}}\mathbf{F}\left(\tfrac{1}{2}-q,\tfrac{1}{2}+p-q;1-2q;1-e^{-2\eta}\right)\]
     \[\boldsymbol{Q}^{q}_{p-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\pi^{1/2}\left(1-e^{-2\eta}\right)^{q}}{e^{(p+(1/2))\eta}}\mathbf{F}\left(q+\tfrac{1}{2},p+q+\tfrac{1}{2};p+1;e^{-2\eta}\right)\]
-</div>
-<div class="normal">
-    The other two equations get solutions like
-    \[\frac{\partial^2\Theta}{\partial\theta^2}+p^2\Theta=0\quad\Rightarrow\quad\Theta=A_2\sin p\theta+B_2\cos p\theta\]
-    \[\frac{\partial^2\Psi}{\partial\psi^2}+q^2\Psi=0\quad\Rightarrow\quad\Psi=A_3\sin p\psi+B_3\cos p\psi\]
 </div>
 <div class="normal">
     We will examine first the solution in the case \(p=q=0\) where we get
@@ -428,13 +461,13 @@
                 \[H(\xi)=B\xi^{-\nu-1}\cdot{}_2F_1\left(\frac{\nu}{2}+\frac{1}{2}, \frac{\nu}{2}+1; \nu+\frac{3}{2};\xi^{-2}\right)\]
                 In out case \(\nu=-\frac{1}{2}\) which gives \(\nu(\nu+1)=-\frac{1}{4}\) so the function becomes
                 \[H(\xi)=B\xi^{-\frac{1}{2}}\cdot{}_2F_1\left(\frac{1}{4}, \frac{3}{4}; 1;\xi^{-2}\right)\]
-
             </div>
 
 
         </div>
     </span>
     \[H=A\mathcal{P}_{-\frac{1}{2}}(\cosh\eta)+B\mathcal{Q}_{-\frac{1}{2}}(\cosh\eta)\]
+    \[\mathcal{Q}_{-\frac{1}{2}}(\xi)=B\xi^{-\frac{1}{2}}\cdot{}_2F_1\left(\frac{1}{4}, \frac{3}{4}; 1;\xi^{-2}\right)\]
     \[P_{-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\Gamma\left(\frac{1}{2}\right)}{\pi^{1/2}e^{(1/2)\eta}}\mathbf{F}\left(\tfrac{1}{2},\tfrac{1}{2};1;1-e^{-2\eta}\right)\]
     \[\boldsymbol{Q}_{-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\pi^{1/2}}{e^{(1/2)\eta}}\mathbf{F}\left(\tfrac{1}{2},\tfrac{1}{2};1;e^{-2\eta}\right)\]
     \[\frac{\partial^2\Theta}{\partial\theta^2}=0\quad\Rightarrow\quad\Theta=A_2+B_2\theta\]

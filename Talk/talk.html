@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Talk</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="../css/menus.css">
+
+    <style>
+        .pic {
+            max-width: 600px;
+            max-height: 500px;
+        }
+        .picFrame {
+            width: 100%;
+            height:550px;
+        }
+        .name {
+            font-size: 128px;
+            text-transform: uppercase;
+        }
+    </style>
+    <script>
+        let pictures = [
+            ['lion.jpg', 'אריה'],
+            ['cat.jpg', 'חתול']
+
+        ];
+        let currentPic = 0;
+        function displayCurrentPicture() {
+            let html = `<img class="pic" src="../images/${pictures[currentPic][0]}"/>`;
+            document.getElementById('pic').innerHTML = html;
+            html = `<div class="name">${pictures[currentPic][1]}</div>`;
+            document.getElementById('name').innerHTML = html;
+
+        }
+        function nextPic() {
+            currentPic = (currentPic + 1) % pictures.length;
+            displayCurrentPicture();
+        }
+
+        function dr() {
+            displayCurrentPicture();
+        }
+    </script>
+</head>
+<body onload="dr()">
+<div class="but" onclick="nextPic()">Next</div>
+<div class="picFrame" id="pic"></div>
+<div id="name"></div>
+</body>
+</html>
