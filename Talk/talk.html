@@ -8,7 +8,7 @@
 
     <style>
         .pic {
-            max-width: 600px;
+            max-width: 900px;
             max-height: 500px;
         }
         .picFrame {
@@ -25,11 +25,14 @@
     <script>
         let pictures = [
             ['lion.jpg', 'אריה'],
+            ['dog.jpeg', 'כלב'],
+            ['camel.jpeg', 'גמל'],
+            ['horse.png', 'סוס'],
             ['cat.jpg', 'חתול']
         ];
         let currentPic = 0;
         function displayCurrentPicture() {
-            let html = `<img class="pic" src="../images/${pictures[currentPic][0]}"/>`;
+            let html = `<img class="pic" src="../images/objects/${pictures[currentPic][0]}"/>`;
             document.getElementById('pic').innerHTML = html;
             html = `<div class="name">${pictures[currentPic][1]}</div>`;
             document.getElementById('name').innerHTML = html;
