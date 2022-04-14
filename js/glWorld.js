@@ -214,6 +214,7 @@ class glWorld {
 	prepare(canvas, tCanvas = null) {
 		this.canvas = canvas;
 		this.gl = this.canvas.getContext('webgl');
+
 		this.gl.clearColor(0.8, 0.8, 0.8, 0.9);
 		this.gl.clearDepth(1.0);
 		this.gl.viewport(0.0, 0.0, canvas.width, canvas.height);
@@ -445,7 +446,9 @@ class glWorld {
 
 		this.time_old = time; 
 		this.gl.enable(this.gl.DEPTH_TEST);
-
+		//this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+		//this.gl.enable(this.gl.BLEND);
+		//this.gl.disable(this.gl.DEPTH_TEST);
 		// gl.depthFunc(gl.LEQUAL);
 		this.gl.clearColor(0.98,0.98,0.98, 1.0);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);

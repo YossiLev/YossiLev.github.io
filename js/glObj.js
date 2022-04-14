@@ -1,15 +1,42 @@
 class Torus {
+	// calculate an [x, y, z] point of a torus
 	static p(a, exp_eta, theta, psi) {
 		let den = a / (0.5 * (exp_eta + 1 / exp_eta) - Math.cos(theta))
-		return [0.5 * (exp_eta - 1 / exp_eta) * Math.cos(psi) * den, 
-				0.5 * (exp_eta - 1 / exp_eta) * Math.sin(psi) * den,
-				Math.sin(theta) * den]
+		return [0.5 * (exp_eta - 1 / exp_eta) * Math.cos(psi) * den,
+			0.5 * (exp_eta - 1 / exp_eta) * Math.sin(psi) * den,
+			Math.sin(theta) * den]
+	}
+	// calculate a normal vactor to a point of a torus
+	static n(theta, psi) {
+		const xy = Math.cos(theta)
+		return [xy * Math.cos(psi), xy * Math.sin(psi), Math.sin(theta)]
+	}
+	static potentialValFunc = (x, y) => {
+		const d1s = (x + 1) * (x + 1) + y * y;
+		const d2s = (x - 1) * (x - 1) + y * y;
+		const xx = Math.sqrt(d1s / d2s);
+		const coshEta = 0.5 * (xx + 1 / xx);
+		const cosTheta = (d1s + d2s - 4) / (2 * Math.sqrt(d1s * d2s));
+		const val = Math.sqrt(coshEta - cosTheta);
+		return val;
+	}
+	static potentialGradFunc = (x, y) => {
+		const eps = 0.0001;
+		const dx =
+			Torus.potentialValFunc(x + eps, y) -
+			Torus.potentialValFunc(x - eps, y);
+		const dy =
+			Torus.potentialValFunc(x, y + eps) -
+			Torus.potentialValFunc(x, y - eps);
+		const grad = normalizeVec3([dx, dy, 0]);
+		return grad;
 	}
 }
 class glBuild {
 	static lineList = [];
 	static doIt;
 	static doItM;
+	static lastSaveNormal = [];
 	static dataInit(pos, glMode, options = {}) {
 		return ({
 			vertices: [], normals: [], colors: [], indices: [],
@@ -136,7 +163,10 @@ class glBuild {
 				data.vertices.push(...Torus.p(s, exp_eta, lastTheta + pRot, psi))
 				data.vertices.push(...Torus.p(s, exp_eta, lastTheta + last_pRot, last_psi))
 				data.vertices.push(...Torus.p(s, exp_eta, theta + last_pRot, last_psi))
-				data.normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
+				data.normals.push(...Torus.n(theta + pRot, psi));
+				data.normals.push(...Torus.n(lastTheta + pRot, psi));
+				data.normals.push(...Torus.n(lastTheta + pRot, last_psi));
+				data.normals.push(...Torus.n(theta + pRot, last_psi));
 				data.colors.push(...col, ...col, ...col, ...col)
 				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 1, ll + 3)
 
@@ -210,6 +240,42 @@ class glBuild {
 		const helixFunc = (pa) => [r * Math.cos(pa * n * Math.PI * 2), r * Math.sin(pa * n * Math.PI * 2), pa * n * d];
 		return glBuild.parametricCurve((p) => glBuild.curveFrame(helixFunc, p), 50 * n, width, pos, col, colorFunc);
 	}
+	static intoTorusCurve(a, r, theta, phi, width, pos, col, colorFunc = null) {
+
+		let x = r * Math.cos(theta) / a;
+		let z = r * Math.sin(theta) / a;
+		let sPhi = Math.sin(phi);
+		let cPhi = Math.cos(phi);
+		const eps = 0.03;
+		let xZpath = [[x * a * cPhi, x * a * sPhi, z * a]];
+		for (let ii = 1; ii < r / a / eps + 30; ii++) {
+			glBuild.doItM = ii > 10;
+			const grad = Torus.potentialGradFunc(x, z);
+			x += grad[0] * eps;
+			z += grad[1] * eps;
+			xZpath.push([x * a * cPhi, x * a * sPhi, z * a]);
+		}
+
+		const lPath = xZpath.slice(1).map((p, ip) =>
+			normVec3(subVec3(xZpath[ip], xZpath[ip + 1]))
+		);
+		const sPath = [0];
+		lPath.forEach((p, ip) => sPath.push(sPath[ip] + p));
+		const sPathTot = sPath[sPath.length - 1];
+
+		const intoTorusFunc = (pa) => {
+			const pos = pa * sPathTot;
+			let seg = sPath.findIndex(s => s >= pos);
+			if (seg < 0) {
+				seg = xZpath.length - 1;
+			}
+			const part = (pos - sPath[seg - 1]) / (sPath[seg] - sPath[seg - 1]);
+			return seg === 0 ? xZpath[0] : midVec3(xZpath[seg - 1], xZpath[seg], part);
+		}
+
+		return glBuild.parametricCurve((p) => glBuild.curveFrame(intoTorusFunc, p), 400, width, pos, col, colorFunc);
+	}
+
 	static segmentCurve(p1, p2, width, pos, col, colorFunc = null) {
 		const segmentFunc = (pa) => {
 			let rc = p1.map((p, ip) => (1 - pa) * p + pa * p2[ip]);
@@ -800,8 +866,8 @@ class glBuild {
 
 		return new glInfo(data);
 	}
-	
-	
+
+
 	static emWaves(kVec, epsilonVec, pos, n) {
 		let data = glBuild.dataInit(pos,0x0001 /*gl.LINES*/);
 

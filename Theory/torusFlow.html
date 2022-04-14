@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16x16.png">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/menus.css">
     <script src="../js/main.js"></script>
     <script type="text/javascript" src="../js/linesGeo.js"></script>
     <script type="text/javascript" src="../js/glWorld.js"></script>
@@ -15,7 +16,6 @@
     <script type="text/javascript" src="../js/tdObj.js"></script>
     <script type="text/javascript" src="../js/tex/tex-mml-chtml.js"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <!-- <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script> -->
 
     <script defer>
         const sqrtPi = Math.sqrt(Math.PI);
@@ -72,7 +72,6 @@
         const calcLegandreBasic0To1 = (r, a) => {
             const eta = Math.log(Math.abs((r + a) / (r - a)));
             const cc =  Math.sqrt(Math.cosh(eta) + 1)
-            console.log(r, a, eta, cc);
             return cc;
         }
         const calcLegandreTotal = (r, a) => {
@@ -200,17 +199,13 @@
             ctx.stroke();
         }
         const putToroidalPotential = (ctx, a, res) => {
+
             const center = [ctx.canvas.width / 2, ctx.canvas.height / 2];
             for (let xr = 0; xr < ctx.canvas.width; xr += res) {
                 const x = (xr - center[0]) / a;
                 for (let yr = 0; yr < ctx.canvas.height; yr += res) {
                     const y = (yr - center[1]) / a;
-                    const d1s = (x + 1) * (x + 1) + y * y;
-                    const d2s = (x - 1) * (x - 1) + y * y;
-                    const xx = Math.sqrt(d1s / d2s);
-                    const coshEta = 0.5 * (xx + 1 / xx);
-                    const cosTheta = (d1s + d2s - 4) / (2 * Math.sqrt(d1s * d2s));
-                    const val = Math.sqrt(coshEta - cosTheta);
+                    const val = Torus.potentialValFunc(x, y);
                     let c = 255 - 80 * val;
                     //const c = Math.floor(100 * Math.sqrt(x * x + y * y));
                     if (c > 255) c = 255;
@@ -219,6 +214,20 @@
                     ctx.fillRect(xr, yr, res, res)
                 }
             }
+            ctx.strokeStyle = `rgb(200, 50, 0)`;
+            ctx.beginPath();
+            const res2 = 3 * res;
+            for (let xr = 0; xr < ctx.canvas.width; xr += res2) {
+                const x = (xr - center[0]) / a;
+                for (let yr = 0; yr < ctx.canvas.height; yr += res2) {
+                    const y = (yr - center[1]) / a;
+                    const grad = Torus.potentialGradFunc(x, y);
+                    ctx.moveTo(xr, yr)
+                    ctx.lineTo(xr + res * 2 * grad[0], yr + res * 2 * grad[1]);
+                }
+            }
+            ctx.stroke();
+
         }
         const buildToroidalCurve = (a, type, eta, theta, phi,  width, pos, col, colorFunc = null) => {
             const toroidalFunc = (pa) => {
@@ -260,6 +269,22 @@
             worldToroidal.prepare(document.getElementById('torus_Canvas'));
             worldToroidal.startAnimation();
 */
+            let worldFlow = new glWorld();
+            worldFlow.addToRoot('torus', glBuild.torus(0.2, [0.0, 0, 0, 0, 0, 0], [0, 0.5, 1]));
+            const aFact = 1;
+            for (let part = 0.01; part <= 1.0001; part += 0.004) {
+                const theta = -90 + (180 * part * 1) % 180;
+                const phi = 720 * part;
+                worldFlow.addToRoot(`a${part}torus`, glBuild.intoTorusCurve(0.1, 1.0,
+                    theta * Math.PI / 180.0, phi * Math.PI / 180.0, 0.001, [0.0, 0, 0, 0, 0, 0], [0.0, 1.0, 0]));
+                //worldFlow.addToRoot(`b${part}torus`, glBuild.intoTorusCurve(0.1, 1.0,
+                //    theta * Math.PI / 180.0, (phi + 180) * Math.PI / 180.0, 0.001, [0.0, 0, 0, 0, 0, 0], [1.0, 0.0, 0]));
+            }
+            worldFlow.addToRoot('arrow', glBuild.arrow(0.5, 0.05, 0.005, 0.02, [0, 0, 0, 0, 0, 0], [0, 1, 0]));
+            worldFlow.prepare(document.getElementById('flow_Canvas'));
+            worldFlow.startAnimation();
+
+
             let ctx = document.getElementById("torus_2d").getContext('2d');
             ctx.strokeStyle = "green";
             for (let i = 0; i < 16; i ++) {
@@ -478,6 +503,9 @@
 </div>
 <div class="normal">
     We recall that the total potential has the form of  \[\phi=(\cosh\eta-\cos\theta)^{\frac{1}{2}}H(\eta)\Theta(\theta)\Psi(\psi)\]
+</div>
+<div class="container">
+    <canvas width="900" height="600" id="flow_Canvas"></canvas>
 </div>
 <div class="container">
     <canvas width="900" height="600" id="q_Canvas"></canvas>

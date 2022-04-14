@@ -118,6 +118,10 @@ function normalizeVec3(v) {
 	let n = normVec3(v)
 	return [v[0] / n, v[1] / n, v[2] / n]
 }
+function midVec3(v1, v2, p) {
+	const cp = 1.0 - p;
+	return [v1[0] * cp + v2[0] * p, v1[1] * cp + v2[1] * p, v1[2] * cp + v2[2] * p]
+}
 function addVec3(v1, v2) {
 	return [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]]
 }
