@@ -110,8 +110,13 @@ a {
     position: relative;
     top: 6px;
 }
+.rightImage {
+    float: right;
+    width: 180px;
+    padding: 16px;
+}
 .normalImage {
-    width:400px;
+     width:400px;
 }
 .normalImageLarge {
      width:700px;
