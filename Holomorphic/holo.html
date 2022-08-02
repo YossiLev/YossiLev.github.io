@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Complex Functions</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="../css/menus.css">
+
+    <script src="../js/main.js"></script>
+    <script src="../js/funcList.js"></script>
+    <script src="../js/Complex.js"></script>
+    <script>
+
+        let options = new Map();
+        let gblTrans = {sx : 0, sy: 0, z: 0.01, w: 1000, h: 900 }
+
+        function tPointInv (p, t) {
+            return [(p[0] - t.w / 2) * t.z, - (p[1] - t.h / 2) * t.z];
+        }
+        function tPoint (p, t) {
+            return [p[0] / t.z + t.w / 2, - p[1] / t.z + t.h / 2];
+        }
+        function butOpt(o) {
+            let val = options.get(`opt${o}`);
+            return !(!val || val === 'false');
+        }
+
+        function addPoint(px, py) {
+            console.log(px, py);
+            mainFunc.addPointActual(...tPointInv([px, py], gblTrans));
+            refreshMain();
+        }
+        function toggleOption(event) {
+            const id = event.target.id;
+            let val = options.get(id);
+            if (!val || val === 'false') {
+                options.set(id, 'true');
+                event.target.classList.add('optionOn');
+            } else {
+                event.target.classList.remove('optionOn');
+                options.set(id, 'false');
+            }
+            refreshMain();
+        }
+
+        function func1(x, y) {
+            const z = Complex.bld(x, y);
+            const i = Complex.bld(0, 1);
+            const f = Complex.divide(Complex.subtract(z, i), Complex.add(z, i));
+            return [Complex.toReal([f])[0], Complex.toImaginary([f])[0]];
+        }
+        function func2(x, y) {
+            return [x - 0.5, y + 1];
+        }
+
+        let mainFunction = func1;
+        let mainFunc = new FuncList(mainFunction);
+        let mainTo = [];
+        let mouseStatus = [0, 0, 0];
+        let mouseLastPoint = [0, 0];
+
+        let mode = - 1;
+
+        function clearAll(clearKnot) {
+            if (clearKnot) {
+                mainKnot.clear();
+            }
+            gblTrans.sx = 0;
+            gblTrans.sy = 0;
+            gblTrans.z = 1.0;
+            refreshMain();
+        }
+
+        function setMode(newMode) {
+            if (mode === newMode) {
+                return;
+            }
+            mode = newMode;
+        }
+
+        function makeZoom(z) {
+            gblTrans = {...gblTrans, z: gblTrans.z * z}
+            refreshMain();
+        }
+
+        function calcDist2(p1, p2) {
+            return sumSqr(p1[0] - p2[0], p1[1] - p2[1])
+        }
+
+        function refreshMain() {
+            const ctx = document.getElementById('canvas').getContext('2d');
+
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, 1000, 500);
+            ctx.strokeStyle = 'lightgray';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, gblTrans.h / 2);
+            ctx.lineTo(gblTrans.w, gblTrans.h / 2);
+            ctx.moveTo(gblTrans.w / 2, 0);
+            ctx.lineTo(gblTrans.w / 2, gblTrans.h);
+            ctx.stroke();
+
+            mainFunc.drawList(ctx, gblTrans)
+        }
+
+        function mDown(event) {
+            closeContext();
+            const box = event.target.getBoundingClientRect();
+            //if (mainFunc.points.length > 0) {
+            //    setMode(0);
+            //} else {
+                setMode(1);
+            //}
+            switch (mode) {
+                case 0: // view
+                case 1: // draw
+                    mouseLastPoint = [event.clientX, event.clientY];
+                    mouseStatus[event.button] = 1;
+                    break;
+                case 2: // crossings
+                case 3: // divide
+                    actOnCrossing(event.clientX - box.left, event.clientY - box.top);
+                    break;
+            }
+            event.stopPropagation()
+        }
+        function mUp(event) {
+            mouseStatus[event.button] = 0;
+            switch (mode) {
+                case 0: // view
+                    break;
+                case 1: // draw
+                    mainFunc?.makeTarget(mainFunction);
+                    //mainKnot?.countCrossings();
+                    refreshMain();
+                    break;
+            }
+            event.preventDefault();
+        }
+        function mMove(event) {
+            switch (mode) {
+                case 0: // view
+                    if (mouseStatus[0] === 1) {
+                        gblTrans.sx += event.clientX - mouseLastPoint[0];
+                        gblTrans.sy += event.clientY - mouseLastPoint[1];
+                        mouseLastPoint = [event.clientX, event.clientY];
+                        refreshMain();
+                    }
+                    break;
+                case 1: // draw
+                    if (mouseStatus[0] === 1) {
+                        const box = event.target.getBoundingClientRect();
+                        addPoint(event.clientX - box.left, event.clientY - box.top);
+                    }
+                    break;
+            }
+            event.preventDefault();
+        }
+        function mWheel(event) {
+            closeContext();
+            let z = event.deltaY < 0
+                ? Math.max(- 0.3, event.deltaY / 100)
+                : Math.min(0.3, event.deltaY / 100);
+            makeZoom(1 + z);
+            event.preventDefault();
+        }
+        const mContext = (event) => {
+            console.log(event);
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            event.preventDefault();
+            const conIndex = mainKnot.whichConnection(...tPointInv([event.clientX - canvasRect.left, event.clientY - canvasRect.top], gblTrans));
+            let cm;
+            if (conIndex < 0) {
+                //const pp = tPointInv([event.clientX - canvasRect.left, event.clientY - canvasRect.top], gblTrans)
+                //alert(`bo\n ${event.clientX - canvasRect.left}, ${event.clientY - canvasRect.top}\n${pp[0]} ${pp[1]}`);
+                cm = document.getElementById('contextMenu1');
+            } else {
+                mainKnot.setConnectionInFocus(conIndex)
+                cm = document.getElementById('contextMenu2');
+            }
+            cm.style.left = `${event.clientX + canvasRect.left}px`;
+            cm.style.top = `${event.clientY}px`;
+            cm.style.visibility = "visible";
+            return false;
+        }
+        function changeConnection(type) {
+            mainKnot.setFocusConType(type);
+            mainKnot.countCrossings();
+            refreshMain();
+        }
+        function invertConnections() {
+            mainKnot.invertConnections();
+            refreshMain();
+        }
+        function closeContext() {
+            document.getElementById('contextMenu1').style.visibility = "hidden";
+            document.getElementById('contextMenu2').style.visibility = "hidden";
+        }
+        function changeKnotName(iKnot) {
+            currentKnotIndex = iKnot;
+            document.getElementById('enterNameFrame').style.visibility = "visible";
+            document.getElementById('enterName').value = "";
+            if (storageKnots[currentKnotIndex].name.length > 0) {
+                document.getElementById('enterName').placeholder = storageKnots[currentKnotIndex].name;
+            } else {
+                document.getElementById('enterName').placeholder = "Enter new name";
+            }
+        }
+
+        function dr() {
+            const canvas = document.getElementById('canvas');
+            canvas.addEventListener('wheel',mWheel);
+            canvas.addEventListener('mousedown', mDown);
+            canvas.addEventListener('mouseup', mUp);
+            canvas.addEventListener('mousemove', mMove);
+            canvas.addEventListener('contextmenu', mContext);
+            const x = document.getElementsByClassName('option');
+            for (let i = 0; i < x.length; i++) {
+                x.item(i).addEventListener('click', toggleOption);
+            }
+            setMode(1);
+            refreshMain();
+        }
+    </script>
+</head>
+<body onload="dr()">
+
+<div id="options">
+    <div id="optHideCircles" class="but option">Hide circles</div>
+</div>
+<div id="contextMenu1" class="contextMenu" onclick="closeContext();">
+    <div onclick="clearAll(true)" class="menuBut">Clear</div>
+    <div onclick="clearAll(false)" class="menuBut">Reset zoom/shift</div>
+    <div class="menuSeparator"></div>
+    <div onclick="invertConnections()" class="menuBut">Invert connections</div>
+    <div onclick="makeComplexChain()" class="menuBut">Calc Jones polynomial</div>
+    <div class="menuSeparator"></div>
+    <div onclick="saveKnot()" class="menuBut">Save knot</div>
+</div>
+<div id="contextMenu2" class="contextMenu" onclick="closeContext();">
+    <div onclick="changeConnection(1)" class="menuBut"><span style="color:red; font-size: 18px;">&#11096</span> Positive connection</div>
+    <div onclick="changeConnection(2)" class="menuBut"><span style="color:blue; font-size: 18px;">&#11096;</span> Negative connection</div>
+    <div class="menuSeparator"></div>
+    <div onclick="changeConnection(3)" class="menuBut"><span style="color:brown; font-size: 18px;">&#11096</span> 0 connection</div>
+    <div onclick="changeConnection(4)" class="menuBut"><span style="color:green; font-size: 18px;">&#11096</span> 1 connection</div>
+</div>
+
+<div style="display:flex;">
+    <canvas style="cursor:crossHair; border:1px solid blue;" width="1000" height="900" id="canvas"></canvas>
+</div>
+
+</body>
+</html>

@@ -28,6 +28,12 @@ class Complex {
 	static bld(r, i) {
 		return {r:r, i: i}
 	}
+	static valid(c) {
+		return !(isNaN(c.r) || isNaN(c.i))
+	}
+	static isBound(c, b) {
+		return Complex.valid(c) && Complex.norm(c) < b
+	}
 	static adjoint(c) {
 		return {r: c.r, i: - c.i}
 	}
