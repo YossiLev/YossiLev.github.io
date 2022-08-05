@@ -208,7 +208,7 @@
             }
         }
 
-        function dr() {
+        function initPage() {
             const canvas = document.getElementById('canvas');
             canvas.addEventListener('wheel',mWheel);
             canvas.addEventListener('mousedown', mDown);
@@ -222,29 +222,11 @@
             setMode(1);
             refreshMain();
         }
+        window.onloadFuncs.push(initPage);
+
     </script>
 </head>
-<body onload="dr()">
-
-<div id="options">
-    <div id="optHideCircles" class="but option">Hide circles</div>
-</div>
-<div id="contextMenu1" class="contextMenu" onclick="closeContext();">
-    <div onclick="clearAll(true)" class="menuBut">Clear</div>
-    <div onclick="clearAll(false)" class="menuBut">Reset zoom/shift</div>
-    <div class="menuSeparator"></div>
-    <div onclick="invertConnections()" class="menuBut">Invert connections</div>
-    <div onclick="makeComplexChain()" class="menuBut">Calc Jones polynomial</div>
-    <div class="menuSeparator"></div>
-    <div onclick="saveKnot()" class="menuBut">Save knot</div>
-</div>
-<div id="contextMenu2" class="contextMenu" onclick="closeContext();">
-    <div onclick="changeConnection(1)" class="menuBut"><span style="color:red; font-size: 18px;">&#11096</span> Positive connection</div>
-    <div onclick="changeConnection(2)" class="menuBut"><span style="color:blue; font-size: 18px;">&#11096;</span> Negative connection</div>
-    <div class="menuSeparator"></div>
-    <div onclick="changeConnection(3)" class="menuBut"><span style="color:brown; font-size: 18px;">&#11096</span> 0 connection</div>
-    <div onclick="changeConnection(4)" class="menuBut"><span style="color:green; font-size: 18px;">&#11096</span> 1 connection</div>
-</div>
+<body>
 
 <div style="display:flex;">
     <canvas style="cursor:crossHair; border:1px solid blue;" width="1000" height="900" id="canvas"></canvas>

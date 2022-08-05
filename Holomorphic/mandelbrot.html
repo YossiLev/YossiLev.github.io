@@ -16,6 +16,7 @@
         let gblTrans = {sx : 0, sy: 0, z: 0.01, w: 800, h: 800 }
         let mainPoint = [0, 0];
         let lastImage = Array.from({length: gblTrans.w * gblTrans.h * 4}).map(k => 0);
+        let zoomStatus = 0;
 
         function tPointInv (p, t) {
             return [(p[0] - t.sx - t.w / 2) * t.z, - (p[1] - t.sy - t.h / 2) * t.z];
@@ -112,27 +113,31 @@
             let id = ctx.getImageData(0, 0, width, height);
             let pixels = id.data;
 
-            const k = Math.min(100, Math.floor(0.5 / gblTrans.z));
+            const limit = zoomStatus === 0 ? 200 : 200;
+            const k = Math.min(limit, Math.floor(0.5 / gblTrans.z));
+            let off = 0;
             for (let ih = 0; ih < height; ih++) {
+                let pInv = tPointInv([0, ih], gblTrans)
                 for (let iw = 0; iw < width; iw++) {
-                    const c = Complex.bld(...tPointInv([iw, ih], gblTrans));
-                    const points = buildPointsSeries(c, k, true);
-                    let v = points === null ? 255 : 255 * points.length / k;
-                    let off = (ih * id.width + iw) * 4;
-                    pixels[off] = v;
-                    pixels[off + 1] = v;
-                    pixels[off + 2] = v;
-                    pixels[off + 3] = 255;
+                    const l = buildPointsCount(Complex.bld(...pInv), k);
+                    let v = 255 * l / k;
+                    pixels[off++] = v;
+                    pixels[off++] = v;
+                    pixels[off++] = v;
+                    pixels[off++] = 255;
+                    pInv[0] += gblTrans.z;
                 }
             }
-            for (let i = 0; i < width * height * 4; i++) {
-                lastImage[i] = pixels[i];
+            ctx.putImageData(id, 0, 0);
+            if (zoomStatus == 0) {
+                for (let i = 0; i < width * height * 4; i++) {
+                    lastImage[i] = pixels[i];
+                }
+                ctx.strokeStyle = 'orange';
+                ctx.lineWidth = 1;
+                drawGrid(ctx);
             }
 
-            ctx.putImageData(id, 0, 0);
-            ctx.strokeStyle = 'orange';
-            ctx.lineWidth = 1;
-            drawGrid(ctx);
         }
         function drawLastMandel() {
             const ctx = document.getElementById('canvas').getContext('2d');
@@ -183,12 +188,10 @@
                 let p = points[points.length - 1];
                 p = Complex.add(Complex.mult(p, p), c);
                 if (i > 5) {
-                    if (!Complex.isBound(p, 100000)) {
+                    if (!Complex.isBound(p, 10000)) {
                         break;
                     }
                     if (Complex.isBound(Complex.subtract(p, points[points.length - 2]), 0.00001)) {
-                        //for (let j = i; j < n; j++) {points.push(p);
-                        //}
                         if (returnNull) {
                             return null;
                         }
@@ -198,6 +201,40 @@
                 points.push(p);
             }
             return points;
+        }
+        function buildPointsCount(c, n) {
+            const x0 = c.r;
+            const y0 = c.i;
+            let iter = 0;
+            let x = 0;
+            let y = 0;
+            while (x*x + y*y <= 2*2 && iter < n)
+            {
+                const t = x * x - y * y + x0;
+                y = 2 * x * y + y0;
+                x = t;
+                iter = iter + 1
+            }
+            return iter;
+            /*
+            let p = Complex.bld(0, 0);
+            for (let i = 1; i < n; i++) {
+                let pp = Complex.clone(p);
+                p = Complex.add(Complex.mult(p, p), c);
+                if (i > 5) {
+                    if (!Complex.isBound(p, 100)) {
+                        return i;
+                    }
+                    if (Complex.isBound(Complex.subtract(p, pp), 0.00001)) {
+                        if (returnNull) {
+                            return n;
+                        }
+                        return i;
+                    }
+                }
+            }
+            return n;
+            */
         }
         function drawPoint(ctx, tr, opt = {}) {
             const c = Complex.bld(...mainPoint);
@@ -339,6 +376,27 @@
             }
         }
 
+        function startZoomPlay() {
+            if (zoomStatus !== 0) {
+                makeZoom(zoomStatus > 0 ? 0.9 : 1.1);
+                setTimeout(startZoomPlay, 10);
+            }
+            refreshMain();
+        }
+        function playZoom(dir) {
+            if (dir === 0) {
+                document.getElementById("zoomIn").style.visibility = "visible";
+                document.getElementById("zoomOut").style.visibility = "visible";
+                document.getElementById("zoomStop").style.visibility = "hidden";
+            } else {
+                document.getElementById("zoomIn").style.visibility = "hidden";
+                document.getElementById("zoomOut").style.visibility = "hidden";
+                document.getElementById("zoomStop").style.visibility = "visible";
+            }
+            zoomStatus = dir;
+            startZoomPlay();
+        }
+
         function initPage() {
             document.getElementById("canvasContainer").innerHTML =
                 `<canvas style="cursor:crossHair; border:1px solid blue;" width="${gblTrans.w}" height="${gblTrans.h}" id="canvas"></canvas>`
@@ -367,6 +425,9 @@
 <div>
     <div name="mainOptionsRadio" id="optTrackPath" class="but option radio">Track Path</div>
     <div name="mainOptionsRadio" id="optMandelbrot" class="but option radio">Mandelbrot</div>
+    <div id="zoomIn" class="but" onclick="playZoom(1)">Zoom In</div>
+    <div id="zoomOut" class="but" onclick="playZoom(- 1)">Zoom Out</div>
+    <div id="zoomStop" class="but" onclick="playZoom(0)">Stop Zoom</div>
 </div>
 
 <div id="gblTrans"></div>
