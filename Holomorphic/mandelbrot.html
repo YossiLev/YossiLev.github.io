@@ -5,6 +5,7 @@
     <title>Holomorphic Dynamics</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="../css/menus.css">
+    <link rel="stylesheet" href="../css/main.css">
 
     <script src="../js/main.js"></script>
     <script src="../js/funcList.js"></script>
@@ -338,7 +339,7 @@
             }
         }
 
-        function dr() {
+        function initPage() {
             document.getElementById("canvasContainer").innerHTML =
                 `<canvas style="cursor:crossHair; border:1px solid blue;" width="${gblTrans.w}" height="${gblTrans.h}" id="canvas"></canvas>`
 
@@ -356,14 +357,18 @@
             refreshMain();
         }
 
+        window.onloadFuncs.push(initPage);
     </script>
 </head>
-<body onload="dr()">
-
+<body>
+<div class="headLine">
+    MandelBrot Fun
+</div>
 <div>
     <div name="mainOptionsRadio" id="optTrackPath" class="but option radio">Track Path</div>
     <div name="mainOptionsRadio" id="optMandelbrot" class="but option radio">Mandelbrot</div>
 </div>
+
 <div id="gblTrans"></div>
 <div id="contextMenu1" class="contextMenu" onclick="closeContext();">
     <div onclick="clearAll(true)" class="menuBut">Clear</div>
