@@ -28,6 +28,9 @@ class Complex {
 	static bld(r, i) {
 		return {r:r, i: i}
 	}
+	static clone(p) {
+		return {r: p.r, i: p.i}
+	}
 	static valid(c) {
 		return !(isNaN(c.r) || isNaN(c.i))
 	}
