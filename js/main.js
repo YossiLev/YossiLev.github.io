@@ -124,9 +124,6 @@ fillAppendixOrder = () => {
         const appendixObj = appendixes.find(a => a.page === pageName)
         if (appendixObj) {
             const appendixLabel = appendixObj.label;
-            getArrayByClass("equLabel").forEach(el => {
-                el.innerHTML = `<u>Appendix ${appendixLabel}</u> ${el.innerHTML}`;
-            })
             getArrayByClass("appendHead").forEach(el => {
                 el.innerHTML = `<u>Appendix ${appendixLabel}</u> ${el.innerHTML}`;
             })
@@ -141,7 +138,7 @@ zoomOnImages = () => {
     });
 }
 equationsLabels = () => {
-    getArrayByClass("equLabel").forEach(el => el.innerText = el.id);
+   // getArrayByClass("equLabel").forEach(el => el.innerText = el.id);
 }
 getArrayByClass = (className) => {
     let vs = document.getElementsByClassName(className);
