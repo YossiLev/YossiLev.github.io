@@ -115,6 +115,11 @@ a {
     width: 180px;
     padding: 16px;
 }
+.rightImageLarge {
+     float: right;
+     width: 360px;
+     padding: 16px;
+}
 .normalImage {
      width:400px;
 }

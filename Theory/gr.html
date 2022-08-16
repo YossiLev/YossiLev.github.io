@@ -37,19 +37,72 @@ Here, \( U_r \) is the inwards radial ether speed, and \( M \) is the mass or th
     (connected to the rate of eating up ether) and \( K \) is some constant.
 </div>
 <div class="normal">
-    This immediately gives us the correct gravitation!
-    Other particles are drifted (carried by the wind) into our particle with increasing speed,
-    and we get Newton’s gravitation attraction rule (actually it is the same as Einstein’s gravitation rule),
-    as setting \( K \) to be \( 2G \) gives the following:
-    <div class="equHolder"> \( U_r^2R=2GM \)<div class="equLabel" id="gr_u2re2gm"></div></div>
-    \[ \frac{U_r^2}{2}=\frac{2GM}{R} \]
-    \[ \frac{mU_r^2}{2}-\frac{2GMm}{R}=0\]
+    This gives us the correct gravitation!
 </div>
 <div class="normal">
-    The above formula mimics the gravitational “force” transforming “gravitational potential energy” into “kinetic energy”.
-    We should note that according to our theory,
-    the gravitated particle does not experience any force and does not change its energy.
-    It is more like sound waves in the windy air as the wind changes speed.
+    Every gravitating object, eventually creates a spherical wind around itself affecting all other objects.
+    Other abjects can be free light rays, or trapped light rays (particles). The ether itself has a speed that
+    goes like \[ U^2(r)=\frac{KM}{r}\] and then setting \( K \) to be \( 2G \) gives \[ U^2(r)=\frac{2GM}{r}\]
+    this means that the accelerating ether particles have the following acceleration
+    \[ Acc(r)=\frac{\partial U(t)}{\partial t}
+    =\frac{\partial U(r)}{\partial r}\frac{dR(t)}{dt}
+    =\frac{\partial U(r)}{\partial r}U
+    =\frac{1}{2}\frac{\partial U^2(r)}{\partial r}=\frac{GM}{r^2}\]
+    So ether has the correct gravitation acceleration, can ether cause the objects around to have the same acceleration?
+    In order to answer this we need to understand how ether affects objects. The answer is a bit surprising.
+</div>
+<div class="headLine3">
+    Gravitation action on free light rays
+</div>
+<div class="normal">
+    <img class="rightImageLarge" src="../images/gravitatedLight.png" alt="Light ray in ether"/>
+    Let's first check the effect of a free light ray that is directed perpendicular to the direction of the ether motion.
+    We will examine two cases. One where the ether presents a radial accelerating motion (left part of the image) and a
+    second case where the ether is moving through the light without acceleration, just constant speed.
+</div>
+<div class="normal">
+    We claim that only in the gravitating case, the light is accelerated, by changing its direction.
+    The reason for the light to bend, and not moe at a straight line, is the difference in speed between various parts
+    of the light ray. Let's examine the gravitated case and look only at the part of the ray that move perpendicular
+    to the ether going down at a speed \(U^2=\frac{2GM}{r}\). Since the ether speed depends on the distance \(r\) from the
+    center of the sphere, so does the horizontal speed of the light ray \(V(r)\) which can be calculated as \(V^2(r)=C^2-U^2(r)\).
+    This means that the upper part of the ray moves faster than the lower part, and this causes the ray to bend.
+    For a tiny moment we have a circular motion of unknown radius. We can calculate the radial speed \(\omega\)
+    using the connection
+    \[V(r)=\omega r \Rightarrow \omega=\frac{dV(r)}{dr}\]
+    We are interested in th radial acceleration which is any of \(\frac{V^2}{r}\) or \(\omega^2 r\) or \(\omega V\). So
+    \[\omega V=\frac{dV(r)}{dr}V=\frac{d\sqrt{C^2-U^2(r)}}{dr}\sqrt{C^2-U^2(r)}=\frac{-\frac{dU^2(r)}{dr}}{2\sqrt{C^2-U^2(r)}}\sqrt{C^2-U^2(r)}\]
+    and we get again (using \(U^2(r)=\frac{2GM}{r}\))
+    \[Acc(r)=\omega V=-\frac{1}{2}\frac{dU^2(r)}{dr}=\frac{2GM}{r^2}\]
+    Just to be clear, it is not that there is some force which bend the light ray with such an acceleration.
+    The difference in speed in different parts of the ray causes it to bend and the amound of bending fits that
+    an acceleration of a certain amount, which we calculated.
+</div>
+<div class="normal">
+    Also important to realize that the ether wind does not
+    "push" the ray downwards. For example, which may come as a surprise, if the ether was blowing upwards with the
+    same speed profile, the light ray would still be bending downwards, since all the calculation we made would have
+    remained the same. This situation is often labeled as a "White Hole", a situation where the wind is coming
+    from a central source, as opposed to a "Black Hole" where the wind is fling into a central sink. While a
+    full three-dimensional white hole is not a realistic object, we will see below how a two-dimensional white hole
+    plays an important role in the stability of particles.
+</div>
+<div class="headLine3">
+    Gravitation action particles
+</div>
+<div class="normal">
+    <img class="rightImageLarge" src="../images/gravitatedRing.png" alt="Light ray in ether"/>
+    If we look at a ring shaped particle hovering in the ether flow, we would be able to conclude that the situation
+    is similar to that of a free light ray. The ring is a light ray where the "upper" part of the ray is moving faster
+    bending the overall motion downwards at an acceleration of \(Acc(r)=\frac{2GM}{r^2}\). Again, the particle is not
+    "pushed" by the ether wind, so a particle in a constant wind can stand still.
+</div>
+<div class="normal">
+    As we can see, we get Newton’s gravitation attraction rule (actually it is the same as Einstein’s gravitation rule)
+    and the connection
+    <div class="equHolder"> \[ U_r^2R=2GM \Rightarrow \frac{U_r^2}{2}=\frac{GM}{R}\]<div class="equLabel" id="gr_u2re2gm"></div></div>
+    can be reinterpreted as a balance between gravitational potential energy and kinetic energy
+    \[ \frac{mU_r^2}{2}-\frac{GMm}{R}=0\]
 </div>
 <div class="normal">
     However, this is actually not Newton’s gravitation; it is closer to Einstein’s gravitation! Can you see why?
