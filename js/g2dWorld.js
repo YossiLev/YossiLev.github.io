@@ -84,7 +84,6 @@ class g2dWorld {
         };
 
         const mouseMove = function(e) {
-            console.log("mouseMove");
             if (single2dWorld?.canvas === e.target) {
                 const curWorld = single2dWorld;
                 if (!curWorld.drag) return false;
@@ -185,7 +184,7 @@ class g2dWorld {
         ctx.clearRect(0, 0, this.w, this.h);
         this.drawLine([-1000, 0, 0], [1000, 0, 0], "yellow");
         ctx.strokeStyle = "green";
-        drawFunc(this, this.charges[0], -100, 100);
+        drawFunc(this, this.charges[0], 0, 100);
         for (let measurePoint of this.measurePoints) {
             //this.drawCircle(measurePoint, 2, "red");
             const speedC = 90; // pixels per second

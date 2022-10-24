@@ -24,7 +24,7 @@
             const mPointsLines = () => {
                 const measurePoints =   [];
                 for (let z = -100; z < 101; z += 10) {
-                    for (let x = 40; x < 600; x += 10) {
+                    for (let x = 40; x < 300; x += 10) {
                         measurePoints.push([x, 0, z])
                     }
                 }
@@ -58,7 +58,7 @@
                 }
             }
             const funcLineZ = (t) => {
-                let z = 10 * t;
+                let z = 60 * t;
                 z = (Math.floor(z) % 100) + (z - Math.floor(z)) - 50;
                 return {
                     p: [0, 0, z],
@@ -137,41 +137,82 @@
 
             return guess;
         }
+        let animStep = 0.02;
+        let animStepCount = 0;
+        let animCurrentTime = 0;
+        let animStatus = 0;
+        let sizeScale = 1.0;
+        let scr;
+
         const calcElectromagneticField = (measurePoint, retTime, fnVals, speedC) => {
             const v2 = norm2Vec3(fnVals.v);
             const rVec = subVec3(measurePoint, fnVals.p);
             const rNormalVec = normalizeVec3(rVec);
             const rNorm = normVec3(rVec);
             const uVec = subVec3(sMultVec3(speedC, rNormalVec), fnVals.v);
-            const coeff = rNorm / Math.pow(multScalarVec3(rVec, uVec), 3) * 90000;
+            const coeff = rNorm / Math.pow(multScalarVec3(rVec, uVec), 3) * 90000 * sizeScale;
             const efVec = addVec3(sMultVec3(speedC * speedC - v2, uVec), multVec3(rVec, multVec3(uVec, fnVals.a)));
             const ef = sMultVec3(coeff, efVec);
             const bf = sMultVec3(1, multVec3(rNormalVec, ef));
             return [ef, bf];
         }
 
-        const drawAll = (scr, curTime) => {
-            scr.drawState(curTime);
-            if (curTime < 60) {
-                setTimeout(() => drawAll(scr, curTime + 0.02), 10);
+        const drawAll = (scr) => {
+            animStatus = 1;
+            scr.drawState(animCurrentTime);
+            if (animStepCount > 0) {
+                animStepCount -= 1;
+                animCurrentTime += animStep;
+                setTimeout(() => drawAll(scr), 10);
+            } else {
+                animStatus = 0;
             }
         }
         const makeWorld = () => {
-
-            let scr = new g2dWorld(
+            scr = new g2dWorld(
                 document.getElementById("torus_2d"),
-                [getFunc("lineZ")],
+                [getFunc("circleXY")],
                 0,
                 getMeasurePoints("lines"));
 
             scr.prepare();
 
-            setTimeout(() => drawAll(scr, 0), 10);
+            setTimeout(() => drawAll(scr), 10);
+        }
 
+        const onChangeChargePath = (v) => {
+            console.log(v);
         }
 
         window.onloadFuncs.push(makeWorld);
 
+        const animPlay = () => {
+            animStepCount = 10000;
+            animStep = 0.02;
+            if (animStatus === 0) {
+                setTimeout(() => drawAll(scr), 10);
+            }
+        }
+        const animPause = () => { animStepCount  = 0;}
+        const animNext = () => {
+            if (animStatus === 0) {
+                animStepCount = 1;
+                animStep = 0.02;
+                setTimeout(() => drawAll(scr), 10);
+            }
+        }
+        const animPrevious = () => {
+            if (animStatus === 0) {
+                animStepCount = 1;
+                animStep = - 0.02;
+                setTimeout(() => drawAll(scr), 10);
+            }
+        }
+
+        const changeSize = () => {
+            let a = document.getElementById("arrowSize").value;
+            sizeScale = 0.01 * parseFloat(a);
+        }
     </script>
 </head>
 <body>
@@ -179,6 +220,23 @@
     <div class="appendHead">Retarded Potentials</div>
 </div>
 <div class="containerRight">
+    <div style="margin: 4px;">
+        <i style="cursor: pointer;" onclick="animPlay()" class="material-icons noSelect">play_arrow</i>
+        <i style="cursor: pointer;" onclick="animPause()" class="material-icons noSelect">pause</i>
+        <i style="cursor: pointer;" onclick="animNext()" class="material-icons noSelect">skip_next</i>
+        <i style="cursor: pointer;" onclick="animPrevious()" class="material-icons noSelect">skip_previous</i>
+                <input type="range" id="arrowSize" min="10" max="400" onchange="changeSize();" value="100"/>
+        <label for="funcChoice">Charge Path</label>
+        <div class="custom-selectX" style="display: inline-block; width:200px;">
+            <select name="funcChoice" id="funcChoice" onchange="onChangeChargePath(this.value);">
+                <option value="line1">Simple line (Y axis)</option>
+                <option value="lineZ">Repeating line (Z axis)</option>
+                <option value="sin">Sine path</option>
+                <option value="circleXY">Circular XY</option>
+                <option value="circleYZ">Circular YZ</option>
+            </select>
+        </div>
+    </div>
     <canvas style="border:1px solid lightgray;" width="1200" height="800" id="torus_2d" tabindex="0"></canvas>
 </div>
 </body>
