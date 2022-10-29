@@ -8,21 +8,28 @@ class g2dWorld {
         this.setFocus();
         this.charges = charges;
         this.currentTime = currentTime;
-        this.measurePoints =measurePoints;
+        this.measurePoints = measurePoints;
+        this.waves = [];
         this.canvas = canvas;
         this.ctx = ctx;
         this.w = ctx.canvas.width;
         this.h = ctx.canvas.height;
+        this.zoom = 1.0;
+        this.animCounter = 0;
         this.toScreen = (p) => {
             const v = this.view_matrix;
             const px = [
-                v[0] * p[0] + v[1] * p[1] + v[2] * p[2] + v[3],
-                v[4] * p[0] + v[5] * p[1] + v[6] * p[2] + v[7],
+                v[0] * p[0] + v[1] * p[1] + v[2] * p[2] + v[12],
+                v[4] * p[0] + v[5] * p[1] + v[6] * p[2] + v[13],
             ];
-            return [ctx.canvas.width / 2 + px[0] - 250, ctx.canvas.height / 2 - px[1] + 250];
+            return [ctx.canvas.width / 2 + px[0], ctx.canvas.height / 2 - px[1]];
         }
+        this.speedC = 90; // pixels per second
 
         g2dWorld.allWorlds.push(this);
+    }
+    setCharges(charges) {
+        this.charges = charges;
     }
     setFocus() {
         single2dWorld = this;
@@ -46,9 +53,18 @@ class g2dWorld {
             this.setFocus();
         }
     }
+    addWave(pos, status, timeStart) {
+        this.waves.push({
+           pos,
+           status,
+           timeStart
+        });
+    }
 
     resetView() {
         this.view_matrix = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0, 0, 0,1 ];
+        this.zoom = 1.0;
+        this.waves = [];
     }
 
     prepare() {
@@ -139,7 +155,7 @@ class g2dWorld {
                     zoomVecs(curWorld.view_matrix, Math.pow(b, z));
                     curWorld.drawState(- 1);
                     for (let i = 0; i < z; i++) {
-                        curWorld.ZOOM = curWorld.ZOOM * b
+                        curWorld.zoom = curWorld.zoom * b
                     }
                 }
                 e.preventDefault();
@@ -166,15 +182,23 @@ class g2dWorld {
         ctx.stroke();
     }
 
-    drawCircle(center, radius, col) {
+    drawCircle(center, radius, col, filled = true) {
         const ctx = this.ctx;
         ctx.fillStyle = col;
+        ctx.strokeStyle = col;
         ctx.beginPath();
-        ctx.arc(...this.toScreen(center), radius, 0, 2 * Math.PI, false);
-        ctx.fill();
-    }
+        const s = this.toScreen(center);
+        ctx.arc(s[0], s[1], radius, 0, 2 * Math.PI, false);
+        if (filled) {
+            ctx.fill();
+        } else {
+            ctx.stroke();
+        }
+   }
 
     drawState(curTime) {
+        this.animCounter = (this.animCounter + 1) % 2;
+
         if (curTime >= 0) {
             this.currentTime = curTime;
         } else {
@@ -187,14 +211,33 @@ class g2dWorld {
         drawFunc(this, this.charges[0], 0, 100);
         for (let measurePoint of this.measurePoints) {
             //this.drawCircle(measurePoint, 2, "red");
-            const speedC = 90; // pixels per second
-            const retTime = getRetardedTime(measurePoint, this.currentTime, speedC, this.charges[0]);
+            const retTime = getRetardedTime(measurePoint, this.currentTime, this.speedC, this.charges[0]);
             const fnValues = this.charges[0](retTime);
             //this.drawLine(measurePoint, fnVals.p, "gray");
-            const [eF, bF] = calcElectromagneticField(measurePoint, retTime, fnValues, speedC);
+            const [eF, bF] = calcElectromagneticField(measurePoint, retTime, fnValues, this.speedC);
             this.drawLine(measurePoint, addVec3(eF, measurePoint), "blue");
             this.drawLine(measurePoint, addVec3(bF, measurePoint), "red");
+            //this.drawLine(measurePoint, fnValues.p, "gray");
         }
+        console.log({waves: this.waves});
+
+
+        for (let wave of this.waves) {
+            const r = this.speedC * (this.currentTime - wave.timeStart) * this.zoom;
+            console.log({wave}, r);
+            if (r > 250) {
+                wave.status = 0;
+            } else {
+                console.log({wave}, r);
+                const color = `rgb(${r}, ${r}, ${r})`;
+                this.drawCircle(wave.pos, r, color, false);
+            }
+        }
+        this.waves = this.waves.filter(w => w.status === 1);
+        if (this.animCounter === 0 && curTime > 0) {
+            this.addWave(this.charges[0](curTime).p, 1, curTime);
+        }
+
         const o = this.charges[0](this.currentTime);
         this.drawCircle(o.p, 4, "red");
     }

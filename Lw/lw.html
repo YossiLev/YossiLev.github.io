@@ -30,6 +30,11 @@
                 }
                 return measurePoints;
             }
+            const mPointsSingle = () => {
+                const measurePoints =   [];
+                measurePoints.push([40, 0, 0])
+                return measurePoints;
+            }
             const mPointsCentral = () => {
                 const measurePoints =   [];
                 for (let angle = 0; angle < 93; angle += 10) {
@@ -46,29 +51,32 @@
             switch (name) {
                 case "central": return mPointsCentral();
                 case "lines": return mPointsLines();
+                case "single": return mPointsSingle();
             }
             return [];
         }
         const getFunc = (name) => {
             const funcLine1 = (t) => {
+                let v = 10 * speedValue;
                 return {
-                    p: [0, 10 * t, 0],
-                    v: [0, 10, 0],
+                    p: [0, v * t, 0],
+                    v: [0, v, 0],
                     a: [0, 0, 0]
                 }
             }
             const funcLineZ = (t) => {
-                let z = 60 * t;
+                let v = 40 * speedValue;
+                let z = v * t;
                 z = (Math.floor(z) % 100) + (z - Math.floor(z)) - 50;
                 return {
                     p: [0, 0, z],
-                    v: [0, 0, 10],
+                    v: [0, 0, v],
                     a: [0, 0, 0]
                 }
             }
             const funcSin = (t) => {
                 const amp = 12;
-                const f = 2;
+                const f = 2 * speedValue;
                 return {
                     p: [0, amp * Math.sin(f * t), 0],
                     v: [0, f * amp * Math.cos(f * t), 0],
@@ -77,7 +85,7 @@
             }
             const funcCircleXY = (t) => {
                 const amp = 12;
-                const f = 3;
+                const f = 3 * speedValue;
                 return {
                     p: [amp * Math.cos(f * t), amp * Math.sin(f * t), 0],
                     v: [- f * amp * Math.sin(f * t), f * amp * Math.cos(f * t), 0],
@@ -86,7 +94,7 @@
             }
             const funcCircleYZ = (t) => {
                 const amp = 12;
-                const f = 3;
+                const f = 3 * speedValue;
                 return {
                     p: [0, amp * Math.cos(f * t), amp * Math.sin(f * t)],
                     v: [0, - f * amp * Math.sin(f * t), f * amp * Math.cos(f * t)],
@@ -137,11 +145,13 @@
 
             return guess;
         }
+        let animPathFunc = "line1";
         let animStep = 0.02;
         let animStepCount = 0;
         let animCurrentTime = 0;
         let animStatus = 0;
         let sizeScale = 1.0;
+        let speedValue = 1.0;
         let scr;
 
         const calcElectromagneticField = (measurePoint, retTime, fnVals, speedC) => {
@@ -171,7 +181,7 @@
         const makeWorld = () => {
             scr = new g2dWorld(
                 document.getElementById("torus_2d"),
-                [getFunc("circleXY")],
+                [getFunc(animPathFunc)],
                 0,
                 getMeasurePoints("lines"));
 
@@ -181,7 +191,13 @@
         }
 
         const onChangeChargePath = (v) => {
-            console.log(v);
+            animPathFunc = v;
+            scr.setCharges([getFunc(animPathFunc)]);
+            if (animStatus === 0) {
+                animStepCount = 1;
+                animStep = 0;
+                setTimeout(() => drawAll(scr), 10);
+            }
         }
 
         window.onloadFuncs.push(makeWorld);
@@ -208,10 +224,23 @@
                 setTimeout(() => drawAll(scr), 10);
             }
         }
-
         const changeSize = () => {
             let a = document.getElementById("arrowSize").value;
             sizeScale = 0.01 * parseFloat(a);
+            if (animStatus === 0) {
+                animStepCount = 1;
+                animStep = 0;
+                setTimeout(() => drawAll(scr), 10);
+            }
+        }
+        const changeSpeed = () => {
+            let a = document.getElementById("speedValue").value;
+            speedValue = 0.01 * parseFloat(a);
+            if (animStatus === 0) {
+                animStepCount = 1;
+                animStep = 0;
+                setTimeout(() => drawAll(scr), 10);
+            }
         }
     </script>
 </head>
@@ -221,15 +250,24 @@
 </div>
 <div class="containerRight">
     <div style="margin: 4px;">
-        <i style="cursor: pointer;" onclick="animPlay()" class="material-icons noSelect">play_arrow</i>
-        <i style="cursor: pointer;" onclick="animPause()" class="material-icons noSelect">pause</i>
-        <i style="cursor: pointer;" onclick="animNext()" class="material-icons noSelect">skip_next</i>
-        <i style="cursor: pointer;" onclick="animPrevious()" class="material-icons noSelect">skip_previous</i>
-                <input type="range" id="arrowSize" min="10" max="400" onchange="changeSize();" value="100"/>
+        <i style="cursor: pointer; font-size: 50px;" onclick="animPlay()" class="material-icons noSelect">play_arrow</i>
+        <i style="cursor: pointer; font-size: 50px;" onclick="animPause()" class="material-icons noSelect">pause</i>
+        <i style="cursor: pointer; font-size: 50px;" onclick="animNext()" class="material-icons noSelect">skip_next</i>
+        <i style="cursor: pointer; font-size: 50px;" onclick="animPrevious()" class="material-icons noSelect">skip_previous</i>
+        <div style="display:inline-block">
+            <div>
+                Charge:
+                <input type="range" id="arrowSize" min="10" max="400" oninput="changeSize();" value="100" style="vertical-align:middle"/>
+            </div>
+            <div>
+                Speed:
+                <input type="range" id="speedValue" min="10" max="400" oninput="changeSpeed();" value="100" style="vertical-align:middle"/>
+            </div>
+        </div>
         <label for="funcChoice">Charge Path</label>
         <div class="custom-selectX" style="display: inline-block; width:200px;">
             <select name="funcChoice" id="funcChoice" onchange="onChangeChargePath(this.value);">
-                <option value="line1">Simple line (Y axis)</option>
+                <option selected value="line1">Simple line (Y axis)</option>
                 <option value="lineZ">Repeating line (Z axis)</option>
                 <option value="sin">Sine path</option>
                 <option value="circleXY">Circular XY</option>
