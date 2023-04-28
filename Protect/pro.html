@@ -29,6 +29,7 @@
     </style>
     <script>
         let gblObj = null;
+        let gblOpenText = null;
         const putMessage = (s) => {
             document.getElementById('msgFrame').style.display = 'block';
             document.getElementById('msgContent').innerText = s;
@@ -62,21 +63,24 @@
                 const pass = document.getElementById("password").value;
                 document.getElementById("result").innerText = "";
 
-                const out = decrypt(text, pass);
-                if (out.length < 1) {
+                gblOpenText = decrypt(text, pass);
+                if (gblOpenText.length < 1) {
                     putMessage(`Decryption failed, probably wrong password`);
                     return;
                 }
                 try {
-                    gblObj = JSON.parse(out);
+                    gblObj = JSON.parse(gblOpenText);
                     addInfoButtons();
                 } catch (e) {
-                    document.getElementById("result").innerText = out;
+                    document.getElementById("result").innerText = gblOpenText;
                 }
             } catch (e) {
                 putMessage(`Decryption failed, probably wrong password\nError message: ${e.toString()}`);
                 document.getElementById("result").innerText = e.toString();
             }
+        }
+        const presentText = () => {
+            document.getElementById("text").value = gblOpenText;
         }
         const addInfoButtons = () => {
             document.getElementById("keyButtons").innerHTML =
@@ -94,6 +98,7 @@
                 gblObj = {};
             }
             gblObj[k] = v;
+            gblOpenText = JSON.stringify(gblObj);
             addInfoButtons();
         }
         const copyObject = () => {
@@ -119,6 +124,17 @@
             const text = localStorage.getItem('encrypted');
             document.getElementById("text").value = text;
         }
+        function storeNameEncrypt() {
+            const text = document.getElementById("text").value;
+            const storeName = `encryptedName${document.getElementById('storeName').value.trim()}`
+            localStorage.setItem(storeName, text);
+            putMessage("Encrypted stored");
+        }
+        function loadNameEncrypt() {
+            const storeName = `encryptedName${document.getElementById('storeName').value.trim()}`
+            const text = localStorage.getItem(storeName);
+            document.getElementById("text").value = text;
+        }
     </script>
 </head>
 <body>
@@ -130,10 +146,16 @@
             <i class="material-icons" style="vertical-align: middle; color: #2c974b">key</i><input id="password" type="password" placeholder="Password" value="">
             <div class="butx" onclick="firstEncode();">First encode</div>
             <div class="butx" onclick="decode();">Open</div>
+            <div class="butx" onclick="presentText();">Present</div>
             <div class="butx" onclick="addData();">Add Data</div>
             <div class="butx" onclick="copyObject();">Copy Data</div>
             <div class="butx" onclick="storeEncrypt();">Store</div>
             <div class="butx" onclick="loadEncrypt();">Load</div>
+            <div>
+            <div class="butx" onclick="storeNameEncrypt();">Store to Name</div>
+            <div class="butx" onclick="loadNameEncrypt();">Load from Name</div>
+            <input id="storeName" type="text" placeholder="Name" value="">
+            </div>
         </div>
         <div>
             <textarea id="text" cols="100" rows="20" placeholder="Enter data for encryption or decryption here"></textarea>

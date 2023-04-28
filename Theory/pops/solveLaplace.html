@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="normal">
+    How do we solve an equation like  \[\left(\xi^2-1\right)\frac{d^2H}{d\xi^2}+2\xi\frac{dH}{d\xi}+\frac{1}{4}H=0\]
+</div>
+<div class="headLine3">
+    Solutions of a first kind
+</div>
+<div class="normal">
+    We first start with solutions of a first kind. It has the following form \[H(\xi)=\sum_{n=0}^{\infty}a_n\xi^n\quad\Rightarrow\quad\frac{dH}{d\xi}=
+    \sum_{n=1}^{\infty}n a_n\xi^{n-1}\quad\Rightarrow\quad\frac{d^2H}{d\xi^2}=\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2} \]
+    Put into the equation
+    \[\left(\xi^2-1\right)\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2}+2\xi\sum_{n=1}^{\infty}n a_n\xi^{n-1}+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
+    \[-\sum_{n=2}^{\infty}n(n-1)a_n\xi^{n-2}+\sum_{n=2}^{\infty}n(n-1)a_n\xi^n +2\sum_{n=1}^{\infty}n a_n\xi^n+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
+    \[-\sum_{n=0}^{\infty}(n+2)(n+1)a_{n+2}\xi^n+\sum_{n=0}^{\infty}n(n-1)a_n\xi^n +2\sum_{n=0}^{\infty}n a_n\xi^n+\frac{1}{4}\sum_{n=0}^{\infty}a_n\xi^n=0\]
+    \[\sum_{n=0}^{\infty}\xi^n\left[-(n+2)(n+1)a_{n+2}+n(n-1)a_n+2n a_n+\frac{1}{4}a_n\right]=0\]
+    So, for every \(n\) we get the relation
+    \[-(n+2)(n+1)a_{n+2}+n(n-1)a_n+2n a_n+\frac{1}{4}a_n=0\]
+    \[a_{n+2}=\frac{n(n+1)+\frac{1}{4}}{(n+2)(n+1)}a_n\]
+    \[a_{n+2}=\frac{(n+\frac{1}{2})(n+\frac{1}{2})}{(n+2)(n+1)}a_n\]
+    Setting \(a_0=A, a_1=B\) and defining\[(x)_{n,d}\equiv(1)(x)(x+d)(x+2d)...(x+(n-1)d)\quad(x)_n=(x)_{n,1}\]
+    We can write the solution
+    \[H(\xi)=A\sum_{n=0}^{\infty}\frac{(1/2)_{n,2}(1/2)_{n,2}}{(2n)!}\xi^{2n}+B\sum_{n=0}^{\infty}\frac{(3/2)_{n,2}(3/2)_{n,2}}{(2n+1)!}\xi^{2n+1}\]
+    We use the identities \[(x)_{n,2}=2^n(x/2)_n\quad(2n)!=(1)_{n,2}(2)_{n,2}\quad(2n+1)!=(2)_{n,2}(3)_{n,2}\]
+    To get
+    \[H(\xi)=A\sum_{n=0}^{\infty}\frac{(1/4)_n(1/4)_n}{(1/2)_n(1)_n}\xi^{2n}+B\sum_{n=0}^{\infty}\frac{(3/4)_n(3/4)_n}{(1)_n(3/2)_n}\xi^{2n+1}\]
+    This can be written as
+    \[H(\xi)=A\cdot{}_2F_1\left(\frac{1}{4}, \frac{1}{4}; \frac{1}{2}; \xi^2\right) + B\xi\cdot{}_2F_1\left(\frac{3}{4}, \frac{3}{4}; \frac{3}{2};\xi^2\right)\]
+
+</div>
+<div class="headLine3">
+    Solutions of a second kind
+</div>
+<div class="normal">
+    We will be more interested with solutions of a second kind.
+    We look at a more general equation
+    \[\left(\xi^2-1\right)\frac{d^2H}{d\xi^2}+2\xi\frac{dH}{d\xi}-\nu(\nu+1)H=0\]
+    Solutions have the following form
+    \[H(\xi)=\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}\quad\Rightarrow\quad\frac{dH}{d\xi}=
+    \sum_{n=0}^{\infty}(-\nu-n) a_n\xi^{-\nu-n-1}\quad\Rightarrow\quad\frac{d^2H}{d\xi^2}=\sum_{n=0}^{\infty}(-\nu-n)(-\nu-n-1)a_n\xi^{-\nu-n-2} \]
+    Put into the equation
+    \[\left(\xi^2-1\right)\sum_{n=0}^{\infty}(-\nu-n)(-\nu-n-1)a_n\xi^{-\nu-n-2}+2\xi\sum_{n=0}^{\infty}(-\nu-n) a_n\xi^{-\nu-n-1}-\nu(\nu+1)\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}=0\]
+    \[-\sum_{n=0}^{\infty}(-\nu-n)(-\nu-n-1)a_n\xi^{-\nu-n-2}+\sum_{n=0}^{\infty}(-\nu-n)(-\nu-n-1)a_n\xi^{-\nu-n} +2\sum_{n=0}^{\infty}(-\nu-n) a_n\xi^{-\nu-n}-\nu(\nu+1)\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}=0\]
+    \[-\sum_{n=0}^{\infty}(\nu+n)(\nu+n+1)a_n\xi^{-\nu-n-2}+\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}\left[(\nu+n)(\nu+n+1) -2(\nu+n)-\nu(\nu+1)\right]=0\]
+    \[-\sum_{n=2}^{\infty}(\nu+n-2)(\nu+n-1)a_{n-2}\xi^{-\nu-n}+\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}\left[(\nu+n)(\nu+n-1)-\nu(\nu+1)\right]=0\]
+    \[-\sum_{n=2}^{\infty}(\nu+n-2)(\nu+n-1)a_{n-2}\xi^{-\nu-n}+\sum_{n=0}^{\infty}a_n\xi^{-\nu-n}\left[(n-1)(n+2\nu)\right]=0\]
+    And this amounts to:
+    \[For\quad n=0,1\quad a_n(n-1)(n+2\nu)=0\quad\Rightarrow\quad a_0=0,\quad a_1 can be anything \]
+    \[For\quad n>2\quad (\nu+n-2)(\nu+n-1)a_{n-2}=a_n(n-1)(n+2\nu)\quad\Rightarrow\quad a_n=a_{n-2}\frac{(\nu-2+n)(\nu-1+n)}{(-1+n)(2\nu+n)}\quad\Rightarrow\quad a_{n+2}=a_n\frac{(\nu+n)(\nu+1+n)}{(1+n)(2\nu+2+n)} \]
+    We can write the solution
+    \[H(\xi)=B\sum_{n=0}^{\infty}\frac{(\nu+1)_{n,2}(\nu+2)_{n,2}}{\left(2\nu+3\right)_{n,2}(2)_{n,2}}\xi^{-\nu-(2n+1)}\]
+
+    To get
+    \[H(\xi)=B\xi^{-\nu-1}\sum_{n=0}^{\infty}\frac{(\frac{\nu}{2}+\frac{1}{2})_n(\frac{\nu}{2}+1)_n}{\left(\nu+\frac{3}{2}\right)_nn!}\xi^{-2n}\]
+    This can be written as
+    \[H(\xi)=B\xi^{-\nu-1}\cdot{}_2F_1\left(\frac{\nu}{2}+\frac{1}{2}, \frac{\nu}{2}+1; \nu+\frac{3}{2};\xi^{-2}\right)\]
+    In out case \(\nu=-\frac{1}{2}\) which gives \(\nu(\nu+1)=-\frac{1}{4}\) so the function becomes
+    \[H(\xi)=B\xi^{-\frac{1}{2}}\cdot{}_2F_1\left(\frac{1}{4}, \frac{3}{4}; 1;\xi^{-2}\right)\]
+</div>
+
+
+</body>
+</html>

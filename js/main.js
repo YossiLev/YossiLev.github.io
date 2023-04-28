@@ -104,6 +104,55 @@ addHeader = () => {
     addPager();
     addMasthead();
 }
+popupFile = (fName) => {
+    let xhr = new XMLHttpRequest();
+
+    // Define what to do when the request is successful
+    xhr.onload = function() {
+        let oChild = document.body.appendChild(document.createElement("div"));
+        oChild.id = "overlayGo";
+        oChild.innerHTML = "<div id=\"overlay-content\" class=\"overlay-content\" onclick=\"event.stopPropagation()\"></div>";
+        oChild.classList = "overlay";
+        oChild.onclick = () => {document.body.removeChild(document.getElementById('overlayGo'));};
+        oChild.style.display = 'flex';
+
+        // Display the file contents in the overlay content
+        document.getElementById('overlay-content').innerHTML = xhr.responseText;
+
+        // Execute any JavaScript code in the loaded HTML
+        let scripts = document.getElementById('overlay-content').getElementsByTagName('script');
+        console.log(scripts.length);
+        for (let i = 0; i < scripts.length; i++) {
+            console.log(i);
+            console.log(scripts[i]);
+            let script = scripts[i];
+            let src = script.src;
+            if (src) {
+                console.log("src");
+                // If the script has a "src" attribute, load the external script file
+                let xhr2 = new XMLHttpRequest();
+                xhr2.onload = function() {
+                    eval(xhr2.responseText);
+                };
+                xhr2.open('GET', src, false);
+                xhr2.send();
+            } else {
+                // If the script does not have a "src" attribute, evaluate the script code directly
+                console.log("innerHTML");
+                eval(script.innerHTML);
+            }
+        }
+        MathJax.typeset()
+    };
+
+    xhr.onerror = function() {
+        alert('Error reading file.');
+    };
+
+    xhr.open('GET', fName, true);
+    xhr.send();
+
+}
 optionalOpenClose = () => {
     getArrayByClass("optionalCloser").forEach(el => {
         el.onclick = (e) => {
@@ -338,6 +387,7 @@ initializeSelect = () => {
 
     document.addEventListener("click", closeAllSelect);
 }
+console.log("main.js");
 window.onloadFuncs = [addHeader, fillAppendixOrder, optionalOpenClose, equationsLabels,
     zoomOnImages, initActions, addTts, webGlFocus, webGlGuide, initToolTipView, initializeSelect];
 

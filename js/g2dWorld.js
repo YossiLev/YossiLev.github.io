@@ -197,7 +197,7 @@ class g2dWorld {
    }
 
     drawState(curTime) {
-        this.animCounter = (this.animCounter + 1) % 2;
+        this.animCounter = (this.animCounter + 1) % 5;
 
         if (curTime >= 0) {
             this.currentTime = curTime;
