@@ -381,9 +381,10 @@
 <div class="normal">
     The inverse coordinates calculation is
     \[\eta=\frac{1}{2}\ln\frac{\left(\sqrt{x^2+y^2}+a\right)^2+z^2}{\left(\sqrt{x^2+y^2}-a\right)^2+z^2}\]
-    \[\theta=\arcsin\frac{\left(\sqrt{x^2+y^2}+a\right)^2+z^2+\left(\sqrt{x^2+y^2}-a\right)^2+z^2-4a^2}
-    {2\sqrt{\left(\left(\sqrt{x^2+y^2}+a\right)^2+z^2\right)\left(\left(\sqrt{x^2+y^2}-a\right)^2+z^2\right)}}=
-    \arcsin\frac{x^2+y^2+z^2-a^2}
+    \[\theta=sign(z)\arccos\frac{\left(\sqrt{x^2+y^2}+a\right)^2+z^2+\left(\sqrt{x^2+y^2}-a\right)^2+z^2-4a^2}
+    {2\sqrt{\left(\left(\sqrt{x^2+y^2}+a\right)^2+z^2\right)\left(\left(\sqrt{x^2+y^2}-a\right)^2+z^2\right)}}\]
+    \[=
+    sign(z)\arccos\frac{x^2+y^2+z^2-a^2}
     {\sqrt{\left(\left(\sqrt{x^2+y^2}+a\right)^2+z^2\right)\left(\left(\sqrt{x^2+y^2}-a\right)^2+z^2\right)}}
 
     \]
