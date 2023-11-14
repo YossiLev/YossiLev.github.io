@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="91cd5ebf-ee8a-47d2-9eed-6545a24731ff" name="Changes" comment="missing image">
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/YossiLev.github.io.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Elliptic/Elliptic.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/js/poly.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/slider.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Theory/torusFlow.html" beforeDir="false" afterPath="$PROJECT_DIR$/Theory/torusFlow.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/js/glObj.js" beforeDir="false" afterPath="$PROJECT_DIR$/js/glObj.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+        <option value="HTML File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="20JIPIkwfX2jjSsyM3dW8pePBXj" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "WebServerToolWindowFactoryState": "false",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/images/objects" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="91cd5ebf-ee8a-47d2-9eed-6545a24731ff" name="Changes" comment="" />
+      <created>1635756238086</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1635756238086</updated>
+      <workItem from="1635756240159" duration="19000" />
+      <workItem from="1635756633944" duration="45000" />
+      <workItem from="1635756779897" duration="6000" />
+      <workItem from="1635759868812" duration="2142000" />
+      <workItem from="1636134202861" duration="2742000" />
+      <workItem from="1636364072704" duration="661000" />
+      <workItem from="1638087640221" duration="2324000" />
+      <workItem from="1639127094456" duration="6336000" />
+      <workItem from="1639317886215" duration="2035000" />
+      <workItem from="1643710659387" duration="205000" />
+      <workItem from="1643711072377" duration="74000" />
+      <workItem from="1649662370928" duration="19089000" />
+      <workItem from="1649927520455" duration="996000" />
+      <workItem from="1650888807321" duration="1702000" />
+      <workItem from="1651649712683" duration="564000" />
+      <workItem from="1653375974997" duration="28000" />
+      <workItem from="1657368881951" duration="4608000" />
+      <workItem from="1659190432458" duration="5558000" />
+      <workItem from="1659330370113" duration="10648000" />
+      <workItem from="1659451254481" duration="234000" />
+      <workItem from="1659691349097" duration="13985000" />
+      <workItem from="1659938005791" duration="4266000" />
+      <workItem from="1660286358973" duration="6084000" />
+      <workItem from="1660553665841" duration="9903000" />
+      <workItem from="1660668774206" duration="362000" />
+      <workItem from="1660976380298" duration="235000" />
+      <workItem from="1661521894553" duration="3474000" />
+      <workItem from="1661711165051" duration="1516000" />
+      <workItem from="1661785685640" duration="789000" />
+      <workItem from="1665325798284" duration="17029000" />
+      <workItem from="1665837670837" duration="6867000" />
+      <workItem from="1665926844228" duration="2914000" />
+      <workItem from="1666003364389" duration="4805000" />
+      <workItem from="1666623130698" duration="7982000" />
+      <workItem from="1666716641074" duration="2544000" />
+      <workItem from="1666941462562" duration="3254000" />
+      <workItem from="1667206295074" duration="928000" />
+      <workItem from="1671189410530" duration="15637000" />
+      <workItem from="1671389754859" duration="1030000" />
+      <workItem from="1681892207562" duration="11446000" />
+      <workItem from="1683089789227" duration="154000" />
+      <workItem from="1683524655361" duration="742000" />
+      <workItem from="1687182001202" duration="1698000" />
+      <workItem from="1687508294696" duration="1089000" />
+      <workItem from="1691840521317" duration="2293000" />
+      <workItem from="1691910252379" duration="3000" />
+      <workItem from="1693326234457" duration="3420000" />
+      <workItem from="1693406010401" duration="14209000" />
+      <workItem from="1693891113967" duration="556000" />
+      <workItem from="1694769232293" duration="21155000" />
+    </task>
+    <task id="LOCAL-00001" summary="new  talks">
+      <created>1639130311614</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1639130311615</updated>
+    </task>
+    <task id="LOCAL-00002" summary="new  talks">
+      <created>1639148509925</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1639148509925</updated>
+    </task>
+    <task id="LOCAL-00003" summary="new  talks">
+      <created>1639306648473</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1639306648473</updated>
+    </task>
+    <task id="LOCAL-00004" summary="pictures">
+      <created>1639383009771</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1639383009771</updated>
+    </task>
+    <task id="LOCAL-00005" summary="refactor and comments">
+      <created>1649664733254</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1649664733254</updated>
+    </task>
+    <task id="LOCAL-00006" summary="torus functions and torus flow object">
+      <created>1649927615313</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1649927615313</updated>
+    </task>
+    <task id="LOCAL-00007" summary="typo">
+      <created>1650888832560</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1650888832560</updated>
+    </task>
+    <task id="LOCAL-00008" summary="typos and pictures">
+      <created>1651650011947</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1651650011947</updated>
+    </task>
+    <task id="LOCAL-00009" summary="new pages fro holomorphic functions and Mandelbrot function">
+      <created>1659415116729</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1659415116729</updated>
+    </task>
+    <task id="LOCAL-00010" summary="typo">
+      <created>1659451370555</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1659451370555</updated>
+    </task>
+    <task id="LOCAL-00011" summary="title of images&#10;mandelbrot fixes">
+      <created>1659694127861</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1659694127861</updated>
+    </task>
+    <task id="LOCAL-00012" summary="performance">
+      <created>1659707452742</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1659707452742</updated>
+    </task>
+    <task id="LOCAL-00013" summary="add protect applet">
+      <created>1659971951746</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1659971951746</updated>
+    </task>
+    <task id="LOCAL-00014" summary="protect app more operations">
+      <created>1660292328770</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1660292328770</updated>
+    </task>
+    <task id="LOCAL-00015" summary="fixes">
+      <created>1660292882230</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1660292882230</updated>
+    </task>
+    <task id="LOCAL-00016" summary="fixes">
+      <created>1660308534462</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1660308534462</updated>
+    </task>
+    <task id="LOCAL-00017" summary="gravitation calculation and description">
+      <created>1660621715164</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1660621715166</updated>
+    </task>
+    <task id="LOCAL-00018" summary="missing image">
+      <created>1660625350376</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1660625350376</updated>
+    </task>
+    <task id="LOCAL-00019" summary="retarded potentials">
+      <created>1666021418594</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1666021418594</updated>
+    </task>
+    <task id="LOCAL-00020" summary="anim buttons">
+      <created>1666636410953</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1666636410953</updated>
+    </task>
+    <task id="LOCAL-00021" summary="lw retarded potentials">
+      <created>1667020499645</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1667020499646</updated>
+    </task>
+    <task id="LOCAL-00022" summary="connect lw">
+      <created>1667020644395</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1667020644395</updated>
+    </task>
+    <task id="LOCAL-00023" summary="first version fluid sim">
+      <created>1671189483415</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1671189483416</updated>
+    </task>
+    <task id="LOCAL-00024" summary="add overlay options&#10;add new fluid simulator&#10;protect variable storage">
+      <created>1682692014191</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1682692014191</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="new  talks" />
+    <MESSAGE value="pictures" />
+    <MESSAGE value="refactor and comments" />
+    <MESSAGE value="torus functions and torus flow object" />
+    <MESSAGE value="typos and pictures" />
+    <MESSAGE value="new pages fro holomorphic functions and Mandelbrot function" />
+    <MESSAGE value="typo" />
+    <MESSAGE value="title of images&#10;mandelbrot fixes" />
+    <MESSAGE value="performance" />
+    <MESSAGE value="add protect applet" />
+    <MESSAGE value="protect app more operations" />
+    <MESSAGE value="fixes" />
+    <MESSAGE value="gravitation calculation and description" />
+    <MESSAGE value="missing image" />
+    <MESSAGE value="retarded potentials" />
+    <MESSAGE value="anim buttons" />
+    <MESSAGE value="lw retarded potentials" />
+    <MESSAGE value="connect lw" />
+    <MESSAGE value="first version fluid sim" />
+    <MESSAGE value="add overlay options&#10;add new fluid simulator&#10;protect variable storage" />
+    <option name="LAST_COMMIT_MESSAGE" value="add overlay options&#10;add new fluid simulator&#10;protect variable storage" />
+  </component>
+</project>

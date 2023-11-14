@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Vector Field Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.4.0/gl-matrix.js"></script>
+    <script type="text/javascript" src="../js/glMat.js"></script>
+    <script type="text/javascript" src="../js/glObj.js"></script>
+
+    <style>
+        body { margin: 0; }
+        canvas { display: block; border: 1px solid blue; margin-bottom: 20px}
+        .separatorH {
+            height: 2px;
+            background: #1c74c1;
+            margin:4px;
+        }
+    </style>
+</head>
+<body>
+
+<div style="display: flex; flex-direction: row" />
+    <canvas id="glCanvas" width="800" height="800"></canvas>
+    <div style="display: flex; flex-direction: column; margin: 20px" />
+        <div id="responseTextZoom">Zoom 10</div>
+        <input type="range" id="sliderInputZoom" min="0" max="100" value="10" step="1">
+        <div class="separatorH"></div>
+        <div id="responseTextLength">Length 10</div>
+        <input type="range" id="sliderInputLength" min="0" max="100" value="10" step="1">
+        <div class="separatorH"></div>
+        <div>
+            <input type="checkbox" id="showPath" name="path" onclick="checkBoxAction('showPath')">
+            <label for="showPath">Show path</label>
+        </div>
+        <div class="separatorH"></div>
+        <div>
+            <input type="checkbox" id="showVelocity" name="path" onclick="checkBoxAction('showVelocity')">
+            <label for="showVelocity">Show velocity</label>
+        </div>
+        <div class="separatorH"></div>
+        <div>
+            <input type="checkbox" id="showVorticity" name="path" onclick="checkBoxAction('showVorticity')">
+            <label for="showVorticity">Show vorticity</label>
+        </div>
+    </div>
+
+</div>
+<script type="text/javascript">
+
+const checkBoxesValues = {};
+const sliderInputZoom = document.getElementById("sliderInputZoom");
+const responseTextZoom = document.getElementById("responseTextZoom");
+sliderInputZoom.addEventListener("input", function() {
+    responseTextZoom.textContent = `Zoom ${sliderInputZoom.value}`;
+    resetData();
+});
+const sliderInputLength = document.getElementById("sliderInputLength");
+const responseTextLength = document.getElementById("responseTextLength");
+sliderInputLength.addEventListener("input", function() {
+    responseTextLength.textContent = `Length ${sliderInputLength.value}`;
+    resetData();
+});
+
+let glX;
+
+function checkBoxAction(id) {
+    checkBoxesValues[id] = document.getElementById(id).checked;
+    console.log(checkBoxesValues)
+    resetData();
+}
+function buildSinStarFlow() {
+    const vec = [];
+    for (let i = 0; i < 360; i += 1) {
+        const ri = i * Math.PI / 180.0;
+        const sf = Math.pow(Math.sin(ri * 17), 2);
+        const s = Math.sin(ri);
+        const c = Math.cos(ri);
+        const ls = 0.1 * sf + 0.6
+        const le = - 0.1 * sf + 0.4
+        const xs = ls * c;
+        const ys = ls * s;
+        const xe = le * c;
+        const ye = le * s;
+        vec.push(xs, ys, 0.0, 1.0, 0.0, 0.0);
+        vec.push(xe, ye, 0.0, 1.0, 1.0, 0.0);
+    }
+
+    return vec;
+}
+
+function resetData() {
+    torusPathMemory = [];
+    buildWorld();
+    renderVectorField();
+}
+
+function buildWorld() {
+    vectorFieldDataX = [];
+    if (checkBoxesValues["showPath"]) buildTorusPath();
+    if (checkBoxesValues["showVelocity"]) buildTorusVelocity();
+    if (checkBoxesValues["showVorticity"]) buildTorusVorticity();
+
+}
+
+let torusPathMemory = [];
+function buildTorusPath() {
+    if (torusPathMemory.length <= 0) {
+        buildTorusFlow(torusVecPath);
+    }
+    vectorFieldDataX = vectorFieldDataX.concat(torusPathMemory)
+}
+function torusVecPath(a, exp_eta, thetaB, psiB) {
+    let scale = 0.1 * sliderInputZoom.value;
+    let bright = 0.4;
+    let col = [1.0, bright, bright];
+    for (let i = 0; i < 2; i++) {
+        const dir = i > 0 ? 1: - 1;
+        let theta = thetaB;
+        let psi = psiB;
+        for (let i = 0; i < 10; i++) {
+            torusPathMemory.push(...Torus.p(a, exp_eta, theta, psi))
+            torusPathMemory.push(...col);
+            theta += Math.PI / 120 * scale * dir;
+            psi += Math.PI / 60 * scale * dir;
+            torusPathMemory.push(...Torus.p(a, exp_eta, theta, psi))
+            torusPathMemory.push(...col);
+        }
+    }
+}
+
+let torusVelocityMemory = [];
+function buildTorusVelocity() {
+    if (torusVelocityMemory.length <= 0) {
+        buildTorusFlow(torusVecVelocity);
+    }
+    console.log(torusVecVelocity.length)
+    vectorFieldDataX = vectorFieldDataX.concat(torusVelocityMemory)
+}
+function torusVecVelocity(a, exp_eta, theta, psi) {
+    let bright = 0.4;
+    let col = [0, bright, 0];
+    const pos = Torus.p(a, exp_eta, theta, psi)
+    const vel = Torus.v(a, exp_eta, theta, psi, 0.5, 1.0);
+    let pos2 = addVec3(pos, sMultVec3(0.02, vel));
+    torusVelocityMemory.push(...pos)
+    torusVelocityMemory.push(...col);
+    torusVelocityMemory.push(...pos2)
+    torusVelocityMemory.push(...col);
+}
+
+let torusVorticityMemory = [];
+function buildTorusVorticity() {
+    if (torusVorticityMemory.length <= 0) {
+        buildTorusFlow(torusVecVorticity);
+    }
+    console.log(torusVorticityMemory.length)
+    vectorFieldDataX = vectorFieldDataX.concat(torusVorticityMemory)
+}
+function torusVecVorticity(a, exp_eta, theta, psi) {
+    let bright = 0.4;
+    let col = [0, bright, 1];
+    const pos = Torus.p(a, exp_eta, theta, psi)
+    const vort = Torus.vort(a, exp_eta, theta, psi, 0.5, 1.0);
+    let pos2 = addVec3(pos, sMultVec3(0.05, vort));
+    torusVorticityMemory.push(...pos)
+    torusVorticityMemory.push(...col);
+    torusVorticityMemory.push(...pos2)
+    torusVorticityMemory.push(...col);
+}
+
+function buildTorusFlow(fillVec) {
+    const a = 0.5;
+    for (let iEta = 270; iEta < 420; iEta += 2000) {
+        let eta = 0.01 * iEta;
+        let exp_eta = Math.exp(eta)
+        for (let iPsi = 0/*-180*/; iPsi < 181; iPsi += 10000) {
+            let psi = (Math.PI * iPsi) / 180
+            for (let iTheta = -180; iTheta <= 181; iTheta += 5) {
+                let theta = (Math.PI * iTheta) / 180
+                fillVec(a, exp_eta, theta, psi)
+            }
+        }
+    }
+}
+
+let viewMatrix = mat4.create();
+mat4.fromScaling(viewMatrix, [1.5, 1.5, 1.5])
+let vectorFieldDataX = [];
+let shaderProgramX;
+
+// Function to compile and link shaders
+function createShader(id) {
+    const shaderScript = document.getElementById(id);
+    if (!shaderScript) {
+        return null;
+    }
+
+    let source = shaderScript.text;
+    const shaderType = (shaderScript.type === "x-shader/x-vertex") ? glX.VERTEX_SHADER : glX.FRAGMENT_SHADER;
+
+    const shader = glX.createShader(shaderType);
+    glX.shaderSource(shader, source);
+    glX.compileShader(shader);
+
+    if (!glX.getShaderParameter(shader, glX.COMPILE_STATUS)) {
+        console.error("An error occurred compiling the shaders: " + glX.getShaderInfoLog(shader));
+        glX.deleteShader(shader);
+        return null;
+    }
+
+    return shader;
+}
+
+// Function to create the shader program
+function initShaders() {
+    const vertexShader = createShader("vertex-shader");
+    const fragmentShader = createShader("fragment-shader");
+
+    shaderProgramX = glX.createProgram();
+
+    glX.attachShader(shaderProgramX, vertexShader);
+    glX.attachShader(shaderProgramX, fragmentShader);
+    glX.linkProgram(shaderProgramX);
+
+    if (!glX.getProgramParameter(shaderProgramX, glX.LINK_STATUS)) {
+        console.error("Unable to initialize the shader program: " + glX.getProgramInfoLog(shaderProgramX));
+    }
+
+    glX.useProgram(shaderProgramX);
+    shaderProgramX.vertexPositionAttribute = glX.getAttribLocation(shaderProgramX, "aVertexPosition");
+    glX.enableVertexAttribArray(shaderProgramX.vertexPositionAttribute);
+
+    shaderProgramX.colorAttributeLocation = glX.getAttribLocation(shaderProgramX, "aVertexColor");
+    glX.enableVertexAttribArray(shaderProgramX.colorAttributeLocation);
+
+    shaderProgramX.pMatrixUniform = glX.getUniformLocation(shaderProgramX, "uPMatrix");
+    shaderProgramX.mvMatrixUniform = glX.getUniformLocation(shaderProgramX, "uMVMatrix");
+
+}
+
+// Initialize variables to track mouse interaction
+let isDragging = [false, false, false];
+let lastMouseX = 0;
+let lastMouseY = 0;
+
+function handleMouseDown(event) {
+    isDragging[event.button] = true;
+    lastMouseX = event.clientX;
+    lastMouseY = event.clientY;
+}
+
+function handleMouseMove(event) {
+    if (!isDragging[0] && !isDragging[2]) return;
+
+    const deltaX = event.clientX - lastMouseX;
+    const deltaY = event.clientY - lastMouseY;
+
+    if (isDragging[0]) {
+
+        // Convert the mouse movement to radians for rotation
+        const sensitivity = 0.005; // Adjust this value to control rotation speed
+        const angleY = deltaX * sensitivity;
+        const angleX = deltaY * sensitivity;
+        const s = Math.sqrt(angleX * angleX + angleY * angleY)
+        if (s < 0.00001) {
+            return
+        }
+
+        const rotMatrix = mat4.create();
+        const out = mat4.create();
+        mat4.fromRotation(rotMatrix, s, [angleX / s, angleY / s, 0.0]);
+        mat4.multiply(out, rotMatrix, viewMatrix);
+        mat4.copy(viewMatrix, out)
+    }
+    if (isDragging[2]) {
+        const sensitivity = 0.005; // Adjust this value to control rotation speed
+        const shiftX = deltaX * sensitivity;
+        const shiftY = - deltaY * sensitivity;
+        const out = mat4.create();
+
+        mat4.translate(out, viewMatrix, [shiftX, shiftY, 0]);
+        mat4.copy(viewMatrix, out)
+    }
+    lastMouseX = event.clientX;
+    lastMouseY = event.clientY;
+
+    renderVectorField();
+}
+
+function handleMouseUp(event) {
+    isDragging[event.button] = false;
+}
+
+function handleMouseWheel(event) {
+    // Calculate the zoom factor based on the mouse wheel event
+    const zoomSpeed = 0.001; // Adjust this value to control zoom speed
+    const delta = event.deltaY;
+    const zoomChange = 1.0 + delta * zoomSpeed;
+
+    const scaleMatrix = mat4.create();
+    const out = mat4.create();
+
+    mat4.fromScaling(scaleMatrix, [zoomChange, zoomChange, zoomChange]);
+    mat4.multiply(out, scaleMatrix, viewMatrix);
+    mat4.copy(viewMatrix, out)
+
+    renderVectorField();
+}
+
+// Function to set up the WebGL context and shaders
+function webGLStart() {
+    const canvas = document.getElementById("glCanvas");
+
+    glX = canvas.getContext("webgl");
+    if (!glX) return;
+
+    glX.viewportWidth = canvas.height;
+    glX.viewportHeight = canvas.height;
+
+    initShaders();
+    glX.clearColor(0.9, 0.9, 0.8, 3);
+
+    const fieldOfView = 45 * (Math.PI / 180); // Convert degrees to radians
+    const aspectRatio = 1.0;
+    const nearClip = 0.1;
+    const farClip = 100.0;
+
+    const pMatrix = mat4.create();
+    mat4.perspective(pMatrix, fieldOfView, aspectRatio, nearClip, farClip);
+    glX.uniformMatrix4fv(shaderProgramX.uProjectionMatrix, false, pMatrix);
+
+    // Add event listeners for mouse actions
+    canvas.addEventListener("mousedown", handleMouseDown, false);
+    canvas.addEventListener("mousemove", handleMouseMove, false);
+    canvas.addEventListener("mouseup", handleMouseUp, false);
+    canvas.addEventListener("wheel", handleMouseWheel, false);
+    canvas.addEventListener("contextmenu", function (event) { event.preventDefault(); });
+
+    resetData();
+}
+
+// Implement your WebGL rendering code here to visualize the vector field.
+function renderVectorField() {
+    // Create buffers to store vector field data
+    const positionBuffer = glX.createBuffer();
+    glX.bindBuffer(glX.ARRAY_BUFFER, positionBuffer);
+    glX.bufferData(glX.ARRAY_BUFFER, new Float32Array(vectorFieldDataX), glX.STATIC_DRAW);
+
+    glX.vertexAttribPointer(shaderProgramX.colorAttributeLocation, 3, glX.FLOAT, false, 24, 12);
+    glX.vertexAttribPointer(shaderProgramX.vertexPositionAttribute, 3, glX.FLOAT, false, 24, 0);
+
+    const pMatrix = mat4.create();   // Your projection matrix
+    // Pass the matrices to the shader
+    glX.uniformMatrix4fv(shaderProgramX.mvMatrixUniform, false, viewMatrix);
+    glX.uniformMatrix4fv(shaderProgramX.pMatrixUniform, false, pMatrix);
+
+    // Clear the canvas
+    glX.clear(glX.COLOR_BUFFER_BIT | glX.DEPTH_BUFFER_BIT);
+
+    // Draw the vector field
+    glX.drawArrays(glX.LINES, 0, vectorFieldDataX.length / 6);
+}
+
+window.onload = webGLStart;
+</script>
+
+<!-- Vertex Shader -->
+<script id="vertex-shader" type="x-shader/x-vertex">
+    // Precision specifier
+    precision mediump float;
+    // Attributes
+    attribute vec3 aVertexPosition;
+    attribute vec3 aVertexColor;
+
+    varying vec3 vColor;
+
+    // Uniforms
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+
+    void main(void) {
+        // Transform the vertex position
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        vColor = aVertexColor;
+    }
+</script>
+
+<!-- Fragment Shader -->
+<script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    varying vec3 vColor; // Receive color from the vertex shader
+
+    void main(void) {
+        // Define the fragment color
+        gl_FragColor = vec4(vColor, 1.0);
+    }
+</script>
+</body>
+</html>
+
