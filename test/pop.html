@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Read File Overlay Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Toroidal Ether</title>
+  <script type="text/javascript" src="../js/tex/tex-mml-chtml.js"></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+  <style>
+    /* Style the overlay */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.25);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+    /* Style the overlay content */
+    .overlay-content {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      max-width: 90%;
+      max-height: 80%;
+      overflow: auto;
+    }
+  </style>
+  <script>
+    function popupFile(fName) {
+      let xhr = new XMLHttpRequest();
+
+      // Define what to do when the request is successful
+      xhr.onload = function() {
+        let oChild = document.body.appendChild(document.createElement("div"));
+        oChild.id = "overlayGo";
+        oChild.innerHTML = "<div id=\"overlay-content\" class=\"overlay-content\" onclick=\"event.stopPropagation()\"></div>";
+        oChild.classList = "overlay";
+        oChild.onclick = () => {document.body.removeChild(document.getElementById('overlayGo'));};
+        oChild.style.display = 'flex';
+
+        // Display the file contents in the overlay content
+        document.getElementById('overlay-content').innerHTML = xhr.responseText;
+
+        // Execute any JavaScript code in the loaded HTML
+        let scripts = document.getElementById('overlay-content').getElementsByTagName('script');
+        console.log(scripts.length);
+        for (let i = 0; i < scripts.length; i++) {
+          console.log(i);
+          console.log(scripts[i]);
+          let script = scripts[i];
+          let src = script.src;
+          if (src) {
+            console.log("src");
+            // If the script has a "src" attribute, load the external script file
+            let xhr2 = new XMLHttpRequest();
+            xhr2.onload = function() {
+              eval(xhr2.responseText);
+            };
+            xhr2.open('GET', src, false);
+            xhr2.send();
+          } else {
+            // If the script does not have a "src" attribute, evaluate the script code directly
+            console.log("innerHTML");
+            eval(script.innerHTML);
+          }
+        }
+        MathJax.typeset()
+      };
+
+      xhr.onerror = function() {
+        alert('Error reading file.');
+      };
+
+      xhr.open('GET', fName, true);
+      xhr.send();
+
+    }
+
+  </script>
+</head>
+<body>
+<button onclick="popupFile('../Theory/torusFlow.html')">Read File</button>
+<div class="normal">
+  From Moon & Spencer [5] we take the Toroidal coordinates
+  \[0\leq\eta<+\infty,\quad-\pi<\theta\leq+\pi,\quad0\leq\psi<2\pi\]
+  \[x=\frac{a\sinh\eta\cos\psi}{\cosh\eta-\cos\theta}\]
+  \[y=\frac{a\sinh\eta\sin\psi}{\cosh\eta-\cos\theta}\]
+  \[z=\frac{a\sin\theta}{\cosh\eta-\cos\theta}\]
+</div>
+</body>
+</html>

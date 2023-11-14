@@ -1,0 +1,490 @@
+body {
+    max-width: 900px;
+    font-family: 'Verdana', sans-serif;
+    color: #464646;
+    margin: 0 auto 1000px;
+}
+a {
+    color: #1976d2;
+}
+.header {
+    background-color: #1976d2;
+    color: white;
+    text-align: center;
+    padding:10px;
+    font-size: 20px;
+}
+.pager {
+    position:sticky;
+    top: 0;
+    background-color: #046546;
+    color: white;
+    text-align: center;
+    padding:10px;
+    font-size: 20px;
+    z-index: 50;
+}
+.contentList {
+    background-color: #046546;
+    color: white;
+    padding: 20px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+}
+.headLine {
+    font-size: 32px;
+    padding: 20px 0 10px 0;
+    color: #202020;
+    text-align: center;
+}
+.headLineSub {
+    font-size: 14px;
+    color: #202020;
+    text-align: center;
+}
+.headLine2 {
+    font-size: 24px;
+    padding: 30px 0 4px 0;
+    color: #202020;
+    text-align: left;
+}
+.headLine3 {
+    font-size: 20px;
+    padding: 8px 0 0 0;
+    color: #202020;
+    text-align: left;
+}
+.headLine4 {
+     font-size: 16px;
+     padding: 6px 0 0 0;
+     font-weight: bold;
+     color: #202020;
+     text-align: left;
+ }
+.abstract {
+    margin: 0 50px 20px;
+    border: 1px solid black;
+    padding: 10px;
+    line-height: 22px;
+    text-align: justify;
+}
+.normal {
+    margin-top: 4px;
+    padding: 2px 0;
+    line-height: 1.5em;
+}
+.highlight {
+    padding: 8px 0;
+    font-weight: bold;
+    text-align: center;
+}
+.equHolder {
+    width: 100%;
+    text-align: center;
+    padding: 20px 0;
+}
+.equLabel {
+    float: right;
+    display: inline-block;
+}
+.list {
+    margin: 8px 0;
+}
+.listItem {
+    margin-top: 4px;
+    margin-left: 8px;
+    line-height: 1.5em;
+}
+.spreadList .listItem {
+    padding: 5px 0;
+}
+.listItem::before {
+    content: "‣";
+    font-size: 30px;
+    line-height: 10px;
+    color: #2f2fdc;
+    position: relative;
+    top: 6px;
+}
+.rightImage {
+    float: right;
+    width: 180px;
+    padding: 16px;
+}
+.rightImageLarge {
+     float: right;
+     width: 360px;
+     padding: 16px;
+}
+.normalImage {
+     width:400px;
+}
+.normalImageLarge {
+     width:700px;
+}
+.extendedImage .normalImage {
+    width: 100%;
+    position: fixed;
+    left: 0;
+    top:0;
+    cursor: zoom-out;
+    background-color: white;
+    padding-bottom: 1000px;
+}
+.insertImage {
+    cursor: zoom-in;
+    float: right;
+    padding: 10px;
+    border: 1px solid gray;
+}
+.imageLabel {
+    text-align: center;
+    font-size: 10px;
+}
+.insertActivity {
+    float: right;
+    padding: 10px;
+    margin:10px;
+    border: 1px solid gray;
+}
+.extendedImage .imageLabel {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #1976d2;
+    color: white;
+    z-index: 100;
+    font-size: 32px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    display: inline-block;
+    width: fit-content;
+    max-width: 90%;
+}
+.matIcon {
+
+}
+.structNav {
+    display: inline-block;
+    background-color: #f7f0f0;
+    color: darkred;
+    padding: 5px 12px;
+    cursor: pointer;
+    user-select: none;
+    font-size: larger;
+}
+.structNavOn {
+    background-color: #eee18b;
+}
+.mainHeader {
+    font-weight: bold;
+    color: #b43519;
+}
+.structNavSub {
+    display: inline-block;
+    background-color: #f7f0f0;
+    color: #cc4848;
+    padding: 3px 10px;
+    margin: 4px 0px;
+    cursor: pointer;
+    user-select: none;
+}
+.structNavSubOn {
+    background-color: #eee18b;
+}
+.structNavBlock {
+    border-left: 4px solid blue;
+    padding: 10px 10px;
+    margin: 6px;
+}
+.mainPart {
+    display: none;
+}
+.optionalOpening {
+    border-left: 2px solid #808080;
+    border-right: 2px solid #808080;
+    padding: 0 10px;
+}
+.optionalParagraph.optionalStatusClosed > div > .optionalCloser {
+    visibility: hidden;
+}
+.optionalCloser {
+    background-color: #328904;
+    color: white;
+    cursor: row-resize;
+    padding: 3px 7px;
+    border-radius: 4px;
+}
+.optionalParagraph {
+    margin-top: 20px;
+}
+.optionalParagraph > .optionalClosing {
+    display: none;
+}
+.optionalParagraph > .optionalClosing::after {
+    content: " touch to open";
+    background-color: #7f1ed4;
+    color: white;
+    cursor: row-resize;
+    padding: 3px 7px;
+    border-radius: 4px;
+}
+.optionalParagraph.optionalStatusClosed > .optionalClosing {
+    display: block;
+}
+
+.optionalParagraph.optionalStatusClosed > .optionalOpening {
+    display: none;
+}
+.link {
+    text-decoration: underline;
+    cursor: pointer;
+    color: #1c74c1;
+}
+.pointer {
+    cursor: pointer;
+}
+.mailFrame {
+    position: fixed;
+    right: 100px;
+    top: 100px;
+    background-color: white;
+    border: 2px solid gray;
+    border-radius: 4px;
+    z-index: 100;
+    padding: 8px 10px;
+    margin: 8px 10px;
+    color: #56b9e5;
+}
+.guideFrame {
+    position: absolute;
+    right: 20px;
+    top: -20px;
+    text-align: left;
+    background-color: white;
+    border: 2px solid gray;
+    border-radius: 4px;
+    z-index: 100;
+    padding: 8px 10px;
+    margin: 8px 10px;
+    font-size: smaller;
+    color: #56b9e5;
+
+}
+.closeButton{
+    background-color: white;
+    padding: 3px;
+    cursor: pointer;
+    float:right;
+    margin-top: -20px;
+    border: 1px solid lightgray;
+    border-radius: 50%;
+}
+.guideButton {
+    position: relative;
+    top: 20px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    text-align: center
+}
+
+.custom-select {
+    position: relative;
+    font-family: Arial;
+}
+
+.custom-select select {
+    display: none; /*hide original SELECT element: */
+}
+
+.select-selected {
+    background-color: DodgerBlue;
+}
+
+/* Style the arrow inside the select element: */
+.select-selected:after {
+    position: absolute;
+    content: "";
+    top: 14px;
+    right: 10px;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-color: #fff transparent transparent transparent;
+}
+
+/* Point the arrow upwards when the select box is open (active): */
+.select-selected.select-arrow-active:after {
+    border-color: transparent transparent #fff transparent;
+    top: 7px;
+}
+
+/* style the items (options), including the selected item: */
+.select-items div,.select-selected {
+    color: #ffffff;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+    cursor: pointer;
+}
+
+/* Style items (options): */
+.select-items {
+    position: absolute;
+    background-color: DodgerBlue;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 99;
+}
+
+/* Hide the items when the select box is closed: */
+.select-hide {
+    display: none;
+}
+
+.select-items div:hover, .same-as-selected {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+.vidFrame {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    background-color: rgba(113, 112, 110, 0.44);
+    z-index: 100;
+}
+.vidFrame div {
+    position: relative;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+.videoRef {
+    color: #1976d2;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.container {
+    position: relative;
+}
+.containerLeft {
+    position: relative;
+    float: left;
+    padding: 10px 24px 10px 0px;
+}
+.containerRight {
+     position: relative;
+     float: right;
+     padding: 10px 0px 10px 24px;
+}
+.containerFlex {
+     display: flex;
+}
+.borderBox {
+    border: 1px solid black;
+    display: inline-block;
+    padding: 0 20px;
+}
+.centerContent {
+    text-align: center;
+}
+.fullWidth {
+    width: 100%;
+    border: 1px solid black;
+}
+.butTab {
+    border: 1px solid red;
+}
+.textCanvas {
+    background-color: transparent;  /* needed because webgl-tutoraisl.css sets canvas bg color to white */
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 10;
+    pointer-events: none;
+}
+.canvasWebGl {
+    border: 1px solid blue;
+    box-shadow: inset 0 0 20px #000000;
+}
+.canvasWebGl:focus {
+    border: 1px solid red;
+    box-shadow: 0 0 20px #ffff80;
+}
+.animButton {
+    display: inline-block;
+    background-color: #5f5c5c;
+    color: #ffff80;
+    padding: 1px 7px;
+    margin: 1px;
+    border: 2px solid #d7de65;
+    border-radius: 15px;
+}
+.animButton:hover {
+    color: #ffff04;
+    background-color: #b9b7b7;
+}
+.animButton::before {
+    content: "> ";
+}
+.toolTipView {
+   // background-color: #56b9e5;
+}
+.toolTipContent {
+    visibility: hidden;
+    z-index: 10;
+    position: fixed;
+    width: 80%;
+    height: 80%;
+    top: 10%;
+    left: 10%;
+    color: #5f5c5c;
+    background-color: #f3f3f3;
+    border-radius: 10px;
+    border: 2px solid blue;
+    padding: 20px;
+    overflow-y: scroll;
+}
+.clButton {
+    float: right;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 10px 15px;
+    background: black;
+    border-radius: 50%;
+    color: white;
+}
+
+/* Style the overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.25);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+/* Style the overlay content */
+.overlay-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    max-width: 90%;
+    max-height: 80%;
+    overflow: auto;
+}

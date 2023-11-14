@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Central drift</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16x16.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <script src="../js/main.js"></script>
+    <script type="text/javascript" src="../js/linesGeo.js"></script>
+    <script type="text/javascript" src="../js/glWorld.js"></script>
+    <script type="text/javascript" src="../js/glObj.js"></script>
+    <script type="text/javascript" src="../js/glMat.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="headLine">
+    <div class="appendHead"> - Central drift for compressible fluid</div>
+</div>
+<div class="containerRight" style="width: 200px; border: 1px solid black;">
+    <div class="normal">
+        \(\rho\) - Density</br>
+    </div>
+    <div class="normal">
+        \(V\) - Specific volume</br>
+    </div>
+    <div class="normal">
+        \(T\) - Temperature</br>
+    </div>
+    <div class="normal">
+        \(p\) - Pressure</br>
+    </div>
+    <div class="normal">
+        \(U\) - Ether speed</br>
+    </div>
+    <div class="normal">
+    </div>
+    <div class="normal">
+        \(R\) - Radial coordinate</br>
+    </div>
+    <div class="normal">
+        \(f\) - degrees of freedom</br>
+    </div>
+    <div class="normal">
+        \(C_p\) - Specific heat at constant pressure</br>
+    </div>
+    <div class="normal">
+        \(C_V\) - Specific heat at constant volume</br>
+    </div>
+</div>
+<div class="normal">
+    We wish to calculate the steady state of a compressible ideal gas for is a single flow sink.
+    The incoming flux (quantity per time) proportional to the mass of the object we mark the flux as \(KM\).
+</div>
+<div class="normal">
+    We will treat this gas as mon-atomic. Mon-atomic means that the only degrees of freedom of the particles of the gas
+    are its linear motion. The is no rotational motions, and also no internal vibration. The number of degrees of freedom
+    \(f\) is 3.
+    The main effect of this is that every bit of energy we put into the gas, contributes directly to the pressure that
+    this gas exerts on its containing walls.
+    This gives a simple connection between the pressure and the density. We get
+    \[\gamma=1+\frac{2}{f}=\frac{C_p}{C_v}=\frac{5}{3}\]
+    For our case the flow is isentropic (no wall friction, no heat flow), so we get
+    \[\left(\frac{T_2}{T_1}\right)^{\frac{\gamma}{\gamma-1}}=\frac{p_2}{p_1}=\left(\frac{\rho_2}{\rho_1}\right)^\gamma=\left(\frac{V_2}{V_1}\right)^\gamma\]
+    Resulting in the state equation \[p\propto\rho^{\frac{5}{3}}\]
+    <span class="toolTipView">What is this state equation?
+        <div class="toolTipContent">
+            <div class="normal">
+                During the flow
+            </div>
+        </div>
+    </span>
+</div>
+<div class="normal">
+    Due to spherical symmetry, we choose to work in spherical coordinates to get the Navier–Stokes equations
+</div>
+<div class="normal">
+    (1) Continuity equation \[\rho UR^2=KM\]
+</div>
+<div class="normal">
+    (2) Euler equation \[\rho U\frac{\partial U}{\partial R}+\frac{\partial p}{\partial R}=0\]
+</div>
+<div class="normal">
+    <span class="toolTipView">How to solve the flow equations?
+        <div class="toolTipContent">
+            <div class="normal">
+                We will solve the Euler equation \[\rho U\frac{\partial U}{\partial R}+\frac{\partial p}{\partial R}=0\]
+                First we use the state Equation \(p\propto\rho^{\frac{5}{3}}\) Which means that for some constant \(Q\)
+                we have the connection \(p=Q\rho^{\frac{5}{3}}\).
+            </div>
+            <div class="normal">
+                We can then set the \(p\) in the Euler equation to get an equation with only the density \(\rho\) and the speed \(U\)
+                \[\rho U\frac{\partial U}{\partial R}+\frac{\partial Q\rho^{\frac{5}{3}}}{\partial R}=0\]
+                \[U\frac{\partial U}{\partial R}+Q\rho^{-1}\frac{\partial\rho^{\frac{5}{3}}}{\partial R}=0\]
+            </div>
+            <div class="normal">
+                Then use the identity
+                <div style="display: inline-block">\[F(x)^\alpha\frac{\partial F(x)^\beta}{\partial x}=\frac{\beta}{\alpha+\beta}\frac{\partial F(x)^{\alpha+\beta}}{\partial x}\]</div>
+                to get
+                \[\frac{1}{2}\frac{\partial U^2}{\partial R}+Q\frac{5}{2}\frac{\partial\rho^{\frac{2}{3}}}{\partial R}=0\]
+                \[\frac{\partial \left(U^2 + 5Q\rho^{\frac{2}{3}}\right)}{\partial R}=0\]
+                Which means that \(U^2+Q^`\rho^{\frac{2}{3}}\) is a constant, so now in order to propose a solution we need to talk about boundary conditions.
+            </div>
+            <div class="normal">
+                The conditions we choose are that at a distance \(R_f\) (that is at \(R\) far away) we set the initial density \(\rho\) to \(\rho_f\).
+                More than that, we make sure that the value of the density at \(R_f\) remains the same vy adding and removing particles as needed.
+                So \(U^2+Q^`\rho^{\frac{2}{3}}=U_f^2+Q^`\rho_f^{\frac{2}{3}}\), and we can find \(U_f\) using \(\rho UR^2=KM\). So we get
+                \[U^2+Q^`\rho^{\frac{2}{3}}=\frac{KM}{R_f^2\rho_f}+Q^`\rho_f^{\frac{2}{3}}\]
+            </div>
+        </div>
+    </span>
+</div>
+<div class="normal">
+    From the last two equations we get \[\frac{KM}{R^2}\frac{\partial U}{\partial R}+\frac{\partial p}{\partial R}=0\]
+</div>
+<div class="normal">
+    We can now make a guess that \(U(R)\propto R^\alpha\) for some \(\alpha\). From the last equation we get
+    \[p(R)\propto R^{\alpha-2}\]
+    And then from the state equation \[\rho(R)\propto R^{\frac{3}{5}\left(\alpha-2\right)}\]
+    Collecting all the powers in to the continuity equation gives
+    \[\frac{3}{5}\left(\alpha-2\right)+\alpha+2=0\quad\Rightarrow\quad\alpha=-\frac{1}{2}\]
+    So the full solutions is
+</div>
+<div class="normal centerContent">
+    <div class="borderBox">
+    \[U(R)\propto R^{-\frac{1}{2}}\quad\quad a(R)\propto R^{-2}\]
+    \[\rho(R)\propto R^{-\frac{3}{2}}\quad\quad p(R)\propto R^{-\frac{5}{2}}\]
+    \[T(R)\propto R^{-1}\]
+    </div>
+</div>
+<div class="normal">
+    From this solution we see that \(\frac{U}{\rho R}\) is constant (marked \(\beta\)),
+    and together with the continuity equation we get
+    \[\rho UR^2=KM\quad\Rightarrow\quad\frac{U}{\rho R}\rho UR^2=\beta KM\quad\Rightarrow\quad U^2R=\beta KM\]
+    Setting the constant \(\beta K\) to have a value of \(2G_N\) we get \[U^2R=2G_NM\]
+    And this immediately give the final equation that makes gravitation
+    <div class="normal centerContent">
+        <div class="borderBox">
+            \[\frac{U^2}{2}-\frac{G_NM}{R}=0\]
+        </div>
+    </div>
+</div>
+</body>
+</html>

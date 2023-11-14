@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Holomorphic Dynamics</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="../css/menus.css">
+    <link rel="stylesheet" href="../css/main.css">
+
+    <script src="../js/main.js"></script>
+    <script src="../js/funcList.js"></script>
+    <script src="../js/Complex.js"></script>
+    <script>
+
+        let options = new Map();
+        let gblTrans = {sx : 0, sy: 0, z: 0.01, w: 800, h: 800 }
+        let mainPoint = [0, 0];
+        let lastImage = Array.from({length: gblTrans.w * gblTrans.h * 4}).map(k => 0);
+        let zoomStatus = 0;
+
+        function tPointInv (p, t) {
+            return [(p[0] - t.sx - t.w / 2) * t.z, - (p[1] - t.sy - t.h / 2) * t.z];
+        }
+        function tPoint (p, t) {
+            return [p[0] / t.z + t.w / 2 + t.sx, - p[1] / t.z + t.h / 2 + t.sy];
+        }
+        function butOpt(o) {
+            let val = options.get(`opt${o}`);
+            return !(!val || val === 'false');
+        }
+
+        function toggleOption(event) {
+            const target = event.target;
+            const classes = target.classList;
+            if (classes.contains("radio")) {
+                const name = target.getAttribute('name')
+                console.log(`radio ${name}`)
+                document.getElementsByName(name)
+                    .forEach(el => {
+                        console.log(`turn off ${el.id}`)
+                        el.classList.remove('optionOn');
+                        options.set(el.id, 'false');
+                    });
+                console.log(`turn on ${target.id}`)
+                options.set(target.id, 'true');
+                classes.add('optionOn');
+            } else {
+                let val = options.get(target.id);
+                if (!val || val === 'false') {
+                    options.set(target.id, 'true');
+                    classes.add('optionOn');
+                } else {
+                    classes.remove('optionOn');
+                    options.set(target.id, 'false');
+                }
+            }
+            refreshMain();
+        }
+
+        function func1(x, y) {
+            const z = Complex.bld(x, y);
+            const i = Complex.bld(0, 1);
+            const f = Complex.divide(Complex.subtract(z, i), Complex.add(z, i));
+            return [Complex.toReal([f])[0], Complex.toImaginary([f])[0]];
+        }
+        function func2(x, y) {
+            return [x - 0.5, y + 1];
+        }
+
+        let mainFunction = func1;
+        let mainFunc = new FuncList(mainFunction);
+        let mainTo = [];
+        let mouseStatus = [0, 0, 0];
+        let mouseLastPoint = [0, 0];
+
+        let mode = - 1;
+
+        function clearAll(clearKnot) {
+            if (clearKnot) {
+                mainKnot.clear();
+            }
+            gblTrans.sx = 0;
+            gblTrans.sy = 0;
+            gblTrans.z = 1.0;
+            refreshMain();
+        }
+
+        function setMode(newMode) {
+            if (mode === newMode) {
+                return;
+            }
+            mode = newMode;
+        }
+
+        function makeZoom(z) {
+            gblTrans = {...gblTrans,
+                z: gblTrans.z * z,
+                sx: gblTrans.sx / z,
+                sy: gblTrans.sy / z
+            }
+            refreshMain();
+        }
+
+        function calcDist2(p1, p2) {
+            return sumSqr(p1[0] - p2[0], p1[1] - p2[1])
+        }
+
+        function drawMandel() {
+            const ctx = document.getElementById('canvas').getContext('2d');
+            const width = ctx.canvas.width;
+            const height = ctx.canvas.height;
+
+            let id = ctx.getImageData(0, 0, width, height);
+            let pixels = id.data;
+
+            const limit = zoomStatus === 0 ? 200 : 200;
+            const k = Math.min(limit, Math.floor(0.5 / gblTrans.z));
+            let off = 0;
+            for (let ih = 0; ih < height; ih++) {
+                let pInv = tPointInv([0, ih], gblTrans)
+                for (let iw = 0; iw < width; iw++) {
+                    const l = buildPointsCount(Complex.bld(...pInv), k);
+                    let v = 255 * l / k;
+                    pixels[off++] = v;
+                    pixels[off++] = v;
+                    pixels[off++] = v;
+                    pixels[off++] = 255;
+                    pInv[0] += gblTrans.z;
+                }
+            }
+            ctx.putImageData(id, 0, 0);
+            if (zoomStatus == 0) {
+                for (let i = 0; i < width * height * 4; i++) {
+                    lastImage[i] = pixels[i];
+                }
+                ctx.strokeStyle = 'orange';
+                ctx.lineWidth = 1;
+                drawGrid(ctx);
+            }
+
+        }
+        function drawLastMandel() {
+            const ctx = document.getElementById('canvas').getContext('2d');
+            const width = ctx.canvas.width;
+            const height = ctx.canvas.height;
+
+            let id = ctx.getImageData(0, 0, width, height);
+            let pixels = id.data;
+
+            for (let i = 0; i < width * height * 4; i++) {
+                pixels[i] = lastImage[i];
+            }
+
+            ctx.putImageData(id, 0, 0);
+        }
+
+        function drawGrid(ctx) {
+            ctx.beginPath();
+            ctx.moveTo(...tPoint([-10, 0], gblTrans));
+            ctx.lineTo(...tPoint([10, 0], gblTrans));
+            ctx.moveTo(...tPoint([0, -10], gblTrans));
+            ctx.lineTo(...tPoint([0, 10], gblTrans));
+            ctx.stroke();
+            ctx.beginPath()
+            ctx.arc(...tPoint([0, 0], gblTrans), 1 / gblTrans.z, 0, 2 * Math.PI, false);
+            ctx.stroke();
+        }
+
+        function refreshMain() {
+            if (butOpt("Mandelbrot")) {
+                drawMandel();
+            } else {
+                const ctx = document.getElementById('canvas').getContext('2d');
+                drawLastMandel();
+                ctx.fillStyle = "white";
+                //ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.strokeStyle = 'lightgray';
+                ctx.lineWidth = 1;
+                drawGrid(ctx);
+                //mainFunc.drawList(ctx, gblTrans);
+                drawPoint(ctx, gblTrans);
+            }
+        }
+
+        function buildPointsSeries(c, n = 20, returnNull = false) {
+            let points = [Complex.bld(0, 0)];
+            for (let i = 1; i < n; i++) {
+                let p = points[points.length - 1];
+                p = Complex.add(Complex.mult(p, p), c);
+                if (i > 5) {
+                    if (!Complex.isBound(p, 10000)) {
+                        break;
+                    }
+                    if (Complex.isBound(Complex.subtract(p, points[points.length - 2]), 0.00001)) {
+                        if (returnNull) {
+                            return null;
+                        }
+                        break;
+                    }
+                }
+                points.push(p);
+            }
+            return points;
+        }
+        function buildPointsCount(c, n) {
+            const x0 = c.r;
+            const y0 = c.i;
+            let iter = 0;
+            let x = 0;
+            let y = 0;
+            while (x*x + y*y <= 2*2 && iter < n)
+            {
+                const t = x * x - y * y + x0;
+                y = 2 * x * y + y0;
+                x = t;
+                iter = iter + 1
+            }
+            return iter;
+            /*
+            let p = Complex.bld(0, 0);
+            for (let i = 1; i < n; i++) {
+                let pp = Complex.clone(p);
+                p = Complex.add(Complex.mult(p, p), c);
+                if (i > 5) {
+                    if (!Complex.isBound(p, 100)) {
+                        return i;
+                    }
+                    if (Complex.isBound(Complex.subtract(p, pp), 0.00001)) {
+                        if (returnNull) {
+                            return n;
+                        }
+                        return i;
+                    }
+                }
+            }
+            return n;
+            */
+        }
+        function drawPoint(ctx, tr, opt = {}) {
+            const c = Complex.bld(...mainPoint);
+            const points = buildPointsSeries(c);
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 1;
+            const f = [...tPoint([0, 0], tr)];
+            ctx.moveTo(f[0], f[1]);
+            for (let i = 1; i < points.length; i++) {
+                const f = [...tPoint([points[i].r, points[i].i], tr)];
+                ctx.lineTo(f[0], f[1])
+            }
+            ctx.stroke();
+
+            for (let i = 1; i < points.length; i++) {
+                ctx.beginPath()
+                const f = [...tPoint([points[i].r, points[i].i], tr)];
+                ctx.arc(f[0], f[1], 5, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'yellow';
+                ctx.strokeStyle = 'black';
+                ctx.fill();
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+        }
+
+        function mDown(event) {
+            closeContext();
+            const box = event.target.getBoundingClientRect();
+            if (butOpt("Mandelbrot")) {
+                setMode(0);
+            } else {
+                setMode(1);
+            }
+            switch (mode) {
+                case 0: // view
+                case 1: // draw
+                    mouseLastPoint = [event.clientX, event.clientY];
+                    mouseStatus[event.button] = 1;
+                    break;
+            }
+            event.stopPropagation()
+        }
+        function mUp(event) {
+            mouseStatus[event.button] = 0;
+            switch (mode) {
+                case 0: // view
+                    break;
+                case 1: // draw
+                    mainFunc?.makeTarget(mainFunction);
+                    //mainKnot?.countCrossings();
+                    refreshMain();
+                    break;
+            }
+            event.preventDefault();
+        }
+        function mMove(event) {
+            switch (mode) {
+                case 0: // view
+                    if (mouseStatus[0] === 1) {
+                        console.log('before ', {gblTrans});
+                        gblTrans.sx += event.clientX - mouseLastPoint[0];
+                        gblTrans.sy += event.clientY - mouseLastPoint[1];
+                        mouseLastPoint = [event.clientX, event.clientY];
+                        console.log('after ', {gblTrans});
+                        refreshMain();
+                    }
+                    break;
+                case 1: // draw
+                    if (mouseStatus[0] === 1) {
+                        const box = event.target.getBoundingClientRect();
+                        //addPoint(event.clientX - box.left, event.clientY - box.top);
+                        mainPoint = [...tPointInv([event.clientX - box.left, event.clientY - box.top], gblTrans)];
+                        refreshMain();
+                    }
+                    break;
+            }
+            event.preventDefault();
+        }
+        function mWheel(event) {
+            closeContext();
+            let z = event.deltaY < 0
+                ? Math.max(- 0.3, event.deltaY / 100)
+                : Math.min(0.3, event.deltaY / 100);
+            makeZoom(1 + z);
+            //presentTrans()
+            event.preventDefault();
+        }
+        function presentTrans() {
+            document.getElementById("gblTrans").innerText =
+                `z ${gblTrans.z}`;
+        }
+        function addPoint(px, py) {
+            mainFunc.addPointActual(...tPointInv([px, py], gblTrans));
+            refreshMain();
+        }
+        const mContext = (event) => {
+            console.log(event);
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            event.preventDefault();
+            let cm;
+            if (conIndex < 0) {
+                //const pp = tPointInv([event.clientX - canvasRect.left, event.clientY - canvasRect.top], gblTrans)
+                //alert(`bo\n ${event.clientX - canvasRect.left}, ${event.clientY - canvasRect.top}\n${pp[0]} ${pp[1]}`);
+                cm = document.getElementById('contextMenu1');
+            } else {
+                mainKnot.setConnectionInFocus(conIndex)
+                cm = document.getElementById('contextMenu2');
+            }
+            cm.style.left = `${event.clientX + canvasRect.left}px`;
+            cm.style.top = `${event.clientY}px`;
+            cm.style.visibility = "visible";
+            return false;
+        }
+        function changeConnection(type) {
+            mainKnot.setFocusConType(type);
+            mainKnot.countCrossings();
+            refreshMain();
+        }
+        function invertConnections() {
+            mainKnot.invertConnections();
+            refreshMain();
+        }
+        function closeContext() {
+            document.getElementById('contextMenu1').style.visibility = "hidden";
+            document.getElementById('contextMenu2').style.visibility = "hidden";
+        }
+        function changeKnotName(iKnot) {
+            currentKnotIndex = iKnot;
+            document.getElementById('enterNameFrame').style.visibility = "visible";
+            document.getElementById('enterName').value = "";
+            if (storageKnots[currentKnotIndex].name.length > 0) {
+                document.getElementById('enterName').placeholder = storageKnots[currentKnotIndex].name;
+            } else {
+                document.getElementById('enterName').placeholder = "Enter new name";
+            }
+        }
+
+        function startZoomPlay() {
+            if (zoomStatus !== 0) {
+                makeZoom(zoomStatus > 0 ? 0.9 : 1.1);
+                setTimeout(startZoomPlay, 10);
+            }
+            refreshMain();
+        }
+        function playZoom(dir) {
+            if (dir === 0) {
+                document.getElementById("zoomIn").style.visibility = "visible";
+                document.getElementById("zoomOut").style.visibility = "visible";
+                document.getElementById("zoomStop").style.visibility = "hidden";
+            } else {
+                document.getElementById("zoomIn").style.visibility = "hidden";
+                document.getElementById("zoomOut").style.visibility = "hidden";
+                document.getElementById("zoomStop").style.visibility = "visible";
+            }
+            zoomStatus = dir;
+            startZoomPlay();
+        }
+
+        function initPage() {
+            document.getElementById("canvasContainer").innerHTML =
+                `<canvas style="cursor:crossHair; border:1px solid blue;" width="${gblTrans.w}" height="${gblTrans.h}" id="canvas"></canvas>`
+
+            const canvas = document.getElementById('canvas');
+            canvas.addEventListener('wheel',mWheel);
+            canvas.addEventListener('mousedown', mDown);
+            canvas.addEventListener('mouseup', mUp);
+            canvas.addEventListener('mousemove', mMove);
+            canvas.addEventListener('contextmenu', mContext);
+            const x = document.getElementsByClassName('option');
+            for (let i = 0; i < x.length; i++) {
+                x.item(i).addEventListener('click', toggleOption);
+            }
+            setMode(1);
+            refreshMain();
+        }
+
+        window.onloadFuncs.push(initPage);
+    </script>
+</head>
+<body>
+<div class="headLine">
+    MandelBrot Fun
+</div>
+<div>
+    <div name="mainOptionsRadio" id="optTrackPath" class="but option radio">Track Path</div>
+    <div name="mainOptionsRadio" id="optMandelbrot" class="but option radio">Mandelbrot</div>
+    <div id="zoomIn" class="but" onclick="playZoom(1)">Zoom In</div>
+    <div id="zoomOut" class="but" onclick="playZoom(- 1)">Zoom Out</div>
+    <div id="zoomStop" class="but" onclick="playZoom(0)">Stop Zoom</div>
+</div>
+
+<div id="gblTrans"></div>
+<div id="contextMenu1" class="contextMenu" onclick="closeContext();">
+    <div onclick="clearAll(true)" class="menuBut">Clear</div>
+    <div onclick="clearAll(false)" class="menuBut">Reset zoom/shift</div>
+    <div class="menuSeparator"></div>
+    <div onclick="invertConnections()" class="menuBut">Invert connections</div>
+    <div onclick="makeComplexChain()" class="menuBut">Calc Jones polynomial</div>
+    <div class="menuSeparator"></div>
+    <div onclick="saveKnot()" class="menuBut">Save knot</div>
+</div>
+<div id="contextMenu2" class="contextMenu" onclick="closeContext();">
+    <div onclick="changeConnection(1)" class="menuBut"><span style="color:red; font-size: 18px;">&#11096</span> Positive connection</div>
+    <div onclick="changeConnection(2)" class="menuBut"><span style="color:blue; font-size: 18px;">&#11096;</span> Negative connection</div>
+    <div class="menuSeparator"></div>
+    <div onclick="changeConnection(3)" class="menuBut"><span style="color:brown; font-size: 18px;">&#11096</span> 0 connection</div>
+    <div onclick="changeConnection(4)" class="menuBut"><span style="color:green; font-size: 18px;">&#11096</span> 1 connection</div>
+</div>
+
+<div id="canvasContainer" >
+</div>
+
+</body>
+</html>

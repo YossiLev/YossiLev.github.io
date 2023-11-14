@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Protect</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="../css/menus.css">
+    <link rel="stylesheet" href="../css/main.css">
+
+    <script src="../js/main.js"></script>
+    <script src="../js/funcList.js"></script>
+    <script src="../js/Complex.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+    <style>
+        #msgContent {
+            width: 500px;
+            height: 200px;
+            padding: 10px;
+            border: 2px solid orange;
+            border-radius: 10px;
+            background-color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+            -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+        }
+    </style>
+    <script>
+        let gblObj = null;
+        let gblOpenText = null;
+        const putMessage = (s) => {
+            document.getElementById('msgFrame').style.display = 'block';
+            document.getElementById('msgContent').innerText = s;
+            console.log(s);
+        }
+        const firstEncode = () => {
+            let text = document.getElementById("text").value;
+            let pass = document.getElementById("password").value;
+            document.getElementById("result").innerText = "";
+
+            if (pass.length <= 0) {
+                putMessage("Empty password, please fill password");
+                return;
+            }
+            if (pass.length < 8) {
+                putMessage("Password should be at least 8 characters");
+                return;
+            }
+
+            document.getElementById("fieldContent").innerText = "";
+            document.getElementById("password").value = "";
+
+            const out = CryptoJS.AES.encrypt(text, pass).toString().match(/.{1,60}/g).join("\n")
+            navigator.clipboard.writeText(out);
+            putMessage("Encrypted data is now in your clipboard");
+            document.getElementById("result").innerText = out;
+        }
+        const decode = () => {
+            try {
+                const text = document.getElementById("text").value.replaceAll("\n", "");
+                const pass = document.getElementById("password").value;
+                document.getElementById("result").innerText = "";
+
+                gblOpenText = decrypt(text, pass);
+                if (gblOpenText.length < 1) {
+                    putMessage(`Decryption failed, probably wrong password`);
+                    return;
+                }
+                try {
+                    gblObj = JSON.parse(gblOpenText);
+                    addInfoButtons();
+                } catch (e) {
+                    document.getElementById("result").innerText = gblOpenText;
+                }
+            } catch (e) {
+                putMessage(`Decryption failed, probably wrong password\nError message: ${e.toString()}`);
+                document.getElementById("result").innerText = e.toString();
+            }
+        }
+        const presentText = () => {
+            document.getElementById("text").value = gblOpenText;
+        }
+        const addInfoButtons = () => {
+            document.getElementById("keyButtons").innerHTML =
+                Object.keys(gblObj).map(k => `<div class="butx" onclick="showKey('${k}');">${k}</div>`).join("");
+        }
+        const addData = () => {
+            const text = document.getElementById("text").value;
+            const splitText = text.split("@@@").map(s => s.trim());
+            if (splitText.length === 2) {
+                addValue(splitText[0], splitText[1]);
+            }
+        }
+        const addValue = (k, v) => {
+            if (gblObj === null) {
+                gblObj = {};
+            }
+            gblObj[k] = v;
+            gblOpenText = JSON.stringify(gblObj);
+            addInfoButtons();
+        }
+        const copyObject = () => {
+            if (gblObj !== null) {
+                navigator.clipboard.writeText(JSON.stringify(gblObj, null, "\n"));
+                putMessage("Data is now in your clipboard");
+            }
+        }
+        const showKey = (k) => {
+            document.getElementById("fieldContent").innerText = JSON.stringify(gblObj[k], null, "");
+        }
+
+        function decrypt(encrypted, password) {
+           let decrypted = CryptoJS.AES.decrypt(encrypted, password);//.toString(CryptoJS.enc.Utf8)
+           return decrypted.toString(CryptoJS.enc.Utf8)
+        }
+        function storeEncrypt() {
+            const text = document.getElementById("text").value;
+            localStorage.setItem('encrypted', text);
+            putMessage("Encrypted stored");
+        }
+        function loadEncrypt() {
+            const text = localStorage.getItem('encrypted');
+            document.getElementById("text").value = text;
+        }
+        function storeNameEncrypt() {
+            const text = document.getElementById("text").value;
+            const storeName = `encryptedName${document.getElementById('storeName').value.trim()}`
+            localStorage.setItem(storeName, text);
+            putMessage("Encrypted stored");
+        }
+        function loadNameEncrypt() {
+            const storeName = `encryptedName${document.getElementById('storeName').value.trim()}`
+            const text = localStorage.getItem(storeName);
+            document.getElementById("text").value = text;
+        }
+    </script>
+</head>
+<body>
+    <div class="headLine">
+        Protect
+    </div>
+    <div>
+        <div>
+            <i class="material-icons" style="vertical-align: middle; color: #2c974b">key</i><input id="password" type="password" placeholder="Password" value="">
+            <div class="butx" onclick="firstEncode();">First encode</div>
+            <div class="butx" onclick="decode();">Open</div>
+            <div class="butx" onclick="presentText();">Present</div>
+            <div class="butx" onclick="addData();">Add Data</div>
+            <div class="butx" onclick="copyObject();">Copy Data</div>
+            <div class="butx" onclick="storeEncrypt();">Store</div>
+            <div class="butx" onclick="loadEncrypt();">Load</div>
+            <div>
+            <div class="butx" onclick="storeNameEncrypt();">Store to Name</div>
+            <div class="butx" onclick="loadNameEncrypt();">Load from Name</div>
+            <input id="storeName" type="text" placeholder="Name" value="">
+            </div>
+        </div>
+        <div>
+            <textarea id="text" cols="100" rows="20" placeholder="Enter data for encryption or decryption here"></textarea>
+        </div>
+        <div style="display: flex;">
+            <div id="keyButtons" style="display:flex; flex-wrap: wrap;"></div>
+        </div>
+        <div id="fieldContent" >
+
+        </div>
+        <div id="result"> </div>
+    </div>
+    <div id="msgFrame"
+         style="position: fixed; display: none; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.1);"
+         onclick="document.getElementById('msgFrame').style.display = 'none'">
+        <div id="msgContent">
+
+        </div>
+    </div>
+</body>
+</html>
+

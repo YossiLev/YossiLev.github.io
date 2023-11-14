@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Momentum - Energy - Mass</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16x16.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <script src="../js/main.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="headLine">
+    <div class="appendHead"> - Momentum, Energy, and Mass</div>
+</div>
+<div class="normal">
+    A beam of trapped light, that does not change its position in space,
+    can be described by its electromagnetic momentum density per length unit function \(\overline p_0(\overline x, t) \),
+    so the electromagnetic energy density is \(e_0(\overline x, t)=C\lvert\overline p_0\rvert\).
+</div>
+<div class="normal">
+    We can integrate along the path of light to get the total momentum \(\overline P_0=\int\overline p_0dl=0\)
+    (This is zero momentum of a particle at rest)
+</div>
+<div class="normal">
+    The total energy is \(E_0=\int C\lvert\overline p_0\rvert dl\ne 0\) and we should note that, for beams of light,
+    the value of the energy is redundant, as it does not add any information, once with know the momentum.
+</div>
+<div class="normal">
+    To put the particle in motion, we add momentum \(\overline P_M\).
+    This momentum spreads along the beam as a constant addition of momentum density \(\overline p_M=\frac{\overline P_M}{L}\),
+    where \(L=\int dl\).
+    We can define the total momentum density (\(\overline p_T\)) as the sum of the “rest momentum density” (\(\overline p_0\)),
+    and the “motion momentum density” (\(\overline p_M\)).
+</div>
+<div class="normal">
+    So now the total energy is \(E_T=\int C\lvert\overline p_0+\overline p_M\rvert dl\) and we get the following
+    \[E_T^2=(\int C\lvert\overline p_T\rvert dl)^2=(\int C\lvert\overline p_0+\overline p_M\rvert dl)^2=\]
+    \[=C^2\int\int (\overline p_0+\overline p_M)^2dl^2= C^2\int_{0}^{L}\int_{0}^{L}(\overline p_0^2+2\overline p_0\cdot\overline p_M+\overline p_M^2)dl^2=\]
+    \[=(\int C\lvert\overline p_0\rvert dl)^2+2C^2L\overline p_M\int_{0}^{L}\overline p_0dl+L^2\overline p_M^2C^2=\]
+    \[=E_0^2+2C^2\overline P_M\overline P_0+\overline P_M^2C^2=\quad (\textrm{remember that } \overline P_0=0)\]
+    \[\textrm{so we finally get }\quad E_T^2=E_0^2+\overline P_M^2C^2\]
+    \[\textrm{also known as }\quad \boxed{E^2=M^2C^4+P^2C^2}\]
+</div>
+<div class="normal">
+</div>
+
+<div class="normal">
+</div>
+
+<div class="normal">
+</div>
+
+<div class="normal">
+</div>
+
+</body>
+</html>

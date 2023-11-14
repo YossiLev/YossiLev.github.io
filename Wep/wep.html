@@ -1,0 +1,216 @@
+<html>
+<head>
+<style>
+input {
+	font-family: Courier New;
+	width: 141px;
+	text-align: right;
+}
+.withCrc {
+    background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 52%, rgba(239,239,239,1) 52%, rgba(239,239,239,1) 100%);
+}
+.but {
+    display: inline-block;
+    width: 100px;
+    user-select: none;
+    background-color: #e1f7be;
+    text-align: center;
+    border-radius: 5px;
+    margin: 3px;
+    border: 2px solid #4399d6;
+}
+.hbut {
+    display: inline-block;
+    width: 50px;
+    user-select: none;
+    background-color: #e1f7be;
+    text-align: center;
+    border-radius: 5px;
+    margin: 3px;
+    border: 2px solid #4399d6;
+}
+.label {
+    display: inline-block;
+    color: rebeccapurple;
+    width: 100px;
+}
+.key {
+    background-color: #202020;
+    color: white;
+    font-weight: bold;
+}
+.plain {
+    color: #1ec415;
+}
+.crc {
+    color: #072fb0;
+}
+.cipher {
+     color: #e71d51;
+}
+</style>
+<script>
+
+function xorLong(a, b) {
+	const xx = BigInt(1 << 16);
+	let a1 = a % xx;
+	let a11 = (a - a1) / xx;
+	let a2 = a11 % xx;
+	let a22 = (a11 - a2) / xx;
+	let a3 = a22 % xx;
+	let a33 = (a22 - a3) / xx;
+	let a4 = a33 % xx;
+	let b1 = b % xx;
+	let b11 = (b - b1) / xx;
+	let b2 = b11 % xx;
+	let b22 = (b11 - b2) / xx;
+	let b3 = b22 % xx;
+	let b33 = (b22 - b3) / xx;
+	let b4 = b33 % xx;
+	let c1 = a1 ^ b1;
+	let c2 = a2 ^ b2;
+	let c3 = a3 ^ b3;
+	let c4 = a4 ^ b4;
+
+    return ((c4 * xx + c3) * xx + c2) * xx + c1;
+}
+function pow2(f) {
+	let c = 1n;
+	for (let i = 0; i < f; i++) {
+		c = c * 2n;
+	}
+	return c;
+}
+function isBit(v, b) {
+	return v >= xorLong(v, pow2(b))
+}
+function leftBit(v) {
+	let c = 1;
+	for (let i = 0; i < 100; i++) {
+		if (c > v) {
+			return i - 1;
+		}
+		c = c * 2;
+	}	
+}
+function multXor(v1, v2) {
+    let res = 0n;
+    for (let i = 0; i < 100; i++) {
+        if (isBit(v2, i)) {
+            res = xorLong(res, v1 * pow2(i))
+        }
+    }
+    return res
+}
+function divXor(v1, v2) {
+	let l2 = leftBit(v2);
+
+	while (leftBit(v1) >= l2) {
+		let l1 = leftBit(v1);
+		let p2 = v2 * pow2(l1 - l2);
+		v1 = xorLong(v1, p2);
+	}
+	return v1
+}
+function crc(v1, v2) {
+    let clean = v1 - (v1 % pow2(32));
+    return divXor(clean, v2) + clean;
+}
+function getHexa(name) {
+	return document.getElementById(name).value.trim().length > 0
+        ? BigInt(`0x${document.getElementById(name).value.trim()}`) : 0n;
+}
+function putHexa(name, val) {
+	document.getElementById(name).value = val.toString(16);
+}
+function calcHexa(f, n1, n2, r) {
+    putHexa(r, f(getHexa(n1), getHexa(n2)));
+}
+
+function makeCrc() {
+    calcHexa(crc, "msg", "crc", "msg");
+
+}
+function makeCrc2() {
+    calcHexa(crc, "msg2", "crc", "msg2");
+}
+function makeDiff() {
+    calcHexa(xorLong, "msg", "msg2", "msgDiff");
+}
+function makeAdd(n) {
+    let differ = getHexa("numX") + BigInt(n);
+    putHexa("numX", differ)
+    let base = xorLong(getHexa("msg"), differ * pow2(32));
+    putHexa("msg2", base);
+    makeCrc2();
+    calcHexa(xorLong, "key", "msg2", "R");
+    makeDiff();
+    calcHexa(divXor, "msgDiff", "crc", "numXCrc");
+}
+function makeAdds(n) {
+    for (let i = 0; i < n; i++) {
+        makeAdd(1n);
+        if (getHexa("msg2") % 256n === 0n) {
+            return;
+        }
+    }
+}
+function makeKey(n) {
+    let k = 0n;
+    for (let i = 0; i < n; i++) {
+        let r = Math.floor(Math.random() * 256);
+        let lastK = k;
+        k = k * 256n + BigInt(r);
+    }
+    putHexa("key", k);
+    calcHexa(xorLong, "key", "msg", "S");
+    calcHexa(xorLong, "key", "msg2", "R");
+}
+</script>
+</head>
+<body style="font-family: Arial">
+<h1>CHOPCHOP</h1>
+<div>
+    <div class="label">CRC</div>
+    <input id="crc" type="text" value="104c11db7" class="withCrc crc"/>
+</div>
+<div>
+    <div class="label">Message</div>
+    <input id="msg" type="text" value="1234567800000000" class="withCrc plain" />
+    <div class="but" onclick="makeCrc();">CRC</div>
+</div>
+<div>
+    <div class="label">Message X</div>
+    <input id="msg2" type="text" value="1234567800000000" class="withCrc plain"/>
+    <div class="but" onclick="makeCrc2();">CRC</div>
+</div>
+<div>
+    <div class="label">Messages diff</div>
+    <input id="msgDiff" type="text" class="withCrc"/>
+    <div class="but" onclick="makeDiff();">Diff</div>
+    <input id="numXCrc" type="text" />
+</div>
+<div>
+    <div class="label">Change</div>
+    <input id="numX" type="text"/>
+    <div class="hbut" onclick="makeAdd(1);">&gt;</div>
+    <div class="hbut" onclick="makeAdd(-1);">&lt;</div>
+    <div class="hbut" onclick="makeAdds(256);">&gt;&gt;</div>
+</div>
+<div>
+    <div class="label">Key</div>
+    <input id="key" type="text" value="0000000000000000" class="key"/>
+    <div class="but" onclick="makeKey(8);">New Key</div>
+</div>
+<div>
+    <div class="label">Cipher S</div>
+    <input id="S" type="text" value="" class="cipher"/>
+    <div class="but" onclick='calcHexa(xorLong, "key", "msg", "S");'>Encode</div>
+</div>
+<div>
+    <div class="label">Cipher R</div>
+    <input id="R" type="text" value="" class="cipher"/>
+    <div class="but" onclick='calcHexa(xorLong, "key", "msg2", "R");'>Encode</div>
+</div>
+</body>
+</html>
