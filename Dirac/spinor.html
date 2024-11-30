@@ -237,45 +237,34 @@
             c.innerHTML = serSpinor(electronSpinor, 'electron') +
                 "\n\n" + serSpinor(positronSpinor, 'positron')
         }
+        function calculatePhoton(s1, s2) {
+            let photon = []
+            for (let i = 0; i < 4; i++) {
+                let t = math.multiply(gammaMats[i], s2);
+                let t5 = math.multiply(gammaMats[0], t);
+                let f = math.dotMultiply(math.conj(s1), t5);
+                let esum = math.chain(f[0]).add(f[1]).add(f[2]).add(f[3]).done();
+                photon.push(esum);
+            }
+
+            return photon;
+        }
         function calculateComb() {
             const ev1 = [electronSpinor1.phi[0], electronSpinor1.phi[1], electronSpinor1.chi[0], electronSpinor1.chi[1]];
             const ev2 = [electronSpinor2.phi[0], electronSpinor2.phi[1], electronSpinor2.chi[0], electronSpinor2.chi[1]];
             const pv1 = [positronSpinor1.chi[0], positronSpinor1.chi[1], positronSpinor1.phi[0], positronSpinor1.phi[1]];
             const pv2 = [positronSpinor2.chi[0], positronSpinor2.chi[1], positronSpinor2.phi[0], positronSpinor2.phi[1]];
-            ePhoton = [], pPhoton = [];
-            console.log("e1 ", ev1);
-            console.log("e2 ", ev2);
-            console.log("p1 ", pv1);
-            console.log("p2 ", pv2);
-            for (let i = 0; i < 4; i++) {
-                console.log(`g[${i}]`, gammaMats[i]);
-                let et = math.multiply(gammaMats[i], ev2);
-                console.log("et ", et);
-                let et5 = math.multiply(gammaMats[0], et);
-                console.log("et5 ", et5);
-                let ef = math.dotMultiply(math.conj(ev1), et5);
-                console.log("ef ", ef);
-                let esum = math.chain(ef[0]).add(ef[1]).add(ef[2]).add(ef[3]).done();
-                console.log("esum ", esum);
-                ePhoton.push(esum);
-            }
-            console.log("ePhoton ", ePhoton);
-            for (let i = 0; i < 4; i++) {
-                console.log(`g[${i}]`, gammaMats[i]);
-                let pt = math.multiply(gammaMats[i], pv2);
-                console.log("pt ", pt);
-                let pt5 = math.multiply(gammaMats[0], pt);
-                console.log("pt5 ", pt5);
-                let pf = math.dotMultiply(math.conj(pv1), pt5);
-                console.log("pf ", pf);
-                let psum = math.chain(pf[0]).add(pf[1]).add(pf[2]).add(pf[3]).done();
-                console.log("psum ", psum);
-                pPhoton.push(psum);
-            }
+            let ePhoton = calculatePhoton(ev1, ev2);
+            let pPhoton = calculatePhoton(pv1, pv2);
+            let ePhotonr = calculatePhoton(ev2, ev1);
+            let pPhotonr = calculatePhoton(pv2, pv1);
+       
             console.log("pPhoton ", pPhoton);
             let c = document.getElementById(`particlesCombination`);
             c.innerHTML = serPhoton(ePhoton) +
-                "\n\n" + serPhoton(pPhoton);
+            "\n\n" + serPhoton(pPhoton) +
+            "\n\n" + serPhoton(ePhotonr) +
+            "\n\n" + serPhoton(pPhotonr);
         }
 
     </script>
