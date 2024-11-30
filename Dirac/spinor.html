@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dirac Spinor Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.9.0/math.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            color: #444;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 60px;
+            padding: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            margin-top: 20px;
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .result-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .result-box {
+            flex: 1;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .flex-container {
+            display: flex;
+            justify-content: space-between; /* Adjusts spacing between columns */
+            align-items: center; /* Aligns items vertically (optional) */
+            gap: 10px; /* Adds consistent space between items */
+        }
+        .flex-column {
+            flex: 1; /* Each column takes equal space */
+            text-align: center; /* Centers content inside columns */
+            padding: 10px;
+            background-color: #f0f0f0; /* Light grey for demonstration */
+            border: 1px solid #ccc; /* Border for demonstration */
+            box-sizing: border-box;
+        }
+    </style>
+    <script>
+        let electronSpinor, positronSpinor;
+        let electronSpinor1 = { phi: 0, chi: 0 }, positronSpinor1 = { phi: 0, chi: 0 };
+        let electronSpinor2 = { phi: 0, chi: 0 }, positronSpinor2 = { phi: 0, chi: 0 };
+        let ePhoton = [], pPhoton = [];
+        const ii = math.complex(0, 1);
+        const mii = math.complex(0, -1);
+        const gammaMats = [
+            [[1,0,0,0],[0,1,0,0],[0,0,-1,0],[0,0,0,-1]],
+            [[0,0,0,1],[0,0,1,0],[0,-1,0,0],[-1,0,0,0]],
+            [[0,0,0,mii],[0,0,ii,0],[0,ii,0,0],[mii,0,0,0]],
+            [[0,0,1,0],[0,0,0,-1],[-1,0,0,0],[0,1,0,0]]
+        ];
+        const gamma5 = [[0,0,1,0],[0,0,0,1],[1,0,0,0],[0,1,0,0]];
+
+        function calculateDiracSpinor(vx, vy, vz, Nx, Ny, Nz, particle) {
+            const c = 299792458; // Speed of light in m/s
+            const m = 9.10938356e-31; // Mass of electron in kg
+
+            const sign = particle === "electron" ? 1 : -1; // Reverses momentum for positron
+
+            // Calculate velocity magnitude
+            const v = Math.sqrt(vx ** 2 + vy ** 2 + vz ** 2);
+            if (v >= c) throw new Error("Speed cannot exceed the speed of light.");
+
+            const gamma = 1 / Math.sqrt(1 - (v / c) ** 2); // Lorentz factor
+            const E = gamma * m * c ** 2; // Total energy
+            const px = sign * gamma * m * vx; // Momentum x-component
+            const py = sign * gamma * m * vy; // Momentum y-component
+            const pz = sign * gamma * m * vz; // Momentum z-component
+
+            const spinUpFactor = Math.sqrt((1 + Nz) / 2);
+            const spinDownFactor = Math.sqrt((1 - Nz) / 2);
+
+            // Phase factor using math.js for complex numbers
+            const phase = Math.atan2(Ny, Nx);
+            const eiphase = math.exp(math.complex(0, phase)); // e^(i*phase)
+
+            // Large component
+            const phi = [
+                math.multiply(Math.sqrt((E + m * c ** 2) / (2 * E)), spinUpFactor),
+                math.multiply(Math.sqrt((E + m * c ** 2) / (2 * E)), math.multiply(spinDownFactor, eiphase))
+            ];
+
+            // Small component
+            const chi = [
+                math.divide(
+                    math.add(
+                        math.multiply(pz * c, spinUpFactor),
+                        math.multiply(math.add(px * c, math.multiply(math.complex(0, -1), py * c)), math.multiply(spinDownFactor, eiphase))
+                    ),
+                    Math.sqrt(((E + m * c ** 2) * (2 * E))) // E + m * c ** 2
+                ),
+                math.divide(
+                    math.subtract(
+                        math.multiply(math.add(px * c, math.multiply(math.complex(0, 1), py * c)), spinUpFactor),
+                        math.multiply(pz * c, math.multiply(spinDownFactor, eiphase))
+                    ),
+                    Math.sqrt(((E + m * c ** 2) * (2 * E))) // E + m * c ** 2
+                )
+            ];
+
+            console.log(phi, chi);
+            return { phi: phi, chi: chi };
+        }
+        function serSpinor(s, particle) {
+            if (particle === "electron") {
+                return serComp(s.phi[0]) + "</br>" + 
+                    serComp(s.phi[1]) + "</br>" + 
+                    serComp(s.chi[0]) + "</br>" + 
+                    serComp(s.chi[1]) + "</br></br>";
+            } else {
+                return serComp(s.chi[0]) + "</br>" + 
+                    serComp(s.chi[1]) + "</br>" + 
+                    serComp(s.phi[0]) + "</br>" + 
+                    serComp(s.phi[1]) + "</br></br>";
+            }
+
+        }
+        function serPhoton(p) {
+            return serComp(p[0]) + "</br>" + 
+                    serComp(p[1]) + "</br>" + 
+                    serComp(p[2]) + "</br>" + 
+                    serComp(p[3]) + "</br></br>";
+        }
+        function serComp(c) {
+            console.log(c);
+            if (!c.hasOwnProperty('re')) {
+                return `${c.toFixed(6)}`;
+            }
+            const valR = Math.abs(c.re.toFixed(6)) > 1E-9;
+            const valI = Math.abs(c.im.toFixed(6)) > 1E-9;
+            if (valR) {
+                if (valI) {
+                    return `${c.re.toFixed(6)}${c.im > 0 ? "+" : ""}${c.im.toFixed(6)}i`;
+                } else {
+                    return `${c.re.toFixed(6)}`;
+                }
+
+            } else if (valI) {
+                return `${c.im.toFixed(6)}i`;
+            } else {
+                return("0");
+            }
+        }
+
+        function calculateSpinors() {
+            try {
+                const c = 299792458;
+                const vx = parseFloat(document.getElementById("vx").value) * c || 0;
+                const vy = parseFloat(document.getElementById("vy").value) * c || 0;
+                const vz = parseFloat(document.getElementById("vz").value) * c || 0;
+                let Nx = parseFloat(document.getElementById("Nx").value) || 0;
+                let Ny = parseFloat(document.getElementById("Ny").value) || 0;
+                let Nz = parseFloat(document.getElementById("Nz").value) || 0;
+
+                if (Math.abs(Nx ** 2 + Ny ** 2 + Nz ** 2 - 1) > 1e-6) {
+                    const norm = 1.0 / Math.sqrt(Nx ** 2 + Ny ** 2 + Nz ** 2);
+                    Nx *= norm;
+                    Ny *= norm;
+                    Nz *= norm;
+                }
+
+                // Electron spinor
+                electronSpinor = calculateDiracSpinor(vx, vy, vz, Nx, Ny, Nz, "electron");
+
+                // Positron spinor
+                positronSpinor = calculateDiracSpinor(vx, vy, vz, Nx, Ny, Nz, "positron");
+
+                // Display results
+                document.getElementById("electron-output").innerHTML = `
+                    <h3>Electron Spinor</h3>
+                    <p>${serComp(electronSpinor.phi[0])}</p>
+                    <p>${serComp(electronSpinor.phi[1])}</p>
+                    <p>${serComp(electronSpinor.chi[0])}</p>
+                    <p>${serComp(electronSpinor.chi[1])}</p>
+                    <p><strong>Large Component:</strong> ${JSON.stringify(electronSpinor.phi)}</p>
+                    <p><strong>Small Component:</strong> ${JSON.stringify(electronSpinor.chi)}</p>
+                `;
+
+                document.getElementById("positron-output").innerHTML = `
+                    <h3>Positron Spinor</h3>
+                    <p>${serComp(positronSpinor.chi[0])}</p>
+                    <p>${serComp(positronSpinor.chi[1])}</p>
+                    <p>${serComp(positronSpinor.phi[0])}</p>
+                    <p>${serComp(positronSpinor.phi[1])}</p>
+                    <p><strong>Large Component:</strong> ${JSON.stringify(positronSpinor.chi)}</p>
+                    <p><strong>Small Component:</strong> ${JSON.stringify(positronSpinor.phi)}</p>
+                `;
+            } catch (err) {
+                document.getElementById("output").innerHTML = `<p style="color: red;">Error: ${err.message}</p>`;
+            }
+        }
+        function copySp(i) {
+            if (i == 1) {
+                electronSpinor1 = electronSpinor;
+                positronSpinor1 = positronSpinor;
+            } else {
+                electronSpinor2 = electronSpinor;
+                positronSpinor2 = positronSpinor;
+            }
+            let c = document.getElementById(`particle${i}`);
+            c.innerHTML = serSpinor(electronSpinor, 'electron') +
+                "\n\n" + serSpinor(positronSpinor, 'positron')
+        }
+        function calculateComb() {
+            const ev1 = [electronSpinor1.phi[0], electronSpinor1.phi[1], electronSpinor1.chi[0], electronSpinor1.chi[1]];
+            const ev2 = [electronSpinor2.phi[0], electronSpinor2.phi[1], electronSpinor2.chi[0], electronSpinor2.chi[1]];
+            const pv1 = [positronSpinor1.chi[0], positronSpinor1.chi[1], positronSpinor1.phi[0], positronSpinor1.phi[1]];
+            const pv2 = [positronSpinor2.chi[0], positronSpinor2.chi[1], positronSpinor2.phi[0], positronSpinor2.phi[1]];
+            ePhoton = [], pPhoton = [];
+            console.log("e1 ", ev1);
+            console.log("e2 ", ev2);
+            console.log("p1 ", pv1);
+            console.log("p2 ", pv2);
+            for (let i = 0; i < 4; i++) {
+                console.log(`g[${i}]`, gammaMats[i]);
+                let et = math.multiply(gammaMats[i], ev2);
+                console.log("et ", et);
+                let et5 = math.multiply(gammaMats[0], et);
+                console.log("et5 ", et5);
+                let ef = math.dotMultiply(math.conj(ev1), et5);
+                console.log("ef ", ef);
+                let esum = math.chain(ef[0]).add(ef[1]).add(ef[2]).add(ef[3]).done();
+                console.log("esum ", esum);
+                ePhoton.push(esum);
+            }
+            console.log("ePhoton ", ePhoton);
+            for (let i = 0; i < 4; i++) {
+                console.log(`g[${i}]`, gammaMats[i]);
+                let pt = math.multiply(gammaMats[i], pv2);
+                console.log("pt ", pt);
+                let pt5 = math.multiply(gammaMats[0], pt);
+                console.log("pt5 ", pt5);
+                let pf = math.dotMultiply(math.conj(pv1), pt5);
+                console.log("pf ", pf);
+                let psum = math.chain(pf[0]).add(pf[1]).add(pf[2]).add(pf[3]).done();
+                console.log("psum ", psum);
+                pPhoton.push(psum);
+            }
+            console.log("pPhoton ", pPhoton);
+            let c = document.getElementById(`particlesCombination`);
+            c.innerHTML = serPhoton(ePhoton) +
+                "\n\n" + serPhoton(pPhoton);
+        }
+
+    </script>
+</head>
+<body>
+    <h1>Dirac Spinor Calculator</h1>
+    <div class="flex-container">
+        <div class="flex-column">
+            <div class="input-group">
+                <label for="vx">Speed (v<sub>x</sub>) [/C]:</label>
+                <input type="text" id="vx" placeholder="e.g., 0">
+            </div>
+            <div class="input-group">
+                <label for="vy">Speed (v<sub>y</sub>) [/C]:</label>
+                <input type="text" id="vy" placeholder="e.g., 0">
+            </div>
+            <div class="input-group">
+                <label for="vz">Speed (v<sub>z</sub>) [/C]:</label>
+                <input type="text" id="vz" placeholder="e.g., 0.99">
+            </div>
+            <div class="input-group">
+                <label for="Nx">Spin (N<sub>x</sub>):</label>
+                <input type="text" id="Nx" placeholder="e.g., 0">
+            </div>
+            <div class="input-group">
+                <label for="Ny">Spin (N<sub>y</sub>):</label>
+                <input type="text" id="Ny" placeholder="e.g., 0">
+            </div>
+            <div class="input-group">
+                <label for="Nz">Spin (N<sub>z</sub>):</label>
+                <input type="text" id="Nz" placeholder="e.g., 1">
+            </div>
+        </div>
+        <div class="flex-column">
+            <button onclick="copySp(1)">&Psi;<sub>1</sub></button>
+            <div id="particle1"></div>
+        </div>
+        <div class="flex-column">
+            <button onclick="copySp(2)">&Psi;<sub>2</sub></button>
+            <div id="particle2"></div>
+        </div>
+        <div class="flex-column">
+            <button onclick="calculateComb()">&Psi;<sub>1</sub><sup>&dagger;</sup>&gamma;<sup>5</sup>&gamma;<sup>&mu;</sup>&Psi;<sub>2</sub></button>
+            <div id="particlesCombination"></div>
+        </div>
+    </div>
+        <button onclick="calculateSpinors()">Calculate</button>
+    </div>
+    <div class="output" id="output">
+        <p><strong>Output:</strong> The results will be shown here.</p>
+        <div class="result-section">
+            <div class="result-box" id="electron-output">
+                <h3>Electron Spinor</h3>
+                <p>Large Component: -</p>
+                <p>Small Component: -</p>
+            </div>
+            <div class="result-box" id="positron-output">
+                <h3>Positron Spinor</h3>
+                <p>Large Component: -</p>
+                <p>Small Component: -</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
