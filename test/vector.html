@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Vector Field Visualization</title>
+    <link rel="stylesheet" href="../css/menus.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.4.0/gl-matrix.js"></script>
     <script type="text/javascript" src="../js/glMat.js"></script>
     <script type="text/javascript" src="../js/glObj.js"></script>
@@ -23,42 +24,37 @@
 <div style="display: flex; flex-direction: row" />
     <canvas id="glCanvas" width="800" height="800"></canvas>
     <div style="display: flex; flex-direction: column; margin: 20px" />
-        <div id="responseTextZoom">Zoom 10</div>
-        <input type="range" id="sliderInputZoom" min="0" max="100" value="10" step="1">
-        <div class="separatorH"></div>
-        <div id="responseTextLength">Length 10</div>
-        <input type="range" id="sliderInputLength" min="0" max="100" value="10" step="1">
-        <div class="separatorH"></div>
         <div>
-            <input type="checkbox" id="showPath" name="path" onclick="checkBoxAction('showPath')">
-            <label for="showPath">Show path</label>
+            <div class="butx" onclick="setView(0);">Reset View</div>
+            <div class="butx" onclick="setView(1);">Focus</div>
         </div>
-        <div class="separatorH"></div>
         <div>
-            <input type="checkbox" id="showVelocity" name="path" onclick="checkBoxAction('showVelocity')">
-            <label for="showVelocity">Show velocity</label>
+            <input type="range" id="sliderInputTwist" min="0" max="14" value="8" step="1" style="width: 150px;">
+            <span id="responseTextTwist">Twist 1/2</span>
         </div>
-        <div class="separatorH"></div>
-        <div>
-            <input type="checkbox" id="showVorticity" name="path" onclick="checkBoxAction('showVorticity')">
-            <label for="showVorticity">Show vorticity</label>
-        </div>
+        <div id="Path" data-des="" class="buildViewControl"></div>
+        <div id="Velocity" data-des="(V)" class="buildViewControl"></div>
+        <div id="Vorticity" data-des="(&#8711;&times;V)" class="buildViewControl"></div>
+        <div id="Lamb" data-des="(V&times;&#8711;&times;V)" class="buildViewControl"></div>
+        <div id="Helicity" data-des="(V&#xb7;&#8711;&times;V)" class="buildViewControl"></div>
+        <div id="CurlVorticity" data-des="(&#8711;&times;&#8711;&times;V) or &#x2207;(&#x2207;&middot;V)-&#x2207;&sup2;V" class="buildViewControl"></div>
+        <div id="VelCrossCurlVorticity" data-des="(V&times;&#8711;&times;&#8711;&times;V) or V&times;(&#x2207;(&#x2207;&middot;V)-&#x2207;&sup2;V)" class="buildViewControl"></div>
+        <div id="VelCrossVelCrossCurlVorticity" data-des="(V&times;V&times;&#8711;&times;&#8711;&times;V)" class="buildViewControl"></div>
     </div>
 
 </div>
 <script type="text/javascript">
 
 const checkBoxesValues = {};
-const sliderInputZoom = document.getElementById("sliderInputZoom");
-const responseTextZoom = document.getElementById("responseTextZoom");
-sliderInputZoom.addEventListener("input", function() {
-    responseTextZoom.textContent = `Zoom ${sliderInputZoom.value}`;
-    resetData();
-});
-const sliderInputLength = document.getElementById("sliderInputLength");
-const responseTextLength = document.getElementById("responseTextLength");
-sliderInputLength.addEventListener("input", function() {
-    responseTextLength.textContent = `Length ${sliderInputLength.value}`;
+const sliderValues = {};
+
+const sliderInputTwist = document.getElementById("sliderInputTwist");
+const responseTextTwist = document.getElementById("responseTextTwist");
+let twist = (sliderInputTwist.value - 7) / 2;
+sliderInputTwist.addEventListener("input", function() {
+    twist = (sliderInputTwist.value - 7) / 2;
+    responseTextTwist.textContent =
+        `Twist ${sliderInputTwist.value - 7}${sliderInputTwist.value - 7 === 0 ? "" : "/2"}`;
     resetData();
 });
 
@@ -69,28 +65,41 @@ function checkBoxAction(id) {
     console.log(checkBoxesValues)
     resetData();
 }
-function buildSinStarFlow() {
-    const vec = [];
-    for (let i = 0; i < 360; i += 1) {
-        const ri = i * Math.PI / 180.0;
-        const sf = Math.pow(Math.sin(ri * 17), 2);
-        const s = Math.sin(ri);
-        const c = Math.cos(ri);
-        const ls = 0.1 * sf + 0.6
-        const le = - 0.1 * sf + 0.4
-        const xs = ls * c;
-        const ys = ls * s;
-        const xe = le * c;
-        const ye = le * s;
-        vec.push(xs, ys, 0.0, 1.0, 0.0, 0.0);
-        vec.push(xe, ye, 0.0, 1.0, 1.0, 0.0);
-    }
-
-    return vec;
-}
 
 function resetData() {
     torusPathMemory = [];
+    torusVelocityMemory = [];
+    torusVorticityMemory = [];
+    torusLambMemory = [];
+    torusHelicityMemory = [];
+    torusCurlVorticityMemory = [];
+    torusVelCrossCurlVorticityMemory = [];
+    torusVelCrossVelCrossCurlVorticityMemory = [];
+
+    buildWorld();
+    renderVectorField();
+}
+
+function setView(v) {
+    switch (v) {
+        case 0:
+            viewMatrix = mat4.create();
+            mat4.fromScaling(viewMatrix, [1.5, 1.5, 1.5]);
+            break;
+        case 1:
+            viewMatrix = mat4.create();
+            let out = mat4.create();
+            let out2 = mat4.create();
+            const rotMatrix = mat4.create();
+
+
+            mat4.fromScaling(out, [150, 150, 150]);
+            mat4.translate(out2, out, [-0.5, 0, 0]);
+            mat4.fromRotation(rotMatrix, Math.PI / 2, [1.0, 0.0, 0.0]);
+            mat4.multiply(viewMatrix, rotMatrix, out2);
+            break;
+
+    }
     buildWorld();
     renderVectorField();
 }
@@ -100,9 +109,15 @@ function buildWorld() {
     if (checkBoxesValues["showPath"]) buildTorusPath();
     if (checkBoxesValues["showVelocity"]) buildTorusVelocity();
     if (checkBoxesValues["showVorticity"]) buildTorusVorticity();
+    if (checkBoxesValues["showLamb"]) buildTorusLamb();
+    if (checkBoxesValues["showHelicity"]) buildTorusHelicity();
+    if (checkBoxesValues["showCurlVorticity"]) buildTorusCurlVorticity();
+    if (checkBoxesValues["showVelCrossCurlVorticity"]) buildTorusVelCrossCurlVorticity();
+    if (checkBoxesValues["showVelCrossVelCrossCurlVorticity"]) buildTorusVelCrossVelCrossCurlVorticity();
 
 }
 
+// PATH
 let torusPathMemory = [];
 function buildTorusPath() {
     if (torusPathMemory.length <= 0) {
@@ -111,7 +126,7 @@ function buildTorusPath() {
     vectorFieldDataX = vectorFieldDataX.concat(torusPathMemory)
 }
 function torusVecPath(a, exp_eta, thetaB, psiB) {
-    let scale = 0.1 * sliderInputZoom.value;
+    let scale = 0.1 * sliderValues["Path"];
     let bright = 0.4;
     let col = [1.0, bright, bright];
     for (let i = 0; i < 2; i++) {
@@ -121,32 +136,34 @@ function torusVecPath(a, exp_eta, thetaB, psiB) {
         for (let i = 0; i < 10; i++) {
             torusPathMemory.push(...Torus.p(a, exp_eta, theta, psi))
             torusPathMemory.push(...col);
-            theta += Math.PI / 120 * scale * dir;
+            theta += Math.PI / 60 * twist * scale * dir;
             psi += Math.PI / 60 * scale * dir;
             torusPathMemory.push(...Torus.p(a, exp_eta, theta, psi))
             torusPathMemory.push(...col);
         }
     }
 }
+function pushSegment(v, p1, p2, col) {
+    let col2 = sMultVec3(0.125, addVec3(col, [7, 7, 7]));
+    v.push(...p1, ...col, ...p2, ...col);
+}
+
 
 let torusVelocityMemory = [];
 function buildTorusVelocity() {
     if (torusVelocityMemory.length <= 0) {
         buildTorusFlow(torusVecVelocity);
     }
-    console.log(torusVecVelocity.length)
     vectorFieldDataX = vectorFieldDataX.concat(torusVelocityMemory)
 }
 function torusVecVelocity(a, exp_eta, theta, psi) {
-    let bright = 0.4;
-    let col = [0, bright, 0];
+    let scale = 0.1 * sliderValues["Velocity"];
+    let col = [0.3, 0.3, 0];
     const pos = Torus.p(a, exp_eta, theta, psi)
-    const vel = Torus.v(a, exp_eta, theta, psi, 0.5, 1.0);
-    let pos2 = addVec3(pos, sMultVec3(0.02, vel));
-    torusVelocityMemory.push(...pos)
-    torusVelocityMemory.push(...col);
-    torusVelocityMemory.push(...pos2)
-    torusVelocityMemory.push(...col);
+    const vel = Torus.v(a, exp_eta, theta, psi, twist, 1.0);
+    console.log('velocity ', normVec3(vel), vel );
+    let pos2 = addVec3(pos, sMultVec3(0.001002 * scale, vel));
+    pushSegment(torusVelocityMemory, pos, pos2, col);
 }
 
 let torusVorticityMemory = [];
@@ -154,29 +171,140 @@ function buildTorusVorticity() {
     if (torusVorticityMemory.length <= 0) {
         buildTorusFlow(torusVecVorticity);
     }
-    console.log(torusVorticityMemory.length)
+    //console.log(torusVorticityMemory.length)
     vectorFieldDataX = vectorFieldDataX.concat(torusVorticityMemory)
 }
 function torusVecVorticity(a, exp_eta, theta, psi) {
+    let scale = 0.1 * sliderValues["Vorticity"];
     let bright = 0.4;
     let col = [0, bright, 1];
     const pos = Torus.p(a, exp_eta, theta, psi)
-    const vort = Torus.vort(a, exp_eta, theta, psi, 0.5, 1.0);
-    let pos2 = addVec3(pos, sMultVec3(0.05, vort));
-    torusVorticityMemory.push(...pos)
-    torusVorticityMemory.push(...col);
-    torusVorticityMemory.push(...pos2)
-    torusVorticityMemory.push(...col);
+    const vorticity = Torus.vort(a, exp_eta, theta, psi, twist, 1.0);
+    console.log("vorticity ", normVec3(vorticity), vorticity);
+    const l = normVec3(vorticity);
+    let pos2 = addVec3(pos, sMultVec3(0.000000021 * l * scale, normalizeVec3(vorticity)));
+    pushSegment(torusVorticityMemory, pos, pos2, col);
 }
 
+let torusCurlVorticityMemory = [];
+function buildTorusCurlVorticity() {
+    if (torusCurlVorticityMemory.length <= 0) {
+        buildTorusFlow(torusVecCurlVorticity);
+    }
+    vectorFieldDataX = vectorFieldDataX.concat(torusCurlVorticityMemory)
+}
+function torusVecCurlVorticity(a, exp_eta, theta, psi) {
+    let scale = 0.1 * sliderValues["CurlVorticity"];
+    let col = [0, 0.4, 1];
+    const pos = Torus.p(a, exp_eta, theta, psi)
+    const curlVorticity = Torus.curlVort(a, exp_eta, theta, psi, twist, 1.0);
+    const l = normVec3(curlVorticity);
+    let pos2 = addVec3(pos, sMultVec3(0.0000000010002 * l * scale, normalizeVec3(curlVorticity)));
+    pushSegment(torusCurlVorticityMemory, pos, pos2, col);
+}
+
+let torusVelCrossCurlVorticityMemory = [];
+function buildTorusVelCrossCurlVorticity() {
+    if (torusVelCrossCurlVorticityMemory.length <= 0) {
+        buildTorusFlow(torusVecVelCrossCurlVorticity);
+    }
+    vectorFieldDataX = vectorFieldDataX.concat(torusVelCrossCurlVorticityMemory)
+}
+function torusVecVelCrossCurlVorticity(a, exp_eta, theta, psi) {
+    let scale = 0.1 * sliderValues["VelCrossCurlVorticity"];
+    let col = [0.7, 0.0, 0.0];
+    const pos = Torus.p(a, exp_eta, theta, psi)
+    const curlVorticity = Torus.curlVort(a, exp_eta, theta, psi, twist, 1.0);
+    const vel = Torus.v(a, exp_eta, theta, psi, twist, 1.0);
+    const res = multVec3(vel, curlVorticity);
+    const l = normVec3(res);
+    let pos2 = addVec3(pos, sMultVec3(0.00000000100001 * l * scale, normalizeVec3(res)));
+    pushSegment(torusVelCrossCurlVorticityMemory, pos, pos2, col);
+}
+
+let torusVelCrossVelCrossCurlVorticityMemory = [];
+function buildTorusVelCrossVelCrossCurlVorticity() {
+    if (torusVelCrossVelCrossCurlVorticityMemory.length <= 0) {
+        buildTorusFlow(torusVecVelCrossVelCrossCurlVorticity);
+    }
+    vectorFieldDataX = vectorFieldDataX.concat(torusVelCrossVelCrossCurlVorticityMemory)
+}
+function torusVecVelCrossVelCrossCurlVorticity(a, exp_eta, theta, psi) {
+    let scale = 0.1 * sliderValues["VelCrossVelCrossCurlVorticity"];
+    let col = [0.0, 0.35, 0.0];
+    const pos = Torus.p(a, exp_eta, theta, psi)
+    const curlVorticity = Torus.curlVort(a, exp_eta, theta, psi, twist, 1.0);
+    const vel = Torus.v(a, exp_eta, theta, psi, twist, 1.0);
+    const resx = multVec3(vel, curlVorticity);
+    const res = multVec3(vel, resx);
+    const l = normVec3(res);
+    let pos2 = addVec3(pos, sMultVec3(0.000000000100001 * l * scale, normalizeVec3(res)));
+    pushSegment(torusVelCrossVelCrossCurlVorticityMemory, pos, pos2, col);
+}
+
+let torusLambMemory = [];
+function buildTorusLamb() {
+    if (torusLambMemory.length <= 0) {
+        buildTorusFlow(torusVecLamb);
+    }
+    vectorFieldDataX = vectorFieldDataX.concat(torusLambMemory)
+}
+function torusVecLamb(a, exp_eta, theta, psi) {
+    let scale = 0.1 * sliderValues["Lamb"];
+    let color = [1, 0, 1];
+    const pos = Torus.p(a, exp_eta, theta, psi)
+    const vel = Torus.v(a, exp_eta, theta, psi, twist, 1.0);
+    const vort = Torus.vort(a, exp_eta, theta, psi, twist, 1.0);
+    const lamb = [
+        vort[1] * vel[2] - vort[2] * vel[1],
+        vort[2] * vel[0] - vort[0] * vel[2],
+        vort[0] * vel[1] - vort[1] * vel[0]
+    ];
+
+    let pos2 = addVec3(pos, sMultVec3(0.00000002000005 * scale, lamb));
+    pushSegment(torusLambMemory, pos, pos2, color);
+}
+
+let torusHelicityMemory = [];
+function buildTorusHelicity() {
+    if (torusHelicityMemory.length <= 0) {
+        buildTorusFlow(torusVecHelicity);
+    }
+    vectorFieldDataX = vectorFieldDataX.concat(torusHelicityMemory)
+}
+function pushScalar(p, s, vec) {
+    const col = s >= 0 ? [0.75, 0.15, 0.15] : [0.15, 0.15, 0.75];
+    vec.push(p[0] - s, p[1], p[2]);
+    vec.push(...col);
+    vec.push(p[0] + s, p[1], p[2]);
+    vec.push(...col);
+    vec.push(p[0], p[1] - s, p[2]);
+    vec.push(...col);
+    vec.push(p[0], p[1] + s, p[2]);
+    vec.push(...col);
+    vec.push(p[0], p[1], p[2] - s);
+    vec.push(...col);
+    vec.push(p[0], p[1], p[2] + s);
+    vec.push(...col);
+}
+function torusVecHelicity(a, exp_eta, theta, psi) {
+    let scale = 0.1 * sliderValues["Helicity"];
+    const pos = Torus.p(a, exp_eta, theta, psi)
+    const vel = Torus.v(a, exp_eta, theta, psi, twist, 1.0);
+    const vort = Torus.vort(a, exp_eta, theta, psi, twist, 1.0);
+    const helicity = 0.000000101 * (vel[0] * vort[0] + vel[1] * vort[1] + vel[2] * vort[2]);
+
+    pushScalar(pos, helicity * scale, torusHelicityMemory);
+}
 function buildTorusFlow(fillVec) {
     const a = 0.5;
-    for (let iEta = 270; iEta < 420; iEta += 2000) {
+    for (let iEta = 520; iEta < 621; iEta += 2000) {
         let eta = 0.01 * iEta;
         let exp_eta = Math.exp(eta)
-        for (let iPsi = 0/*-180*/; iPsi < 181; iPsi += 10000) {
+        for (let iPsi = 0/*-180*/; iPsi < 50; iPsi += 5) {
             let psi = (Math.PI * iPsi) / 180
-            for (let iTheta = -180; iTheta <= 181; iTheta += 5) {
+ //           for (let iTheta = 0; iTheta <= 181; iTheta += 400) {
+            for (let iTheta = -180; iTheta <= 181; iTheta += 4) {
                 let theta = (Math.PI * iTheta) / 180
                 fillVec(a, exp_eta, theta, psi)
             }
@@ -274,7 +402,9 @@ function handleMouseMove(event) {
         mat4.copy(viewMatrix, out)
     }
     if (isDragging[2]) {
-        const sensitivity = 0.005; // Adjust this value to control rotation speed
+        let sv = vec3.create();
+        mat4.getScaling(sv, viewMatrix);
+        const sensitivity = 0.005 / sv[0]; // Adjust this value to control rotation speed
         const shiftX = deltaX * sensitivity;
         const shiftY = - deltaY * sensitivity;
         const out = mat4.create();
@@ -308,8 +438,38 @@ function handleMouseWheel(event) {
     renderVectorField();
 }
 
+function buildAllViewControls() {
+    const containers = document.getElementsByClassName("buildViewControl");
+    for (let container of containers) {
+        const id = container.id;
+        const des = container.getAttribute("data-des");
+        sliderValues[id] = 10;
+        container.innerHTML = `
+            <div class="separatorH"> </div>
+            <div>
+                <input type="checkbox" id="show${id}" name="path" onClick="checkBoxAction('show${id}')">
+                <label htmlFor="show${id}">Show ${id}</label>
+                <input type="range" id="slider${id}" min="0" max="100" value="10" step="1">
+                <span id="sliderText${id}">10</span>
+                <span> ${des}</span>
+            </div>
+            `
+    }
+    for (let container of containers) {
+        const id = container.id;
+        const sliderInput = document.getElementById(`slider${id}`);
+        const responseText = document.getElementById(`sliderText${id}`);
+        sliderInput.addEventListener("input", function () {
+            responseText.textContent = `${sliderInput.value}`;
+            sliderValues[id] = sliderInput.value;
+            resetData();
+        });
+    }
+}
+
 // Function to set up the WebGL context and shaders
 function webGLStart() {
+    buildAllViewControls()
     const canvas = document.getElementById("glCanvas");
 
     glX = canvas.getContext("webgl");

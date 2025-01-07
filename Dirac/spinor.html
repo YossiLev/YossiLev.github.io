@@ -74,8 +74,8 @@
     </style>
     <script>
         let electronSpinor, positronSpinor;
-        let electronSpinor1 = { phi: 0, chi: 0 }, positronSpinor1 = { phi: 0, chi: 0 };
-        let electronSpinor2 = { phi: 0, chi: 0 }, positronSpinor2 = { phi: 0, chi: 0 };
+        let electronSpinor1 = { phi: 0, chi: 0, p: [0, 0, 0, 0] }, positronSpinor1 = { phi: 0, chi: 0, p: [0, 0, 0, 0] };
+        let electronSpinor2 = { phi: 0, chi: 0, p: [0, 0, 0, 0] }, positronSpinor2 = { phi: 0, chi: 0, p: [0, 0, 0, 0] };
         let ePhoton = [], pPhoton = [];
         const ii = math.complex(0, 1);
         const mii = math.complex(0, -1);
@@ -86,8 +86,8 @@
             [[0,0,1,0],[0,0,0,-1],[-1,0,0,0],[0,1,0,0]]
         ];
         const gamma5 = [[0,0,1,0],[0,0,0,1],[1,0,0,0],[0,1,0,0]];
-
         function calculateDiracSpinor(vx, vy, vz, Nx, Ny, Nz, particle) {
+
             const c = 299792458; // Speed of light in m/s
             const m = 9.10938356e-31; // Mass of electron in kg
 
@@ -102,6 +102,7 @@
             const px = sign * gamma * m * vx; // Momentum x-component
             const py = sign * gamma * m * vy; // Momentum y-component
             const pz = sign * gamma * m * vz; // Momentum z-component
+            const p = [E / c, px, py, pz ];
 
             const spinUpFactor = Math.sqrt((1 + Nz) / 2);
             const spinDownFactor = Math.sqrt((1 - Nz) / 2);
@@ -135,20 +136,26 @@
             ];
 
             console.log(phi, chi);
-            return { phi: phi, chi: chi };
+            return { phi: phi, chi: chi, p: p };
         }
         function serSpinor(s, particle) {
             if (particle === "electron") {
-                return serComp(s.phi[0]) + "</br>" + 
+                return "e<sup>-</sup></br></br>" + serComp(s.phi[0]) + "</br>" + 
                     serComp(s.phi[1]) + "</br>" + 
                     serComp(s.chi[0]) + "</br>" + 
                     serComp(s.chi[1]) + "</br></br>";
-            } else {
-                return serComp(s.chi[0]) + "</br>" + 
+            } else if (particle === "positron") {
+                return "e<sup>+</sup></br></br>" + serComp(s.chi[0]) + "</br>" + 
                     serComp(s.chi[1]) + "</br>" + 
                     serComp(s.phi[0]) + "</br>" + 
                     serComp(s.phi[1]) + "</br></br>";
-            }
+            } else {
+                return "e<sup>c</sup></br></br>" + 
+                    serComp(math.conj(s.chi[1])) + "</br>" + 
+                    serComp(math.conj(math.unaryMinus(s.chi[0]))) + "</br>" + 
+                    serComp(math.conj(math.unaryMinus(s.phi[1]))) + "</br>" + 
+                    serComp(math.conj(s.phi[0])) + "</br></br>";
+            } 
 
         }
         function serPhoton(p) {
@@ -156,6 +163,12 @@
                     serComp(p[1]) + "</br>" + 
                     serComp(p[2]) + "</br>" + 
                     serComp(p[3]) + "</br></br>";
+        }
+        function serMomentum(p) {
+            return "P<sub>Kg M / S</sub></br></br>" + p[0].toExponential(4) + "</br>" + 
+                    p[1].toExponential(4) + "</br>" + 
+                    p[2].toExponential(4) + "</br>" +
+                    p[3].toExponential(4) + "</br></br>";
         }
         function serComp(c) {
             console.log(c);
@@ -226,6 +239,7 @@
             }
         }
         function copySp(i) {
+            calculateSpinors();
             if (i == 1) {
                 electronSpinor1 = electronSpinor;
                 positronSpinor1 = positronSpinor;
@@ -234,8 +248,14 @@
                 positronSpinor2 = positronSpinor;
             }
             let c = document.getElementById(`particle${i}`);
-            c.innerHTML = serSpinor(electronSpinor, 'electron') +
-                "\n\n" + serSpinor(positronSpinor, 'positron')
+            c.innerHTML = "<table><tr><td>" + 
+                serSpinor(electronSpinor, 'electron') +
+                "</td><td>" + 
+                serSpinor(electronSpinor, 'elsectronCon') +
+                "</td><td>" + 
+                // serSpinor(positronSpinor, 'positron') +
+                // "</td><td>" + 
+                serMomentum(electronSpinor.p, 'P') + "</td></tr></table>";
         }
         function calculatePhoton(s1, s2) {
             let photon = []
@@ -252,19 +272,29 @@
         function calculateComb() {
             const ev1 = [electronSpinor1.phi[0], electronSpinor1.phi[1], electronSpinor1.chi[0], electronSpinor1.chi[1]];
             const ev2 = [electronSpinor2.phi[0], electronSpinor2.phi[1], electronSpinor2.chi[0], electronSpinor2.chi[1]];
+            const evc1 = [
+                math.conj(electronSpinor1.chi[1]), 
+                math.conj(math.unaryMinus(electronSpinor1.chi[0])), 
+                math.conj(math.unaryMinus(electronSpinor1.phi[1])), 
+                math.conj(electronSpinor1.phi[0])];
+            const evc2 = [
+                math.conj(electronSpinor2.chi[1]), 
+                math.conj(math.unaryMinus(electronSpinor2.chi[0])), 
+                math.conj(math.unaryMinus(electronSpinor2.phi[1])), 
+                math.conj(electronSpinor2.phi[0])];
             const pv1 = [positronSpinor1.chi[0], positronSpinor1.chi[1], positronSpinor1.phi[0], positronSpinor1.phi[1]];
             const pv2 = [positronSpinor2.chi[0], positronSpinor2.chi[1], positronSpinor2.phi[0], positronSpinor2.phi[1]];
             let ePhoton = calculatePhoton(ev1, ev2);
             let pPhoton = calculatePhoton(pv1, pv2);
-            let ePhotonr = calculatePhoton(ev2, ev1);
-            let pPhotonr = calculatePhoton(pv2, pv1);
+            let ePhotonc = calculatePhoton(evc1, evc2);
+            //let ePhotonr = calculatePhoton(ev2, ev1);
+            //let pPhotonr = calculatePhoton(pv2, pv1);
        
             console.log("pPhoton ", pPhoton);
             let c = document.getElementById(`particlesCombination`);
             c.innerHTML = serPhoton(ePhoton) +
-            "\n\n" + serPhoton(pPhoton) +
-            "\n\n" + serPhoton(ePhotonr) +
-            "\n\n" + serPhoton(pPhotonr);
+            // "\n\n" + serPhoton(pPhoton) +
+            "\n\n" + serPhoton(ePhotonc);
         }
 
     </script>
@@ -272,7 +302,7 @@
 <body>
     <h1>Dirac Spinor Calculator</h1>
     <div class="flex-container">
-        <div class="flex-column">
+        <div class="flex-column" style="flex: 0 0 20em">
             <div class="input-group">
                 <label for="vx">Speed (v<sub>x</sub>) [/C]:</label>
                 <input type="text" id="vx" placeholder="e.g., 0">
@@ -307,7 +337,7 @@
             <div id="particle2"></div>
         </div>
         <div class="flex-column">
-            <button onclick="calculateComb()">&Psi;<sub>1</sub><sup>&dagger;</sup>&gamma;<sup>5</sup>&gamma;<sup>&mu;</sup>&Psi;<sub>2</sub></button>
+            <button onclick="calculateComb()">&Psi;<sub>1</sub><sup>&dagger;</sup>&gamma;<sup>0</sup>&gamma;<sup>&mu;</sup>&Psi;<sub>2</sub></button>
             <div id="particlesCombination"></div>
         </div>
     </div>

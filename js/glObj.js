@@ -6,6 +6,91 @@ class Torus {
 			0.5 * (exp_eta - 1 / exp_eta) * Math.sin(psi) * den,
 			Math.sin(theta) * den]
 	}
+	static rp(a, x, y, z) {
+		let r2 = x * x + y * y;
+		let r = Math.sqrt(r2);
+		let sqPlus2 = (r + a) * (r + a);
+		let sqMinus2 = (r - a) * (r - a);
+		let exp_eta = Math.sqrt((sqPlus2 + z * z) / (sqMinus2 + z * z))
+		let psi = Math.atan2(y, x);
+		let cosTheta = (x * x + y * y + z * z - a * a) / (Math.sqrt((sqPlus2 + z * z) * (sqMinus2 + z * z)));
+		let theta;
+
+		if (cosTheta <= - 1.0) {
+			theta = - Math.PI;
+		} else if (cosTheta >= 1.0) {
+			theta = 0;
+		} else {
+			theta = Math.acos(cosTheta);
+		}
+		if (z < 0) {
+			theta = - theta;
+		}
+
+		if (isNaN(theta)) {
+			console.log("***** ", x * x + y * y + z * z - a * a, sqPlus2 + z * z, sqMinus2 + z * z)
+			console.log(Math.sqrt((sqPlus2 + z * z) * (sqMinus2 + z * z)),
+				(x * x + y * y + z * z - a * a) / (Math.sqrt((sqPlus2 + z * z) * (sqMinus2 + z * z))));
+
+		}
+
+		return [exp_eta, theta, psi];
+	}
+	static distR(a, exp_eta, theta, psi, d_theta, d_phi) {
+		const eps = 0.00001;
+		const p0 = Torus.p(a, exp_eta, theta - eps * d_theta, psi - eps * d_phi);
+	}
+	// calculate the velocity an [x, y, z] point of a torus given delta theta and psi (assume eta is constant)
+	static v(a, exp_eta, theta, psi, d_theta, d_phi) {
+		const eps = 0.00001;
+		const pv = Torus.p(a, exp_eta, 0,0);
+		const da = pv[0] - a
+		const dd = 1 / da; // speed is 1 / d
+		const p0 = Torus.p(a, exp_eta, theta - eps * d_theta, psi - eps * d_phi);
+		const p1 = Torus.p(a, exp_eta, theta + eps * d_theta, psi + eps * d_phi);
+		return sMultVec3(0.5 / eps * dd, subVec3(p1, p0));
+	}
+	// calculate the vorticity an [x, y, z] point of a torus given delta theta and psi (assume eta is constant)
+	static vort(a, exp_eta, theta, psi, d_theta, d_phi) {
+		const eps = 0.000001;
+		const p0 = Torus.p(a, exp_eta, theta, psi);
+
+		let vd = [[], [], []];
+		for (let ic = 0; ic < 3; ic++) {
+			let np = [0, 0, 0];
+			np[ic] = eps;
+			const pm = subVec3(p0, np);
+			const pmT = Torus.rp(a, ...pm);
+			const vm = Torus.v(a, ...pmT, d_theta, d_phi)
+			const pp = addVec3(p0, np);
+			const ppT = Torus.rp(a, ...pp);
+			const vp = Torus.v(a, ...ppT, d_theta, d_phi)
+			vd[ic] = sMultVec3(0.5 / eps, subVec3(vp, vm));
+		}
+		const vortX = vd[1][2] - vd[2][1];
+		const vortY = vd[2][0] - vd[0][2];
+		const vortZ = vd[0][1] - vd[1][0];
+
+		return [vortX, vortY, vortZ];
+	}
+	// calculate the curl of vorticity an [x, y, z] point of a torus given delta theta and psi (assume eta is constant)
+	static curlVort(a, exp_eta, theta, psi, d_theta, d_phi) {
+		const eps = 0.0001;
+		const p0 = Torus.p(a, exp_eta, theta, psi);
+
+		let vd = [[], [], []];
+		for (let ic = 0; ic < 3; ic++) {
+			let np = [0, 0, 0];
+			np[ic] = eps;
+			const ppT = Torus.rp(a, ...addVec3(p0, np));
+			const vp = Torus.vort(a, ...ppT, d_theta, d_phi)
+			const pmT = Torus.rp(a, ...subVec3(p0, np));
+			const vm = Torus.vort(a, ...pmT, d_theta, d_phi)
+			vd[ic] = sMultVec3(0.5 / eps, subVec3(vp, vm));
+		}
+
+		return [vd[1][2] - vd[2][1], vd[2][0] - vd[0][2], vd[0][1] - vd[1][0]];
+	}
 	// calculate a normal vactor to a point of a torus
 	static n(theta, psi) {
 		const xy = Math.cos(theta)
