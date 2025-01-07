@@ -62,7 +62,6 @@ let glX;
 
 function checkBoxAction(id) {
     checkBoxesValues[id] = document.getElementById(id).checked;
-    console.log(checkBoxesValues)
     resetData();
 }
 
@@ -161,7 +160,6 @@ function torusVecVelocity(a, exp_eta, theta, psi) {
     let col = [0.3, 0.3, 0];
     const pos = Torus.p(a, exp_eta, theta, psi)
     const vel = Torus.v(a, exp_eta, theta, psi, twist, 1.0);
-    console.log('velocity ', normVec3(vel), vel );
     let pos2 = addVec3(pos, sMultVec3(0.001002 * scale, vel));
     pushSegment(torusVelocityMemory, pos, pos2, col);
 }
@@ -171,7 +169,6 @@ function buildTorusVorticity() {
     if (torusVorticityMemory.length <= 0) {
         buildTorusFlow(torusVecVorticity);
     }
-    //console.log(torusVorticityMemory.length)
     vectorFieldDataX = vectorFieldDataX.concat(torusVorticityMemory)
 }
 function torusVecVorticity(a, exp_eta, theta, psi) {
@@ -180,7 +177,6 @@ function torusVecVorticity(a, exp_eta, theta, psi) {
     let col = [0, bright, 1];
     const pos = Torus.p(a, exp_eta, theta, psi)
     const vorticity = Torus.vort(a, exp_eta, theta, psi, twist, 1.0);
-    console.log("vorticity ", normVec3(vorticity), vorticity);
     const l = normVec3(vorticity);
     let pos2 = addVec3(pos, sMultVec3(0.000000021 * l * scale, normalizeVec3(vorticity)));
     pushSegment(torusVorticityMemory, pos, pos2, col);
