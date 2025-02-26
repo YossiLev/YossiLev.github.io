@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Grid</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f8f8;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>YouTube Videos</h1>
+    <div class="grid">
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/pnbJEg9r1o8" title="Crazy pool vortex" allowfullscreen></iframe>
+        </div>
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/EVbdbVhzcM4" title="Two Vortex Rings Colliding" allowfullscreen></iframe>
+        </div>
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/WIyTZDHuarQ" title="Is This What Quantum Mechanics Looks Like?" allowfullscreen></iframe>
+        </div>
+
+    </div>
+</body>
+</html>
