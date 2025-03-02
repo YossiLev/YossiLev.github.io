@@ -41,6 +41,7 @@ const appendixes = [
     {label: "E", display: "Light Orbits", page: "lightOrbit"},
     {label: "F", display: "Torus Flow", page: "torusFlow"},
     {label: "G", display: "Length Contraction", page: "srLength"},
+    {label: "h", display: "Video References", page: "videos"},
 ];
 const goToPage = (pageIndex) => {
     if (pageIndex >= pages.length) {
