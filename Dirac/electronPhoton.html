@@ -109,7 +109,7 @@
         return complexDot(u3bar, gmu_u1);
       });
 
-      const formatC = ([re, im]) => `${re.toFixed(3)}${im >= 0 ? '+' : ''}${im.toFixed(3)}i`;
+      const formatC = ([re, im]) => `${re.toFixed(4)}${im >= 0 ? '+' : ''}${im.toFixed(4)}i`;
       const formatCol = arr => arr.map(formatC).join('<br>');
       const inputStr = `p = ${p.toFixed(2)}<br>theta = ${thetaDeg.toFixed(2)}<br>alpha1 = ${alpha1Deg.toFixed(2)}<br>beta1 = ${beta1Deg.toFixed(2)}<br>alpha3 = ${alpha3Deg.toFixed(2)}<br>beta3 = ${beta3Deg.toFixed(2)}`;
       return `<tr><td>${inputStr}</td><td>${formatCol(u1)}</td><td>${formatCol(u3)}</td><td>${formatCol(jmu)}</td></tr>`;
