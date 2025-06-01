@@ -103,7 +103,7 @@
       const u1 = spinor(E, p1, alpha1, beta1);
       const u3 = spinor(E, p3, alpha3, beta3);
       const u3bar = complexConjugate(u3);
-      const jmu = [...Array(4)].map(mu => {
+      const jmu = [0, 1, 2, 3].map(mu => {
         const gm = gammaMu(mu);
         const gmu_u1 = gm.map(row => row.reduce((sum, g, j) => [sum[0] + g[0] * u1[j][0] - g[1] * u1[j][1], sum[1] + g[0] * u1[j][1] + g[1] * u1[j][0]], [0, 0]));
         return complexDot(u3bar, gmu_u1);
