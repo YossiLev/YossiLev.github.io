@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+	<meta charset="UTF-8">
   <title>Electron Spinor Input</title>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" href="../css/main.css">
+	<link rel="stylesheet" href="../css/menus.css">
+	<script src="../js/main.js"></script>
+	<script type="text/javascript" src="../js/Complex.js"></script><!DOCTYPE html>
   <style>
     body { font-family: sans-serif; padding: 20px; }
     input, button, select { margin: 5px; }
@@ -12,22 +17,23 @@
   </style>
 </head>
 <body>
-  <h1>Electron Spinor 4-Vectors</h1>
+  <h1>Electron Photon Interaction</h1>
+  <p>Electron mass is taken to be 1. U1 (incoming electron is in the +z direction).</p>
   <p>Enter momentum (p), scattering angle (theta in degrees), and spin angles (alpha, beta in degrees) for particles 1 and 3.</p>
 
-  <label>p: <input type="number" id="p" step="any"></label><br>
-  <label>theta: <input type="number" id="theta" step="any"></label><br><br>
+  <label>p: <input type="number" id="p" value="0.01" step="any"></label><br>
+  <label>theta: <input type="number" id="theta" value="1" step="any"></label><br><br>
 
   <fieldset>
     <legend>Particle 1</legend>
-    <label>alpha1: <input type="number" id="alpha1" step="any"></label>
-    <label>beta1: <input type="number" id="beta1" step="any"></label>
+    <label>alpha1: <input type="number" id="alpha1" value="0" step="any"></label>
+    <label>beta1: <input type="number" id="beta1" value="0" step="any"></label>
   </fieldset>
 
   <fieldset>
     <legend>Particle 3</legend>
-    <label>alpha3: <input type="number" id="alpha3" step="any"></label>
-    <label>beta3: <input type="number" id="beta3" step="any"></label>
+    <label>alpha3: <input type="number" id="alpha3" value="0" step="any"></label>
+    <label>beta3: <input type="number" id="beta3" value="0" step="any"></label>
   </fieldset>
 
   <label>Scan parameter:
