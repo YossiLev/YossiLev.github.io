@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chained Timer</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #countdown-display {
+      font-size: 48px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .time-entry { display: flex; align-items: center; margin-bottom: 5px; }
+    input[type="number"] { width: 80px; margin-right: 10px; }
+    button { margin: 5px; }
+    .bigb {
+      font-size: 48px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="countdown-display">--</div>
+
+  <button onclick="startTimers()" class="bigb">&#x23f5;</button>
+  <button onclick="pauseTimers()" class="bigb">&#x23f8;</button>
+  <button onclick="resetTimers()" class="bigb">&#x23ee;</button>
+
+  <div id="timers-container"></div>
+  <button onclick="addTimer()">Add Timer</button>
+  <br><br>
+
+
+  <script>
+    const timersContainer = document.getElementById('timers-container');
+    const countdownDisplay = document.getElementById('countdown-display');
+
+    let timerList = [];
+    let currentIndex = 0;
+    let running = false;
+    let paused = false;
+    let timeoutID = null;
+    let remaining = 0;
+    let startTimestamp = null;
+    let animationFrameID = null;
+
+    function addTimer(value = '') {
+      const entry = document.createElement('div');
+      entry.className = 'time-entry';
+
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = '0';
+      input.value = value;
+
+      const delButton = document.createElement('button');
+      delButton.textContent = 'Delete';
+      delButton.onclick = () => entry.remove();
+
+      entry.appendChild(input);
+      entry.appendChild(delButton);
+      timersContainer.appendChild(entry);
+    }
+
+    function getTimerValues() {
+      return Array.from(timersContainer.querySelectorAll('input')).map(
+        input => parseFloat(input.value) * 60
+      ).filter(v => !isNaN(v) && v > 0);
+    }
+
+    function beep(times = 3) {
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      for (let i = 0; i < times; i++) {
+        const oscillator = context.createOscillator();
+        const gainNode = context.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, context.currentTime + i * 0.2);
+        gainNode.gain.setValueAtTime(0.2, context.currentTime + i * 0.2);
+        oscillator.connect(gainNode).connect(context.destination);
+        oscillator.start(context.currentTime + i * 0.2);
+        oscillator.stop(context.currentTime + i * 0.2 + 0.1);
+      }
+    }
+
+    function startTimers() {
+    if (running && !paused) return;
+
+    if (paused) {
+        // Resume
+        running = true;
+        paused = false;
+        runCurrentTimer();
+        updateDisplay();
+        return;
+    }
+
+    // Not running at all, start fresh
+    timerList = getTimerValues();
+    currentIndex = 0;
+
+    if (timerList.length === 0) return;
+
+    running = true;
+    paused = false;
+    runCurrentTimer();
+    updateDisplay();
+    }
+
+    function runCurrentTimer() {
+      if (currentIndex >= timerList.length) {
+        running = false;
+        countdownDisplay.textContent = "--";
+        cancelAnimationFrame(animationFrameID);
+        return;
+      }
+
+      const duration = paused ? remaining : timerList[currentIndex];
+      startTimestamp = Date.now();
+      timeoutID = setTimeout(() => {
+        beep();
+        currentIndex++;
+        paused = false;
+        runCurrentTimer();
+      }, duration * 1000);
+    }
+
+    function pauseTimers() {
+      if (!running || paused) return;
+
+      paused = true;
+      clearTimeout(timeoutID);
+      cancelAnimationFrame(animationFrameID);
+      remaining = timerList[currentIndex] - (Date.now() - startTimestamp) / 1000;
+    }
+
+    function resetTimers() {
+      clearTimeout(timeoutID);
+      cancelAnimationFrame(animationFrameID);
+      running = false;
+      paused = false;
+      currentIndex = 0;
+      remaining = 0;
+      countdownDisplay.textContent = "--";
+    }
+
+    function updateDisplay() {
+      if (!running || paused || currentIndex >= timerList.length) return;
+
+      const elapsed = (Date.now() - startTimestamp) / 1000;
+      const total = timerList[currentIndex];
+      const timeLeft = Math.max(0, total - elapsed);
+      countdownDisplay.textContent = timeLeft.toFixed(1) + "s";
+
+      animationFrameID = requestAnimationFrame(updateDisplay);
+    }
+  </script>
+
+</body>
+</html>
