@@ -1,18 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chained Timer</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
+body {
+      font-family: sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
     #countdown-display {
       font-size: 48px;
       font-weight: bold;
       margin-bottom: 20px;
+      text-align: center;
     }
-    .time-entry { display: flex; align-items: center; margin-bottom: 5px; }
-    input[type="number"] { width: 80px; margin-right: 10px; }
-    button { margin: 5px; }
+    .time-entry {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    input[type="number"] {
+      flex: 1 1 100px;
+      padding: 8px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px 5px 5px 0;
+    }
+    #timers-container {
+      width: 100%;
+    }
     .bigb {
       font-size: 48px;
       padding: 10px 20px;
