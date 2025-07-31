@@ -45,7 +45,7 @@ body {
 </head>
 <body>
 
-  <div id="countdown-display">--</div>
+  <div id="countdown-display">Play to Start</div>
   <div style=""display: flex; justify-content: center; align-items: center;">
 
   <button onclick="startTimers()" class="bigb">&#9654;</button>
@@ -55,7 +55,6 @@ body {
   <div id="timers-container"></div>
   <button onclick="addTimer()">Add Timer</button>
   <br><br>
-
 
   <script>
     const timersContainer = document.getElementById('timers-container');
@@ -135,7 +134,7 @@ body {
     function runCurrentTimer() {
       if (currentIndex >= timerList.length) {
         running = false;
-        countdownDisplay.textContent = "--";
+        countdownDisplay.textContent = "Completed";
         cancelAnimationFrame(animationFrameID);
         return;
       }
@@ -166,7 +165,7 @@ body {
       paused = false;
       currentIndex = 0;
       remaining = 0;
-      countdownDisplay.textContent = "--";
+      countdownDisplay.textContent = "Play to Start";
     }
 
     function updateDisplay() {
