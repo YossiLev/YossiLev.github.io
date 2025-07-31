@@ -46,11 +46,12 @@ body {
 <body>
 
   <div id="countdown-display">--</div>
+  <div style=""display: flex; justify-content: center; align-items: center;">
 
-  <button onclick="startTimers()" class="bigb">&#x23f5;</button>
-  <button onclick="pauseTimers()" class="bigb">&#x23f8;</button>
-  <button onclick="resetTimers()" class="bigb">&#x23ee;</button>
-
+  <button onclick="startTimers()" class="bigb">&#9654;</button>
+  <button onclick="pauseTimers()" class="bigb">&#9208;</button>
+  <button onclick="resetTimers()" class="bigb">&#9198;</button>
+  </div>
   <div id="timers-container"></div>
   <button onclick="addTimer()">Add Timer</button>
   <br><br>
@@ -79,7 +80,7 @@ body {
       input.value = value;
 
       const delButton = document.createElement('button');
-      delButton.textContent = 'Delete';
+      delButton.innerHTML = '&#10060;';
       delButton.onclick = () => entry.remove();
 
       entry.appendChild(input);
