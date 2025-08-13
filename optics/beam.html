@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camera Max Pixel Intensity</title>
+<style>
+  body { text-align: center; font-family: sans-serif; background: #222; color: #fff; }
+  video, canvas { width: 90%; max-width: 400px; margin-top: 10px; }
+  button { padding: 10px 20px; font-size: 16px; margin: 10px; }
+</style>
+</head>
+<body>
+<h2>Camera Max Pixel Intensity</h2>
+<video id="video" autoplay playsinline></video><br>
+<button id="captureBtn">Capture & Analyze</button>
+<canvas id="canvas" style="display:none;"></canvas>
+<p id="result"></p>
+
+<script>
+(async function initCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    document.getElementById('video').srcObject = stream;
+  } catch (err) {
+    alert("Camera access failed: " + err);
+  }
+})();
+
+document.getElementById('captureBtn').addEventListener('click', () => {
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  // Draw current frame from video to canvas
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  // Get pixel data
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+  let maxIntensity = -1;
+  let maxIndex = -1;
+
+  // Loop through pixels (RGBA)
+  for (let i = 0; i < imgData.length; i += 4) {
+    const r = imgData[i];
+    const g = imgData[i+1];
+    const b = imgData[i+2];
+
+    // Simple intensity: average of R,G,B
+    const intensity = (r + g + b) / 3;
+
+    if (intensity > maxIntensity) {
+      maxIntensity = intensity;
+      maxIndex = i;
+    }
+  }
+
+  // Convert index to pixel coordinates
+  const pixelPos = (maxIndex / 4);
+  const x = pixelPos % canvas.width;
+  const y = Math.floor(pixelPos / canvas.width);
+
+  document.getElementById('result').textContent =
+    `Max intensity: ${maxIntensity.toFixed(2)} at (x=${x}, y=${y})`;
+});
+</script>
+</body>
+</html>
