@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Camera Max Pixel Intensity</title>
+<title>Laser Beam Profile</title>
 <style>
   body { text-align: center; font-family: sans-serif; background: #222; color: #fff; }
   video, canvas { width: 90%; max-width: 400px; margin-top: 10px; }
@@ -10,10 +10,12 @@
 </style>
 </head>
 <body>
-<h2>Camera Max Pixel Intensity</h2>
+<h2>Laser Beam Profile Analyzer</h2>
 <video id="video" autoplay playsinline></video><br>
 <button id="captureBtn">Capture & Analyze</button>
 <canvas id="canvas" style="display:none;"></canvas>
+<h3>Horizontal Brightness Profile</h3>
+<canvas id="graphCanvas" width="400" height="200"></canvas>
 <p id="result"></p>
 
 <script>
@@ -48,8 +50,6 @@ document.getElementById('captureBtn').addEventListener('click', () => {
     const r = imgData[i];
     const g = imgData[i+1];
     const b = imgData[i+2];
-
-    // Simple intensity: average of R,G,B
     const intensity = (r + g + b) / 3;
 
     if (intensity > maxIntensity) {
@@ -58,14 +58,54 @@ document.getElementById('captureBtn').addEventListener('click', () => {
     }
   }
 
-  // Convert index to pixel coordinates
   const pixelPos = (maxIndex / 4);
-  const x = pixelPos % canvas.width;
-  const y = Math.floor(pixelPos / canvas.width);
+  const centerX = pixelPos % canvas.width;
+  const centerY = Math.floor(pixelPos / canvas.width);
+
+  // Extract brightness along horizontal line at centerY
+  const profile = [];
+  for (let x = 0; x < canvas.width; x++) {
+    const idx = (centerY * canvas.width + x) * 4;
+    const r = imgData[idx];
+    const g = imgData[idx+1];
+    const b = imgData[idx+2];
+    const intensity = (r + g + b) / 3;
+    profile.push(intensity);
+  }
+
+  // Draw brightness profile
+  drawGraph(profile);
 
   document.getElementById('result').textContent =
-    `Max intensity: ${maxIntensity.toFixed(2)} at (x=${x}, y=${y})`;
+    `Max intensity: ${maxIntensity.toFixed(2)} at (x=${centerX}, y=${centerY})`;
 });
+
+function drawGraph(profile) {
+  const graphCanvas = document.getElementById('graphCanvas');
+  const gctx = graphCanvas.getContext('2d');
+  gctx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+
+  const maxVal = Math.max(...profile);
+  const scaleX = graphCanvas.width / profile.length;
+  const scaleY = graphCanvas.height / maxVal;
+
+  gctx.beginPath();
+  gctx.moveTo(0, graphCanvas.height - profile[0] * scaleY);
+  for (let i = 1; i < profile.length; i++) {
+    const x = i * scaleX;
+    const y = graphCanvas.height - profile[i] * scaleY;
+    gctx.lineTo(x, y);
+  }
+  gctx.strokeStyle = "#0f0";
+  gctx.lineWidth = 2;
+  gctx.stroke();
+
+  gctx.strokeStyle = "#888";
+  gctx.beginPath();
+  gctx.moveTo(0, graphCanvas.height-1);
+  gctx.lineTo(graphCanvas.width, graphCanvas.height-1);
+  gctx.stroke();
+}
 </script>
 </body>
 </html>
