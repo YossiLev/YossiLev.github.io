@@ -2,16 +2,46 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Laser Beam Profile</title>
+<title>Laser Beam Profile with Zoom</title>
 <style>
-  body { text-align: center; font-family: sans-serif; background: #222; color: #fff; }
-  video, canvas { width: 90%; max-width: 400px; margin-top: 10px; }
-  button { padding: 10px 20px; font-size: 16px; margin: 10px; }
+  body {
+    text-align: center;
+    font-family: sans-serif;
+    background: #222;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+  }
+  #videoContainer {
+    position: relative;
+    display: inline-block;
+  }
+  video {
+    width: 90vw;
+    max-width: 400px;
+    margin-top: 10px;
+  }
+  #zoomSlider {
+    position: absolute;
+    right: -30px;
+    top: 10px;
+    height: calc(100% - 20px);
+    writing-mode: bt-lr;
+    transform: rotate(270deg);
+  }
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 10px;
+  }
 </style>
 </head>
 <body>
 <h2>Laser Beam Profile Analyzer</h2>
-<video id="video" autoplay playsinline></video><br>
+<div id="videoContainer">
+  <video id="video" autoplay playsinline></video>
+  <input type="range" id="zoomSlider" min="1" max="1" step="0.1" value="1">
+</div><br>
 <button id="captureBtn">Capture & Analyze</button>
 <canvas id="canvas" style="display:none;"></canvas>
 <h3>Horizontal Brightness Profile</h3>
@@ -19,10 +49,35 @@
 <p id="result"></p>
 
 <script>
+let videoTrack = null;
+
 (async function initCamera() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-    document.getElementById('video').srcObject = stream;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }
+    });
+    const video = document.getElementById('video');
+    video.srcObject = stream;
+
+    videoTrack = stream.getVideoTracks()[0];
+    const capabilities = videoTrack.getCapabilities();
+    const zoomSlider = document.getElementById('zoomSlider');
+
+    if ('zoom' in capabilities) {
+      zoomSlider.min = capabilities.zoom.min;
+      zoomSlider.max = capabilities.zoom.max;
+      zoomSlider.step = capabilities.zoom.step || 0.1;
+      zoomSlider.value = videoTrack.getSettings().zoom || capabilities.zoom.min;
+
+      zoomSlider.addEventListener('input', () => {
+        videoTrack.applyConstraints({
+          advanced: [{ zoom: parseFloat(zoomSlider.value) }]
+        });
+      });
+    } else {
+      zoomSlider.style.display = 'none';
+    }
+
   } catch (err) {
     alert("Camera access failed: " + err);
   }
@@ -35,23 +90,18 @@ document.getElementById('captureBtn').addEventListener('click', () => {
 
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
-
-  // Draw current frame from video to canvas
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  // Get pixel data
   const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
 
   let maxIntensity = -1;
   let maxIndex = -1;
 
-  // Loop through pixels (RGBA)
   for (let i = 0; i < imgData.length; i += 4) {
     const r = imgData[i];
     const g = imgData[i+1];
     const b = imgData[i+2];
     const intensity = (r + g + b) / 3;
-
     if (intensity > maxIntensity) {
       maxIntensity = intensity;
       maxIndex = i;
@@ -62,44 +112,53 @@ document.getElementById('captureBtn').addEventListener('click', () => {
   const centerX = pixelPos % canvas.width;
   const centerY = Math.floor(pixelPos / canvas.width);
 
-  // Extract brightness along horizontal line at centerY
-  const profile = [];
+  const avgProfile = [];
+  const redProfile = [];
   for (let x = 0; x < canvas.width; x++) {
     const idx = (centerY * canvas.width + x) * 4;
     const r = imgData[idx];
     const g = imgData[idx+1];
     const b = imgData[idx+2];
-    const intensity = (r + g + b) / 3;
-    profile.push(intensity);
+    avgProfile.push((r + g + b) / 3);
+    redProfile.push(r);
   }
 
-  // Draw brightness profile
-  drawGraph(profile);
+  drawGraph(avgProfile, redProfile);
 
   document.getElementById('result').textContent =
     `Max intensity: ${maxIntensity.toFixed(2)} at (x=${centerX}, y=${centerY})`;
 });
 
-function drawGraph(profile) {
+function drawGraph(avgProfile, redProfile) {
   const graphCanvas = document.getElementById('graphCanvas');
   const gctx = graphCanvas.getContext('2d');
   gctx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
 
-  const maxVal = Math.max(...profile);
-  const scaleX = graphCanvas.width / profile.length;
+  const maxVal = Math.max(...avgProfile, ...redProfile);
+  const scaleX = graphCanvas.width / avgProfile.length;
   const scaleY = graphCanvas.height / maxVal;
 
+  // Draw average intensity in green
   gctx.beginPath();
-  gctx.moveTo(0, graphCanvas.height - profile[0] * scaleY);
-  for (let i = 1; i < profile.length; i++) {
-    const x = i * scaleX;
-    const y = graphCanvas.height - profile[i] * scaleY;
-    gctx.lineTo(x, y);
+  gctx.moveTo(0, graphCanvas.height - avgProfile[0] * scaleY);
+  for (let i = 1; i < avgProfile.length; i++) {
+    gctx.lineTo(i * scaleX, graphCanvas.height - avgProfile[i] * scaleY);
   }
   gctx.strokeStyle = "#0f0";
   gctx.lineWidth = 2;
   gctx.stroke();
 
+  // Draw red channel intensity in red
+  gctx.beginPath();
+  gctx.moveTo(0, graphCanvas.height - redProfile[0] * scaleY);
+  for (let i = 1; i < redProfile.length; i++) {
+    gctx.lineTo(i * scaleX, graphCanvas.height - redProfile[i] * scaleY);
+  }
+  gctx.strokeStyle = "#f00";
+  gctx.lineWidth = 2;
+  gctx.stroke();
+
+  // Axis line
   gctx.strokeStyle = "#888";
   gctx.beginPath();
   gctx.moveTo(0, graphCanvas.height-1);
