@@ -70,6 +70,12 @@ body {
     let startTimestamp = null;
     let animationFrameID = null;
 
+    document.addEventListener('touchmove', function (event) {
+      if (event.touches[0].clientY > 0 && window.scrollY === 0) {
+        event.preventDefault(); // Block pull-to-refresh
+      }
+    }, { passive: false });
+
     function notifyUser(message) {
       navigator.serviceWorker.ready.then(reg => {
         reg.showNotification("Timer finished!", {
