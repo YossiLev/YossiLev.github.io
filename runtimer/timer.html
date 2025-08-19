@@ -53,6 +53,9 @@ body {
       padding: 10px 20px;
       cursor: pointer;
     }
+    #stats {
+      font-size: 32px;
+    }
   </style>
 </head>
 <body>
@@ -60,9 +63,9 @@ body {
 
   <div id="countdown-display">Play to Start</div>
   <div id="stats">
-    <p>Distance: <span id="distance">0</span></p>
-    <p>Speed: <span id="speed">0</span></p>
-    <p>Pace: <span id="pace">0</span></p>
+    <p>D: <span id="distance">0</span></p>
+    <!-- <p>S: <span id="speed">0</span></p> -->
+    <p>P: <span id="pace">0</span></p>
   </div>
   <div style="display: flex; justify-content: center; align-items: center;">
     <button onclick="startTimers()" class="bigb">&#9654;</button>
@@ -140,8 +143,8 @@ body {
       const pace = elapsed / 60 / km; // min/km
 
       // Update UI
-      document.getElementById("distance").textContent = km.toFixed(2) + " km";
-      document.getElementById("speed").textContent = (avgSpeed * 3.6).toFixed(1) + " km/h";
+      document.getElementById("distance").textContent = km.toFixed(3) + " km";
+      //document.getElementById("speed").textContent = (avgSpeed * 3.6).toFixed(1) + " km/h";
       document.getElementById("pace").textContent = pace.toFixed(2) + " min/km";
     }
 
@@ -263,12 +266,15 @@ body {
       if (!running || paused) return;
 
       paused = true;
+      stopTracking();
+
       clearTimeout(timeoutID);
       cancelAnimationFrame(animationFrameID);
       remaining = timerList[currentIndex] - (Date.now() - startTimestamp) / 1000;
     }
 
     function resetTimers() {
+      stopTracking();
       clearTimeout(timeoutID);
       cancelAnimationFrame(animationFrameID);
       running = false;
