@@ -1,7 +1,7 @@
 {
   "name": "Chained Timer",
   "short_name": "Timer1",
-  "start_url": "/runtimer/",
+  "start_url": "/runtimer/timer.html",
   "display": "standalone",
   "orientation": "portrait"
 }
