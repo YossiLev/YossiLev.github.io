@@ -124,6 +124,17 @@ body {
       ).filter(v => !isNaN(v) && v > 0);
     }
 
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'en-US'; // you can change to "he-IL" or others
+        msg.rate = 1;       // speed (0.1 – 10)
+        msg.pitch = 1;      // voice pitch
+        window.speechSynthesis.speak(msg);
+      } else {
+        alert("Sorry, your browser does not support text-to-speech!");
+      }
+    }
     function beep(times = 3) {
       const context = new (window.AudioContext || window.webkitAudioContext)();
       for (let i = 0; i < times; i++) {
@@ -173,7 +184,7 @@ body {
       const duration = paused ? remaining : timerList[currentIndex];
       startTimestamp = Date.now();
       timeoutID = setTimeout(() => {
-        notifyUser(`Timer ${currentIndex + 1} completed!`);
+        speak(`Timer ${currentIndex + 1} finished`);
         beep();
         currentIndex++;
         paused = false;
