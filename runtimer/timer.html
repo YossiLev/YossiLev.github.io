@@ -217,7 +217,12 @@ body {
       const elapsed = (Date.now() - startTimestamp) / 1000;
       const total = timerList[currentIndex];
       const timeLeft = Math.max(0, total - elapsed);
-      countdownDisplay.textContent = timeLeft.toFixed(1) + "s";
+      // turn to minutes and seconds
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = Math.floor(timeLeft % 60);
+      countdownDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      // also show decimal seconds
+      countdownDisplay.textContent += ` (${timeLeft.toFixed(1)}s)`; 
 
       animationFrameID = requestAnimationFrame(updateDisplay);
     }
