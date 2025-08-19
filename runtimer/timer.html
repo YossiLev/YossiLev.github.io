@@ -86,6 +86,66 @@ body {
     let startTimestamp = null;
     let animationFrameID = null;
 
+    let watchId;
+    let lastPosition = null;
+    let totalDistance = 0; // in meters
+    let startTime;
+
+    function startTracking() {
+      startTime = Date.now();
+      watchId = navigator.geolocation.watchPosition(
+        pos => {
+          const { latitude, longitude } = pos.coords;
+
+          if (lastPosition) {
+            const d = haversineDistance(
+              lastPosition.lat,
+              lastPosition.lon,
+              latitude,
+              longitude
+            );
+            totalDistance += d;
+          }
+
+          lastPosition = { lat: latitude, lon: longitude };
+          updateStats();
+        },
+        err => console.error(err),
+        { enableHighAccuracy: true }
+      );
+    }
+
+    function stopTracking() {
+      navigator.geolocation.clearWatch(watchId);
+    }
+
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3; // Earth radius in meters
+      const toRad = deg => deg * Math.PI / 180;
+      const φ1 = toRad(lat1), φ2 = toRad(lat2);
+      const Δφ = toRad(lat2 - lat1);
+      const Δλ = toRad(lon2 - lon1);
+
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c; // in meters
+    }
+
+    function updateStats() {
+      const elapsed = (Date.now() - startTime) / 1000; // seconds
+      const avgSpeed = totalDistance / elapsed; // m/s
+      const km = totalDistance / 1000;
+      const pace = elapsed / 60 / km; // min/km
+
+      // Update UI
+      document.getElementById("distance").textContent = km.toFixed(2) + " km";
+      document.getElementById("speed").textContent = (avgSpeed * 3.6).toFixed(1) + " km/h";
+      document.getElementById("pace").textContent = pace.toFixed(2) + " min/km";
+    }
+
+
     function notifyUser(message) {
       navigator.serviceWorker.ready.then(reg => {
         reg.showNotification("Timer finished!", {
