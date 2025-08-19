@@ -59,15 +59,15 @@ body {
   <div id="app-scroll">
 
   <div id="countdown-display">Play to Start</div>
-  <div style="display: flex; justify-content: center; align-items: center;">
   <div id="stats">
     <p>Distance: <span id="distance">0</span></p>
     <p>Speed: <span id="speed">0</span></p>
     <p>Pace: <span id="pace">0</span></p>
   </div>
-  <button onclick="startTimers()" class="bigb">&#9654;</button>
-  <button onclick="pauseTimers()" class="bigb">&#9208;</button>
-  <button onclick="resetTimers()" class="bigb">&#9198;</button>
+  <div style="display: flex; justify-content: center; align-items: center;">
+    <button onclick="startTimers()" class="bigb">&#9654;</button>
+    <button onclick="pauseTimers()" class="bigb">&#9208;</button>
+    <button onclick="resetTimers()" class="bigb">&#9198;</button>
   </div>
   <div id="timers-container"></div>
   <button onclick="addTimer()">Add Timer</button>
