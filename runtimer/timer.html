@@ -247,11 +247,14 @@ body {
 
       const duration = paused ? remaining : timerList[currentIndex];
       startTimestamp = Date.now();
+      startTracking();
       timeoutID = setTimeout(() => {
         speak(`Timer ${currentIndex + 1} finished`);
         beep();
         currentIndex++;
         paused = false;
+        remaining = 0;
+        stopTracking();
         runCurrentTimer();
       }, duration * 1000);
     }
