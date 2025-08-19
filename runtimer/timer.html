@@ -6,6 +6,17 @@
   <link rel="manifest" href="manifest.json">
   <title>Chained Timer</title>
   <style>
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;             /* stop root scrolling (kills PTR) */
+}
+#app-scroll {
+  height: 100%;
+  overflow-y: auto;             /* scroll only inside this div */
+  -webkit-overflow-scrolling: touch; /* smooth iOS scrolling */
+  overscroll-behavior-y: contain;    /* prevent bounce chaining */
+}
 body {
       font-family: sans-serif;
       padding: 20px;
@@ -45,6 +56,7 @@ body {
   </style>
 </head>
 <body>
+  <div id="app-scroll">
 
   <div id="countdown-display">Play to Start</div>
   <div style=""display: flex; justify-content: center; align-items: center;">
@@ -69,12 +81,6 @@ body {
     let remaining = 0;
     let startTimestamp = null;
     let animationFrameID = null;
-
-    document.addEventListener('touchmove', function (event) {
-      if (event.touches[0].clientY > 0 && window.scrollY === 0) {
-        event.preventDefault(); // Block pull-to-refresh
-      }
-    }, { passive: false });
 
     function notifyUser(message) {
       navigator.serviceWorker.ready.then(reg => {
@@ -205,6 +211,6 @@ body {
       animationFrameID = requestAnimationFrame(updateDisplay);
     }
   </script>
-
+  </div>
 </body>
 </html>
