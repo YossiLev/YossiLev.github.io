@@ -59,8 +59,12 @@ body {
   <div id="app-scroll">
 
   <div id="countdown-display">Play to Start</div>
-  <div style=""display: flex; justify-content: center; align-items: center;">
-
+  <div style="display: flex; justify-content: center; align-items: center;">
+  <div id="stats">
+    <p>Distance: <span id="distance">0</span></p>
+    <p>Speed: <span id="speed">0</span></p>
+    <p>Pace: <span id="pace">0</span></p>
+  </div>
   <button onclick="startTimers()" class="bigb">&#9654;</button>
   <button onclick="pauseTimers()" class="bigb">&#9208;</button>
   <button onclick="resetTimers()" class="bigb">&#9198;</button>
@@ -220,9 +224,8 @@ body {
       // turn to minutes and seconds
       const minutes = Math.floor(timeLeft / 60);
       const seconds = Math.floor(timeLeft % 60);
-      countdownDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-      // also show decimal seconds
-      countdownDisplay.textContent += ` (${timeLeft.toFixed(1)}s)`; 
+      const tenths = Math.floor((timeLeft % 1) * 10);
+      countdownDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}.${tenths}`;
 
       animationFrameID = requestAnimationFrame(updateDisplay);
     }
