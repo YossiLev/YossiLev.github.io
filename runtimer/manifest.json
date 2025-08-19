@@ -1,0 +1,7 @@
+{
+  "name": "Chained Timer",
+  "short_name": "Timer",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait"
+}
