@@ -70,6 +70,18 @@ body {
     let startTimestamp = null;
     let animationFrameID = null;
 
+    function notifyUser(message) {
+      if (Notification.permission === "granted") {
+        new Notification(message);
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            new Notification(message);
+          }
+        });
+      }
+    }
+
     function addTimer(value = '') {
       const entry = document.createElement('div');
       entry.className = 'time-entry';
@@ -143,6 +155,7 @@ body {
       const duration = paused ? remaining : timerList[currentIndex];
       startTimestamp = Date.now();
       timeoutID = setTimeout(() => {
+        notifyUser(`Timer ${currentIndex + 1} completed!`);
         beep();
         currentIndex++;
         paused = false;
