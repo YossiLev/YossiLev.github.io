@@ -1,6 +1,6 @@
 {
-  "name": "Chained Timer",
-  "short_name": "Timer1",
+  "name": "Reut Assistent",
+  "short_name": "RL Assis",
   "start_url": "/runtimer/timer.html",
   "display": "standalone",
   "orientation": "portrait"
