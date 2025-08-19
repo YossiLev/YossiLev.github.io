@@ -55,6 +55,7 @@ body {
     }
     #stats {
       font-size: 32px;
+      display: flex;
     }
   </style>
 </head>
@@ -63,9 +64,9 @@ body {
 
   <div id="countdown-display">Play to Start</div>
   <div id="stats">
-    <p>D: <span id="distance">0</span></p>
+    <div>D: <span id="distance">0</span></div>
     <!-- <p>S: <span id="speed">0</span></p> -->
-    <p>P: <span id="pace">0</span></p>
+    <div>P: <span id="pace">0</span></div>
   </div>
   <div style="display: flex; justify-content: center; align-items: center;">
     <button onclick="startTimers()" class="bigb">&#9654;</button>
