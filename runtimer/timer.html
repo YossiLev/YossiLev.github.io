@@ -81,6 +81,7 @@ body {
     const timersContainer = document.getElementById('timers-container');
     const countdownDisplay = document.getElementById('countdown-display');
 
+    let endedSafariVerificaiton = false;
     let timerList = [];
     let currentIndex = 0;
     let running = false;
@@ -95,6 +96,36 @@ body {
     let totalDistance = 0; // in meters
     let startTime;
 
+    // start navigator action on a button press so later they work in iOS
+    function initServices() {
+      // beep
+      beep(1);
+      // speech
+      speak("hello and welcome");
+      // navigation
+      if ('geolocation' in navigator) {
+        console.log("Geolocation is available");
+        startTracking();
+        stopTracking = () => {
+          if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+          }
+        };
+      } else {
+        console.error("Geolocation is not supported by this browser.");
+      }
+    }
+    function isIOSSafari() {
+      return /iP(ad|od|hone)/i.test(navigator.userAgent) &&
+            /WebKit/i.test(navigator.userAgent) &&
+            !/CriOS/i.test(navigator.userAgent) &&
+            !/FxiOS/i.test(navigator.userAgent);
+    }
+
+
+
+    // Start tracking location
     function startTracking() {
       startTime = Date.now();
       watchId = navigator.geolocation.watchPosition(
@@ -184,6 +215,8 @@ body {
       entry.appendChild(input);
       entry.appendChild(delButton);
       timersContainer.appendChild(entry);
+
+      input.focus();
     }
 
     function getTimerValues() {

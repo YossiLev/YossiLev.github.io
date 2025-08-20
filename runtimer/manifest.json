@@ -1,7 +1,14 @@
 {
   "name": "Reut Assistent",
-  "short_name": "RL Assis",
+  "short_name": "RL Assist",
   "start_url": "/runtimer/timer.html",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/runtimer/icon-480.png",
+      "sizes": "480x480",
+      "type": "image/png"
+    }
+  ]
 }
