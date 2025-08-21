@@ -49,7 +49,7 @@
     }
     .bigb {
       font-size: 48px;
-      padding: 10px 20px;
+      padding: 6px 12px;
       cursor: pointer;
     }
     #stats {
@@ -78,7 +78,7 @@
     <div><span id="distance">0</span><span id="distance-units">km</span></div>
     <div><span id="pace">0</span><span id="pace-units">min/km</span></div>
   </div>
-  <div style="display: flex; justify-content: center; align-items: center;">
+  <div style="display: flex; gap:5px; justify-content: center; align-items: center;">
     <button onclick="startTimers()" class="bigb">&#9654;</button>
     <button onclick="pauseTimers()" class="bigb">&#9208;</button>
     <button onclick="resetTimers()" class="bigb">&#9198;</button>
@@ -108,6 +108,29 @@
     let lastPosition = null;
     let totalDistance = 0; // in meters
     let startTime;
+
+    let wakeLock = null;
+
+    async function requestWakeLock() {
+      try {
+        wakeLock = await navigator.wakeLock.request("screen");
+        console.log("Wake lock active");
+
+        // If the lock is released (like when screen turns off and back on)
+        wakeLock.addEventListener("release", () => {
+          console.log("Wake lock was released");
+        });
+      } catch (err) {
+        console.error(`${err.name}, ${err.message}`);
+      }
+    }
+
+    function releaseWakeLock() {    
+      if (wakeLock) {
+        wakeLock.release();
+        wakeLock = null;
+      }
+    }
 
     // start navigator action on a button press so later they work in iOS
     function initServices() {
@@ -281,6 +304,7 @@
           paused = false;
           runCurrentTimer();
           updateDisplay();
+          requestWakeLock();
           return;
       }
 
@@ -308,6 +332,8 @@
 
       const duration = paused ? remaining : timerList[currentIndex];
       startTimestamp = Date.now();
+      totalDistance = 0;
+
       startTracking();
       timeoutID = setTimeout(() => {
         // upon timer completion
@@ -328,6 +354,7 @@
 
       paused = true;
       stopTracking();
+      releaseWakeLock();
 
       clearTimeout(timeoutID);
       cancelAnimationFrame(animationFrameID);
@@ -339,6 +366,7 @@
       stopTracking();
       clearTimeout(timeoutID);
       cancelAnimationFrame(animationFrameID);
+      releaseWakeLock();
       running = false;
       paused = false;
       currentIndex = 0;
