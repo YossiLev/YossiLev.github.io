@@ -298,13 +298,14 @@
     function startTimers() {
       if (running && !paused) return;
 
+      requestWakeLock();
+
       if (paused) {
           // Resume
           running = true;
           paused = false;
           runCurrentTimer();
           updateDisplay();
-          requestWakeLock();
           return;
       }
 
