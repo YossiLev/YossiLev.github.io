@@ -6,21 +6,21 @@
   <link rel="manifest" href="manifest.json">
   <title>Chained Timer</title>
   <style>
-html, body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;             /* stop root scrolling (kills PTR) */
-}
-#app-scroll {
-  height: 100%;
-  overflow-y: auto;             /* scroll only inside this div */
-  -webkit-overflow-scrolling: touch; /* smooth iOS scrolling */
-  overscroll-behavior-y: contain;    /* prevent bounce chaining */
-}
-body {
-      font-family: sans-serif;
-      padding: 20px;
+    html, body {
+      height: 100%;
       margin: 0;
+      overflow: hidden;             /* stop root scrolling (kills PTR) */
+    }
+    #app-scroll {
+      height: 100%;
+      overflow-y: auto;             /* scroll only inside this div */
+      -webkit-overflow-scrolling: touch; /* smooth iOS scrolling */
+      overscroll-behavior-y: contain;    /* prevent bounce chaining */
+    }
+    body {
+          font-family: sans-serif;
+          padding: 20px;
+          margin: 0;
     }
     #countdown-display {
       font-size: 48px;
@@ -35,7 +35,6 @@ body {
       margin-bottom: 10px;
     }
     input[type="number"] {
-      flex: 1 1 100px;
       padding: 8px;
       font-size: 16px;
       margin-right: 10px;
@@ -56,7 +55,19 @@ body {
     #stats {
       font-size: 32px;
       display: flex;
+      gap: 10px;
     }
+    #distance-units {
+      font-size: 16px;
+    }
+    #pace-units {
+      font-size: 16px;
+    }
+    .timer-completed {
+      background-color: rgb(129, 250, 129) ;
+      font-weight: bold;
+    }
+
   </style>
 </head>
 <body>
@@ -64,9 +75,8 @@ body {
 
   <div id="countdown-display">Play to Start</div>
   <div id="stats">
-    <div>D: <span id="distance">0</span></div>
-    <!-- <p>S: <span id="speed">0</span></p> -->
-    <div>P: <span id="pace">0</span></div>
+    <div><span id="distance">0</span><span id="distance-units">km</span></div>
+    <div><span id="pace">0</span><span id="pace-units">min/km</span></div>
   </div>
   <div style="display: flex; justify-content: center; align-items: center;">
     <button onclick="startTimers()" class="bigb">&#9654;</button>
@@ -74,7 +84,7 @@ body {
     <button onclick="resetTimers()" class="bigb">&#9198;</button>
   </div>
   <div id="timers-container"></div>
-  <button onclick="addTimer()">Add Timer</button>
+  <button onclick="addTimer()">Add Stage</button>
   <br><br>
 
   <script>
@@ -83,6 +93,7 @@ body {
 
     let endedSafariVerificaiton = false;
     let timerList = [];
+    let timerModes = []; // 'R' for running, 'W' for walking
     let currentIndex = 0;
     let running = false;
     let paused = false;
@@ -90,6 +101,8 @@ body {
     let remaining = 0;
     let startTimestamp = null;
     let animationFrameID = null;
+    let km = 0;
+    let pace = 0; // in min/km
 
     let watchId;
     let lastPosition = null;
@@ -122,8 +135,6 @@ body {
             !/CriOS/i.test(navigator.userAgent) &&
             !/FxiOS/i.test(navigator.userAgent);
     }
-
-
 
     // Start tracking location
     function startTracking() {
@@ -169,51 +180,43 @@ body {
     }
 
     function updateStats() {
+
       const elapsed = (Date.now() - startTime) / 1000; // seconds
       const avgSpeed = totalDistance / elapsed; // m/s
-      const km = totalDistance / 1000;
-      const pace = elapsed / 60 / km; // min/km
+      km = totalDistance / 1000;
+      pace = km <= 0 ? 0 : elapsed / 60 / km; // min/km
 
       // Update UI
-      document.getElementById("distance").textContent = km.toFixed(3) + " km";
-      //document.getElementById("speed").textContent = (avgSpeed * 3.6).toFixed(1) + " km/h";
-      document.getElementById("pace").textContent = pace.toFixed(2) + " min/km";
-    }
-
-
-    function notifyUser(message) {
-      navigator.serviceWorker.ready.then(reg => {
-        reg.showNotification("Timer finished!", {
-          body: "Your countdown ended.",
-          icon: "/icon.png"
-        });
-      });
-      // if (Notification.permission === "granted") {
-      //   new Notification(message);
-      // } else if (Notification.permission !== "denied") {
-      //   Notification.requestPermission().then(permission => {
-      //     if (permission === "granted") {
-      //       new Notification(message);
-      //     }
-      //   });
-      // }
+      document.getElementById("distance").textContent = km.toFixed(3);
+      //document.getElementById("speed").textContent = (avgSpeed * 3.6).toFixed(1);
+      document.getElementById("pace").textContent = pace.toFixed(2);
     }
 
     function addTimer(value = '') {
       const entry = document.createElement('div');
       entry.className = 'time-entry';
 
+      const mode = document.createElement('button');
+      mode.textContent = "R";
+      mode.onclick = () => { mode.textContent = mode.textContent === 'R' ? 'W' : 'R';};
+
       const input = document.createElement('input');
       input.type = 'number';
       input.min = '0';
       input.value = value;
+      input.style.width = '100px';
+
+      const stats = document.createElement('div');
+      stats.className = 'step-stats';
 
       const delButton = document.createElement('button');
       delButton.innerHTML = '&#10060;';
       delButton.onclick = () => entry.remove();
-
+      
+      entry.appendChild(mode);
       entry.appendChild(input);
       entry.appendChild(delButton);
+      entry.appendChild(stats);
       timersContainer.appendChild(entry);
 
       input.focus();
@@ -223,6 +226,25 @@ body {
       return Array.from(timersContainer.querySelectorAll('input')).map(
         input => parseFloat(input.value) * 60
       ).filter(v => !isNaN(v) && v > 0);
+    }
+    function setTimerStats(i, stat_text) {
+      timersContainer.querySelector(`.time-entry:nth-child(${i + 1}) .step-stats`).textContent = stat_text;
+    }
+    function setTimerCompleted(i) {
+      const entry = timersContainer.querySelector(`.time-entry:nth-child(${i + 1})`);
+      entry.classList.add('timer-completed');
+    }
+    function resetTimersView() {
+      const entries = Array.from(timersContainer.querySelectorAll(`.time-entry`));
+      entries.forEach(entry => {
+        entry.classList.remove('timer-completed');
+        entry.querySelector('.step-stats').textContent = '';
+      });
+    }
+    function getTimersModes() {
+      return Array.from(timersContainer.querySelectorAll('.time-entry button')).map(
+        button => button.textContent
+      );
     }
 
     function speak(text) {
@@ -251,27 +273,29 @@ body {
     }
 
     function startTimers() {
-    if (running && !paused) return;
+      if (running && !paused) return;
 
-    if (paused) {
-        // Resume
-        running = true;
-        paused = false;
-        runCurrentTimer();
-        updateDisplay();
-        return;
-    }
+      if (paused) {
+          // Resume
+          running = true;
+          paused = false;
+          runCurrentTimer();
+          updateDisplay();
+          return;
+      }
 
-    // Not running at all, start fresh
-    timerList = getTimerValues();
-    currentIndex = 0;
+      // Not running at all, start fresh
+      timerList = getTimerValues();
+      timerModes = getTimersModes();
+      currentIndex = 0;
 
-    if (timerList.length === 0) return;
+      if (timerList.length === 0) return;
 
-    running = true;
-    paused = false;
-    runCurrentTimer();
-    updateDisplay();
+      running = true;
+      paused = false;
+      totalDistance = 0; // reset distance for next timer
+      runCurrentTimer();
+      updateDisplay();
     }
 
     function runCurrentTimer() {
@@ -286,7 +310,10 @@ body {
       startTimestamp = Date.now();
       startTracking();
       timeoutID = setTimeout(() => {
-        speak(`Timer ${currentIndex + 1} finished`);
+        // upon timer completion
+        setTimerCompleted(currentIndex);
+        setTimerStats(currentIndex, `${km.toFixed(3)}, ${pace.toFixed(2)}`);
+        speak(`Stage ${currentIndex + 1} finished`);
         beep();
         currentIndex++;
         paused = false;
@@ -308,6 +335,7 @@ body {
     }
 
     function resetTimers() {
+      resetTimersView();
       stopTracking();
       clearTimeout(timeoutID);
       cancelAnimationFrame(animationFrameID);
