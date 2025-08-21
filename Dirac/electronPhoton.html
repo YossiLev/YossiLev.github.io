@@ -80,7 +80,8 @@
       return gm[mu];
     }
 
-    function spinor(E, p, alpha, beta) {
+    function spinor(p, alpha, beta) {
+      const [E, px, py, pz] = p;
       const chi = [
         [Math.cos(alpha / 2), 0],
         [Math.sin(alpha / 2) * Math.cos(beta), Math.sin(alpha / 2) * Math.sin(beta)]
@@ -88,7 +89,6 @@
       const norm = Math.sqrt(E + m);
       const upper = chi.map(([re, im]) => [norm * re, norm * im]);
 
-      const [px, py, pz] = p;
       const sigmaDotP = [
         [px * chi[1][0] + pz * chi[0][0], px * chi[1][1] + pz * chi[0][1]],
         [px * chi[0][0] - pz * chi[1][0], px * chi[0][1] - pz * chi[1][1]]
@@ -104,10 +104,11 @@
       const alpha3 = toRadians(alpha3Deg);
       const beta3 = toRadians(beta3Deg);
       const E = Math.sqrt(p * p + m * m);
-      const p1 = [0, 0, p];
-      const p3 = [p * Math.sin(theta), 0, p * Math.cos(theta)];
-      const u1 = spinor(E, p1, alpha1, beta1);
-      const u3 = spinor(E, p3, alpha3, beta3);
+      const p1 = [E, 0, 0, p];
+      const p3 = [E, p * Math.sin(theta), 0, p * Math.cos(theta)];
+      const q = p1.map((val, i) => val - p3[i]);
+      const u1 = spinor(p1, alpha1, beta1);
+      const u3 = spinor(p3, alpha3, beta3);
       const u3bar = complexConjugate(u3);
       const jmu = [0, 1, 2, 3].map(mu => {
         const gm = gammaMu(mu);
@@ -117,8 +118,12 @@
 
       const formatC = ([re, im]) => `${re.toFixed(4)}${im >= 0 ? '+' : ''}${im.toFixed(4)}i`;
       const formatCol = arr => arr.map(formatC).join('<br>');
+      const formatColR = arr => arr.map(a => a.toFixed(4)).join('<br>');
       const inputStr = `p = ${p.toFixed(2)}<br>theta = ${thetaDeg.toFixed(2)}<br>alpha1 = ${alpha1Deg.toFixed(2)}<br>beta1 = ${beta1Deg.toFixed(2)}<br>alpha3 = ${alpha3Deg.toFixed(2)}<br>beta3 = ${beta3Deg.toFixed(2)}`;
-      return `<tr><td>${inputStr}</td><td>${formatCol(u1)}</td><td>${formatCol(u3)}</td><td>${formatCol(jmu)}</td></tr>`;
+      const par1Str = `<b>Spinor</b></br>${formatCol(u1)}</br></br><b>Momentum</b><br>${formatColR(p1)}`;
+      const par3Str = `<b>Spinor</b></br>${formatCol(u3)}</br></br><b>Momentum</b><br>${formatColR(p3)}`;
+      const aStr = `<b>A</b></br>${formatCol(jmu)}</br></br><b>Momentum</b><br>${formatColR(q)}`;
+      return `<tr><td>${inputStr}</td><td>${par1Str}</td><td>${par3Str}</td><td>${aStr}</td></tr>`;
     }
 
     function calculate() {
