@@ -326,6 +326,7 @@
     function runCurrentTimer() {
       if (currentIndex >= timerList.length) {
         running = false;
+        releaseWakeLock();
         countdownDisplay.textContent = "Completed";
         cancelAnimationFrame(animationFrameID);
         return;
