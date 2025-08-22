@@ -22,6 +22,22 @@
           padding: 20px;
           margin: 0;
     }
+    /* By default, hide all */
+    .disp-on-mode-run, .disp-on-mode-pause, .disp-on-mode-off {
+      display: none;
+    }
+
+    /* Show when body has the right mode */
+    body.mode-run .disp-on-mode-run {
+      display: block;
+    }
+    body.mode-pause .disp-on-mode-pause {
+      display: block;
+    }
+    body.mode-off .disp-on-mode-off {
+      display: block;
+    }
+
     #countdown-display {
       font-size: 48px;
       font-weight: bold;
@@ -48,9 +64,13 @@
       width: 100%;
     }
     .bigb {
-      font-size: 48px;
-      padding: 6px 12px;
-      cursor: pointer;
+      padding:0px;
+      border:2px solid orange;
+      border-radius: 12px;
+      padding: 4px;
+      background-color: white;
+      width: 96px;
+      height: 96px;
     }
     #stats {
       font-size: 32px;
@@ -79,12 +99,18 @@
     <div><span id="pace">0</span><span id="pace-units">min/km</span></div>
   </div>
   <div style="display: flex; gap:5px; justify-content: center; align-items: center;">
-    <button onclick="startTimers()" class="bigb">&#9654;</button>
-    <button onclick="pauseTimers()" class="bigb">&#9208;</button>
-    <button onclick="resetTimers()" class="bigb">&#9198;</button>
+    <button onclick="startTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
+      <img src="but-run.png" alt="Run" width="72" height="72"></button>
+    <button onclick="pauseTimers()" class="bigb disp-on-mode-run">
+      <img src="but-pause.png" alt="Pause" width="72" height="72"></button>
+    <button onclick="resetTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
+      <img src="but-restart.png" alt="Restart" width="72" height="72"></button>
+    <button onclick="skipTimers()" class="bigb disp-on-mode-run">
+      <img src="but-skip.png" alt="Skip" width="72" height="72"></button>
+
   </div>
   <div id="timers-container"></div>
-  <button onclick="addTimer()">Add Stage</button>
+  <button onclick="addTimer()" class="disp-on-mode-pause disp-on-mode-off">Add Stage</button>
   <br><br>
 
   <script>
@@ -110,6 +136,12 @@
     let startTime;
 
     let wakeLock = null;
+
+    function setMode(mode) {
+      document.body.classList.remove("mode-run", "mode-pause", "mode-off");
+      document.body.classList.add(`mode-${mode}`);
+    }
+    setMode("off");
 
     async function requestWakeLock() {
       try {
@@ -302,8 +334,6 @@
 
       if (paused) {
           // Resume
-          running = true;
-          paused = false;
           runCurrentTimer();
           updateDisplay();
           return;
@@ -316,6 +346,7 @@
 
       if (timerList.length === 0) return;
 
+      setMode("run");
       running = true;
       paused = false;
       totalDistance = 0; // reset distance for next timer
@@ -323,8 +354,24 @@
       updateDisplay();
     }
 
+    function skipTimers() {
+      if (!running || paused) return;
+
+      clearTimeout(timeoutID);
+      //cancelAnimationFrame(animationFrameID);
+      setTimerCompleted(currentIndex);
+      setTimerStats(currentIndex, `${km.toFixed(3)}, ${pace.toFixed(2)} Skipped`);
+      speak(`Stage ${currentIndex + 1} skipped`);
+      currentIndex++;
+      paused = false;
+      remaining = 0;
+      stopTracking();
+      runCurrentTimer();
+    }
+
     function runCurrentTimer() {
       if (currentIndex >= timerList.length) {
+        setMode("off");
         running = false;
         releaseWakeLock();
         countdownDisplay.textContent = "Completed";
@@ -334,7 +381,12 @@
 
       const duration = paused ? remaining : timerList[currentIndex];
       startTimestamp = Date.now();
-      totalDistance = 0;
+      if (!paused) {
+        totalDistance = 0;
+      }
+      setMode("run");
+      running = true;
+      paused = false;
 
       startTracking();
       timeoutID = setTimeout(() => {
@@ -354,6 +406,8 @@
     function pauseTimers() {
       if (!running || paused) return;
 
+      setMode("pause");
+
       paused = true;
       stopTracking();
       releaseWakeLock();
@@ -369,6 +423,7 @@
       clearTimeout(timeoutID);
       cancelAnimationFrame(animationFrameID);
       releaseWakeLock();
+      setMode("off");
       running = false;
       paused = false;
       currentIndex = 0;
