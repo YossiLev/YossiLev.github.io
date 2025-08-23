@@ -128,7 +128,7 @@
     let startTimestamp = null;
     let animationFrameID = null;
     let km = 0;
-    let pace = 0; // in min/km
+    let pace = 0;
 
     let watchId;
     let lastPosition = null;
@@ -383,6 +383,9 @@
       startTimestamp = Date.now();
       if (!paused) {
         totalDistance = 0;
+      } else {
+        startTime = Date.now() - (timerList[currentIndex] - remaining) * 1000;
+        startTimestamp = startTime;
       }
       setMode("run");
       running = true;
@@ -418,6 +421,8 @@
     }
 
     function resetTimers() {
+      km = 0;
+      pace = 0;
       resetTimersView();
       stopTracking();
       clearTimeout(timeoutID);
