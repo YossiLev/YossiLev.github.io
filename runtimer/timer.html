@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
   <link rel="manifest" href="manifest.json">
   <title>Chained Timer</title>
   <style>
@@ -65,7 +66,7 @@
     }
     .bigb {
       padding:0px;
-      border:2px solid orange;
+      border:4px solid orange;
       border-radius: 12px;
       padding: 4px;
       background-color: white;
@@ -450,6 +451,17 @@
 
       animationFrameID = requestAnimationFrame(updateDisplay);
     }
+
+    document.addEventListener('gesturestart', function (e) {
+      e.preventDefault();
+    });
+    document.addEventListener('gesturechange', function (e) {
+      e.preventDefault();
+    });
+    document.addEventListener('gestureend', function (e) {
+      e.preventDefault();
+    });
+
   </script>
   </div>
 </body>
