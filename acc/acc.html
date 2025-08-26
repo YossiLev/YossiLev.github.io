@@ -16,6 +16,8 @@
 <p id="status">Waiting for sensor...</p>
 <h3>Estimated Distance</h3>
 <p id="distance">0 cm</p>
+<p id="acceleration">---</p>
+<p id="velocity">---</p>
 <p id="position">---</p>
 
 <script>
@@ -76,7 +78,8 @@ function handleMotion(event) {
   const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
 
   document.getElementById("distance").textContent = dist.toFixed(1) + " cm";
-  document.getElementById("position").textContent = `X: ${x.toFixed(2)} m, Y: ${y.toFixed(2)} m, Z: ${z.toFixed(2)} m`;
+  document.getElementById("acceleration").textContent = `X: ${acc.x.toFixed(2)} m/s², Y: ${acc.y.toFixed(2)} m/s², Z: ${acc.z.toFixed(2)} m/s²`;
+  document.getElementById("velocity").textContent = `X: ${vx.toFixed(2)} m/s, Y: ${vy.toFixed(2)} m/s, Z: ${vz.toFixed(2)} m/s`;
 }
 </script>
 </body>
