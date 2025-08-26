@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laser Beam Width Tracker</title>
+<style>
+body { font-family: sans-serif; background: #222; color: #fff; text-align: center; }
+#videoContainer { position: relative; display: inline-block; }
+video { width: 90vw; max-width: 400px; margin-top: 10px; }
+#zoomSlider { position: absolute; right: -30px; top: 10px; height: calc(100% - 20px); writing-mode: bt-lr; transform: rotate(270deg); }
+button { padding: 10px 20px; font-size: 16px; margin: 10px; }
+table { margin: 20px auto; border-collapse: collapse; color: #fff; }
+th, td { padding: 6px 12px; border: 1px solid #fff; }
+</style>
+</head>
+<body>
+<h2>Laser Beam Width Tracker</h2>
+<div id="videoContainer">
+  <video id="video" autoplay playsinline></video>
+  <input type="range" id="zoomSlider" min="1" max="1" step="0.1" value="1">
+</div><br>
+<button id="startSensors">Enable Sensors</button>
+<button id="zeroPos">Set Zero Position</button><br>
+<button id="startCal">Start Calibration</button>
+<button id="endCal">End Calibration</button><br>
+<button id="captureBtn">Capture Beam</button>
+
+<p id="status">Waiting for sensor...</p>
+<h3>Distance (cm): <span id="distance">0</span></h3>
+<canvas id="graphCanvas" width="400" height="200"></canvas>
+
+<h3>Measurements</h3>
+<table id="measurementsTable">
+<tr><th>Distance (cm)</th><th>Beam Width (px)</th></tr>
+</table>
+
+<canvas id="canvas" style="display:none;"></canvas>
+
+<script>
+let videoTrack = null;
+let vx=0,vy=0,vz=0,x=0,y=0,z=0,lastTime=null;
+let zeroX=0,zeroY=0,zeroZ=0,tracking=false;
+
+// Calibration
+let calibrating=false, calReadings=[], bias={x:0,y:0,z:0};
+
+// Measurements
+let measurements = [];
+
+const video = document.getElementById('video');
+const zoomSlider = document.getElementById('zoomSlider');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+async function initCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = stream;
+    videoTrack = stream.getVideoTracks()[0];
+    const caps = videoTrack.getCapabilities();
+
+    if('zoom' in caps){
+      zoomSlider.min = caps.zoom.min;
+      zoomSlider.max = caps.zoom.max;
+      zoomSlider.step = caps.zoom.step || 0.1;
+      zoomSlider.value = videoTrack.getSettings().zoom || caps.zoom.min;
+      zoomSlider.addEventListener('input',()=>{videoTrack.applyConstraints({advanced:[{zoom:parseFloat(zoomSlider.value)}]});});
+    } else zoomSlider.style.display='none';
+  } catch(err) { alert("Camera failed: "+err); }
+}
+
+document.getElementById('startSensors').addEventListener('click',()=>{
+  if(typeof DeviceMotionEvent.requestPermission==='function'){
+    DeviceMotionEvent.requestPermission().then(p=>{
+      if(p==='granted') startTracking();
+      else document.getElementById("status").textContent="Permission denied.";
+    });
+  } else startTracking();
+});
+
+function startTracking(){ tracking=true; window.addEventListener('devicemotion',handleMotion); document.getElementById("status").textContent="Tracking..."; }
+
+document.getElementById('zeroPos').addEventListener('click',()=>{ zeroX=x; zeroY=y; zeroZ=z; document.getElementById("status").textContent="Zero set!"; });
+document.getElementById('startCal').addEventListener('click',()=>{ calibrating=true; calReadings=[]; document.getElementById("status").textContent="Calibration started, keep phone still."; });
+document.getElementById('endCal').addEventListener('click',()=>{
+  calibrating=false;
+  if(calReadings.length===0) return;
+  let sum={x:0,y:0,z:0};
+  calReadings.forEach(r=>{ sum.x+=r.x; sum.y+=r.y; sum.z+=r.z; });
+  bias.x=sum.x/calReadings.length; bias.y=sum.y/calReadings.length; bias.z=sum.z/calReadings.length;
+  document.getElementById("status").textContent=`Calibration done. Bias: x=${bias.x.toFixed(3)},y=${bias.y.toFixed(3)},z=${bias.z.toFixed(3)}`;
+});
+
+function handleMotion(e){
+  if(!tracking) return;
+  const a = e.acceleration; if(!a) return;
+  const now=performance.now();
+  if(lastTime===null){ lastTime=now; return; }
+  const dt=(now-lastTime)/1000; lastTime=now;
+
+  if(calibrating){ calReadings.push({x:a.x||0,y:a.y||0,z:a.z||0}); return; }
+
+  const ax=(a.x||0)-bias.x; const ay=(a.y||0)-bias.y; const az=(a.z||0)-bias.z;
+  vx+=ax*dt; vy+=ay*dt; vz+=az*dt;
+  x+=vx*dt; y+=vy*dt; z+=vz*dt;
+
+  const dx=(x-zeroX)*100, dy=(y-zeroY)*100, dz=(z-zeroZ)*100;
+  const dist=Math.sqrt(dx*dx+dy*dy+dz*dz);
+  document.getElementById("distance").textContent=dist.toFixed(1);
+}
+
+document.getElementById('captureBtn').addEventListener('click',()=>{
+  if(video.videoWidth===0) return;
+  canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+
+  // Find brightest pixel
+  let maxI=-1,maxIdx=-1;
+  for(let i=0;i<data.length;i+=4){
+    const I=(data[i]+data[i+1]+data[i+2])/3;
+    if(I>maxI){ maxI=I; maxIdx=i; }
+  }
+  const px = maxIdx/4 % canvas.width;
+  const py = Math.floor(maxIdx/4/canvas.width);
+
+  // Horizontal profile
+  const avgProfile=[], redProfile=[];
+  for(let x0=0;x0<canvas.width;x0++){
+    const idx=(py*canvas.width+x0)*4;
+    avgProfile.push((data[idx]+data[idx+1]+data[idx+2])/3);
+    redProfile.push(data[idx]);
+  }
+
+  drawGraph(avgProfile,redProfile);
+
+  // Measure beam width (example: FWHM)
+  const halfMax=maxI/2;
+  let left=0,right=canvas.width-1;
+  for(let i=0;i<canvas.width;i++){ if(avgProfile[i]>=halfMax){ left=i; break; } }
+  for(let i=canvas.width-1;i>=0;i--){ if(avgProfile[i]>=halfMax){ right=i; break; } }
+  const widthPx=right-left;
+
+  // Record measurement
+  const dist = parseFloat(document.getElementById("distance").textContent);
+  measurements.push({distance:dist,width:widthPx});
+  updateTable();
+});
+
+function drawGraph(avgProfile,redProfile){
+  const g=document.getElementById('graphCanvas'),ctx=g.getContext('2d');
+  ctx.clearRect(0,0,g.width,g.height);
+  const maxVal=Math.max(...avgProfile,...redProfile);
+  const scaleX=g.width/avgProfile.length;
+  const scaleY=g.height/maxVal;
+
+  ctx.beginPath();
+  ctx.moveTo(0,g.height-avgProfile[0]*scaleY);
+  for(let i=1;i<avgProfile.length;i++) ctx.lineTo(i*scaleX,g.height-avgProfile[i]*scaleY);
+  ctx.strokeStyle="#0f0"; ctx.lineWidth=2; ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(0,g.height-redProfile[0]*scaleY);
+  for(let i=1;i<redProfile.length;i++) ctx.lineTo(i*scaleX,g.height-redProfile[i]*scaleY);
+  ctx.strokeStyle="#f00"; ctx.lineWidth=2; ctx.stroke();
+}
+
+function updateTable(){
+  const table=document.getElementById('measurementsTable');
+  table.innerHTML="<tr><th>Distance (cm)</th><th>Beam Width (px)</th></tr>";
+  measurements.forEach(m=>{ table.innerHTML+=`<tr><td>${m.distance.toFixed(1)}</td><td>${m.width}</td></tr>`; });
+}
+
+// Initialize camera
+initCamera();
+</script>
+</body>
+</html>
