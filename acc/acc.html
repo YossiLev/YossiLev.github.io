@@ -78,8 +78,8 @@ function handleMotion(event) {
   const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
 
   document.getElementById("distance").textContent = dist.toFixed(1) + " cm";
-  document.getElementById("acceleration").textContent = `X: ${acc.x.toFixed(2)} m/s², Y: ${acc.y.toFixed(2)} m/s², Z: ${acc.z.toFixed(2)} m/s²`;
-  document.getElementById("velocity").textContent = `X: ${vx.toFixed(2)} m/s, Y: ${vy.toFixed(2)} m/s, Z: ${vz.toFixed(2)} m/s`;
+  document.getElementById("acceleration").textContent = `X: ${acc.x.toFixed(2)} ${acc.y.toFixed(2)} ${acc.z.toFixed(2)} m/s²`;
+  document.getElementById("velocity").textContent = `X: ${vx.toFixed(2)} ${vy.toFixed(2)} ${vz.toFixed(2)} m/s`;
 }
 </script>
 </body>
