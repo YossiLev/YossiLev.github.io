@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accelerometer Position Tracker</title>
+<style>
+  body { font-family: sans-serif; background: #222; color: #fff; text-align: center; }
+  button { padding: 12px 20px; font-size: 16px; margin: 15px; }
+  h2 { margin-top: 20px; }
+</style>
+</head>
+<body>
+<h2>Phone Position Tracker (Accelerometer)</h2>
+<button id="startBtn">Enable Sensors</button>
+<button id="zeroBtn">Set Zero Position</button>
+<p id="status">Waiting for sensor...</p>
+<h3>Estimated Distance</h3>
+<p id="distance">0 cm</p>
+
+<script>
+let vx = 0, vy = 0, vz = 0;
+let x = 0, y = 0, z = 0;
+let lastTime = null;
+let zeroX = 0, zeroY = 0, zeroZ = 0;
+let tracking = false;
+
+// Enable motion on button click (needed on iOS/Android)
+document.getElementById('startBtn').addEventListener('click', () => {
+  if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    DeviceMotionEvent.requestPermission().then(permissionState => {
+      if (permissionState === 'granted') startTracking();
+      else document.getElementById("status").textContent = "Permission denied.";
+    });
+  } else {
+    startTracking();
+  }
+});
+
+function startTracking() {
+  tracking = true;
+  document.getElementById("status").textContent = "Tracking accelerometer...";
+  window.addEventListener('devicemotion', handleMotion);
+}
+
+document.getElementById('zeroBtn').addEventListener('click', () => {
+  zeroX = x; zeroY = y; zeroZ = z;
+  document.getElementById("status").textContent = "Zero position set!";
+});
+
+function handleMotion(event) {
+  if (!tracking) return;
+
+  const acc = event.acceleration;
+  if (!acc) return;
+
+  const now = performance.now();
+  if (lastTime === null) { lastTime = now; return; }
+  const dt = (now - lastTime) / 1000.0; // seconds
+  lastTime = now;
+
+  // Update velocity (v = v + a*dt)
+  if (acc.x !== null) vx += acc.x * dt;
+  if (acc.y !== null) vy += acc.y * dt;
+  if (acc.z !== null) vz += acc.z * dt;
+
+  // Update position (s = s + v*dt)
+  x += vx * dt;
+  y += vy * dt;
+  z += vz * dt;
+
+  // Distance from zero (in cm)
+  const dx = (x - zeroX) * 100;
+  const dy = (y - zeroY) * 100;
+  const dz = (z - zeroZ) * 100;
+  const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+  document.getElementById("distance").textContent = dist.toFixed(1) + " cm";
+}
+</script>
+</body>
+</html>
