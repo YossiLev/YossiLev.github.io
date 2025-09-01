@@ -77,8 +77,8 @@
       display: flex;
       gap: 10px;
     }
-    #dbdata {
-      font-size: 32px;
+    .dbdata {
+      font-size: 24px;
       display: flex;
       gap: 10px;
     }
@@ -107,10 +107,12 @@
     <div><span id="distance">0</span><span id="distance-units">km</span></div>
     <div><span id="pace">0</span><span id="pace-units">min/km</span></div>
   </div> 
-  <div id="dbdata">
+  <div class="dbdata">
     <div><span id="gps-stat">--</span></div>
-    <div><span id="gps-last">--</span></div>
     <div><span id="gps-dist">--</span></div>
+  </div>
+  <div class="dbdata">
+    <div><span id="gps-last">--</span></div>
   </div>
   <div style="display: flex; gap:5px; justify-content: center; align-items: center;">
     <button onclick="startTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
@@ -223,7 +225,7 @@
               longitude
             );
             totalDistance += d;
-            document.getElementById("gps-dist").textContent = `${d.toFixed(5)}, ${totalDistance.toFixed(5)}`;
+            document.getElementById("gps-dist").textContent = `${d.toFixed(3)}, ${totalDistance.toFixed(3)}`;
 
           }
 
