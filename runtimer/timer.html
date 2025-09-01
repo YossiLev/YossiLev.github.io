@@ -112,7 +112,13 @@
     <div><span id="gps-dist">--</span></div>
   </div>
   <div class="dbdata">
-    <div><span id="gps-last">--</span></div>
+    <div><span id="gps-last1">--</span></div>
+  </div>
+  <div class="dbdata">
+    <div><span id="gps-last2">--</span></div>
+  </div>
+  <div class="dbdata">
+    <div><span id="gps-last3">--</span></div>
   </div>
   <div style="display: flex; gap:5px; justify-content: center; align-items: center;">
     <button onclick="startTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
@@ -214,8 +220,10 @@
 
       watchId = navigator.geolocation.watchPosition(
         pos => {
-          const { latitude, longitude } = pos.coords;
-          document.getElementById("gps-last").textContent = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          const { latitude, longitude, accuracy } = pos.coords;
+          document.getElementById("gps-last3").textContent = document.getElementById("gps-last2").textContent;
+          document.getElementById("gps-last2").textContent = document.getElementById("gps-last1").textContent;
+          document.getElementById("gps-last1").textContent = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}, ${accuracy.toFixed(2)}`;
 
           if (lastPosition) {
             const d = haversineDistance(
@@ -436,6 +444,8 @@
 
       paused = true;
       stopTracking();
+      lastPosition = null;
+
       releaseWakeLock();
 
       clearTimeout(timeoutID);
