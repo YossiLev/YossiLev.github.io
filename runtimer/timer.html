@@ -51,8 +51,8 @@
       margin-bottom: 10px;
     }
     input[type="number"] {
-      padding: 8px;
-      font-size: 16px !important;
+      padding: 6px;
+      font-size: 24px !important;
       margin-right: 10px;
     }
     button {
@@ -121,7 +121,7 @@
     <div><span id="gps-last3">--</span></div>
   </div>
   <div style="display: flex; gap:5px; justify-content: center; align-items: center;">
-    <button onclick="startTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
+    <button onclick="startTimers()" class="bigb disp-on-mode-pause disp-on-mode-off"add>
       <img src="but-run.png" alt="Run" width="72" height="72"></button>
     <button onclick="pauseTimers()" class="bigb disp-on-mode-run">
       <img src="but-pause.png" alt="Pause" width="72" height="72"></button>
@@ -297,6 +297,7 @@
 
       const delButton = document.createElement('button');
       delButton.innerHTML = '&#10060;';
+      delButton.classList.add('disp-on-mode-pause', 'disp-on-mode-off');
       delButton.onclick = () => entry.remove();
       
       entry.appendChild(mode);
