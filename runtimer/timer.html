@@ -77,6 +77,11 @@
       display: flex;
       gap: 10px;
     }
+    #dbdata {
+      font-size: 32px;
+      display: flex;
+      gap: 10px;
+    }
     #distance-units {
       font-size: 16px;
     }
@@ -101,6 +106,11 @@
   <div id="stats">
     <div><span id="distance">0</span><span id="distance-units">km</span></div>
     <div><span id="pace">0</span><span id="pace-units">min/km</span></div>
+  </div> 
+  <div id="dbdata">
+    <div><span id="gps-stat">--</span></div>
+    <div><span id="gps-last">--</span></div>
+    <div><span id="gps-dist">--</span></div>
   </div>
   <div style="display: flex; gap:5px; justify-content: center; align-items: center;">
     <button onclick="startTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
@@ -168,26 +178,26 @@
       }
     }
 
-    // start navigator action on a button press so later they work in iOS
-    function initServices() {
-      // beep
-      beep(1);
-      // speech
-      speak("hello and welcome");
-      // navigation
-      if ('geolocation' in navigator) {
-        console.log("Geolocation is available");
-        startTracking();
-        stopTracking = () => {
-          if (watchId) {
-            navigator.geolocation.clearWatch(watchId);
-            watchId = null;
-          }
-        };
-      } else {
-        console.error("Geolocation is not supported by this browser.");
-      }
-    }
+    // // start navigator action on a button press so later they work in iOS
+    // function initServices() {
+    //   // beep
+    //   beep(1);
+    //   // speech
+    //   speak("hello and welcome");
+    //   // navigation
+    //   if ('geolocation' in navigator) {
+    //     console.log("Geolocation is available");
+    //     startTracking();
+    //     stopTracking = () => {
+    //       if (watchId) {
+    //         navigator.geolocation.clearWatch(watchId);
+    //         watchId = null;
+    //       }
+    //     };
+    //   } else {
+    //     console.error("Geolocation is not supported by this browser.");
+    //   }
+    // }
     function isIOSSafari() {
       return /iP(ad|od|hone)/i.test(navigator.userAgent) &&
             /WebKit/i.test(navigator.userAgent) &&
@@ -198,9 +208,12 @@
     // Start tracking location
     function startTracking() {
       startTime = Date.now();
+      document.getElementById("gps-stat").textContent = "on";
+
       watchId = navigator.geolocation.watchPosition(
         pos => {
           const { latitude, longitude } = pos.coords;
+          document.getElementById("gps-last").textContent = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
           if (lastPosition) {
             const d = haversineDistance(
@@ -210,6 +223,8 @@
               longitude
             );
             totalDistance += d;
+            document.getElementById("gps-dist").textContent = `${d.toFixed(5)}, ${totalDistance.toFixed(5)}`;
+
           }
 
           lastPosition = { lat: latitude, lon: longitude };
@@ -222,6 +237,8 @@
 
     function stopTracking() {
       navigator.geolocation.clearWatch(watchId);
+      document.getElementById("gps-stat").textContent = "off";
+
     }
 
     function haversineDistance(lat1, lon1, lat2, lon2) {
