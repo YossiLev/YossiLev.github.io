@@ -221,14 +221,19 @@
       watchId = navigator.geolocation.watchPosition(
         pos => {
           const { latitude, longitude, accuracy } = pos.coords;
+
           document.getElementById("gps-last3").textContent = document.getElementById("gps-last2").textContent;
           document.getElementById("gps-last2").textContent = document.getElementById("gps-last1").textContent;
-          document.getElementById("gps-last1").textContent = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}, ${accuracy.toFixed(2)}`;
+          document.getElementById("gps-last1").textContent = `${accuracy > 50 ? "X" : ""} ${latitude.toFixed(5)}, ${longitude.toFixed(5)}, ${accuracy.toFixed(2)}`;
 
+          if (accuracy > 50) {
+            console.warn(`Ignoring inaccurate position: ${accuracy}m`);
+            return;  
+          }
           if (lastPosition) {
             const d = haversineDistance(
               lastPosition.lat,
-              lastPosition.lon,
+              lastPosition.lon, 
               latitude,
               longitude
             );
