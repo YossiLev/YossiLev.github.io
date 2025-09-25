@@ -144,12 +144,11 @@
     const countdownDisplay = document.getElementById('countdown-display');
 
     let endedSafariVerificaiton = false;
-    let timerList = [];
-    let timerModes = []; // 'R' for running, 'W' for walking
+    let partsList = [];
     let currentIndex = 0;
     let running = false;
     let paused = false;
-    let timeoutID = null;
+    //let timeoutID = null;
     let remaining = 0;
     let startTimestamp = null;
     let animationFrameID = null;
@@ -162,6 +161,22 @@
     let startTime;
 
     let wakeLock = null;
+
+    // Push an initial state so back button triggers popstate
+    history.pushState({page: 1}, "", "");
+
+
+    // Listen for back
+    window.addEventListener("popstate", function(e) {
+      e.preventDefault();
+      if (!running) {
+        // Not running, allow back
+        history.back();
+      } else {
+        // Stay on current page: push state again
+        history.pushState({page: 1}, "", "");
+      }
+    });
 
     function setMode(mode) {
       document.body.classList.remove("mode-run", "mode-pause", "mode-off");
@@ -224,29 +239,29 @@
 
       watchId = navigator.geolocation.watchPosition(
         pos => {
-          const { latitude, longitude, accuracy } = pos.coords;
+          const { latitude, longitude, altitude, accuracy, altitudeAccuracy } = pos.coords;
 
           document.getElementById("gps-last3").textContent = document.getElementById("gps-last2").textContent;
           document.getElementById("gps-last2").textContent = document.getElementById("gps-last1").textContent;
-          document.getElementById("gps-last1").textContent = `${accuracy > 50 ? "X" : ""} ${latitude.toFixed(5)}, ${longitude.toFixed(5)}, ${accuracy.toFixed(2)}`;
+          document.getElementById("gps-last1").textContent = 
+            `${accuracy > 5 ? "X" : ""} ${accuracy.toFixed(2)}, ${altitude.toFixed(3)}, ${altitudeAccuracy.toFixed(2)}`;
 
-          if (accuracy > 50) {
+          if (accuracy > 5) {
             console.warn(`Ignoring inaccurate position: ${accuracy}m`);
             return;  
           }
           if (lastPosition) {
             const d = haversineDistance(
               lastPosition.lat,
-              lastPosition.lon, 
+              lastPosition.lon,
               latitude,
               longitude
             );
             totalDistance += d;
             document.getElementById("gps-dist").textContent = `${d.toFixed(3)}, ${totalDistance.toFixed(3)}`;
-
           }
 
-          lastPosition = { lat: latitude, lon: longitude };
+          lastPosition = { lat: latitude, lon: longitude, alt: altitude };
           updateStats();
         },
         err => console.error(err),
@@ -293,8 +308,14 @@
       entry.className = 'time-entry';
 
       const mode = document.createElement('button');
+      mode.name = 'mode';
       mode.textContent = "R";
       mode.onclick = () => { mode.textContent = mode.textContent === 'R' ? 'W' : 'R';};
+
+      const target = document.createElement('button');
+      target.name = 'target';
+      target.textContent = "T";
+      target.onclick = () => { target.textContent = target.textContent === 'T' ? 'D' : 'T';};
 
       const input = document.createElement('input');
       input.type = 'number';
@@ -311,6 +332,7 @@
       delButton.onclick = () => entry.remove();
       
       entry.appendChild(mode);
+      entry.appendChild(target);
       entry.appendChild(input);
       entry.appendChild(delButton);
       entry.appendChild(stats);
@@ -319,15 +341,28 @@
       input.focus();
     }
 
-    function getTimerValues() {
-      return Array.from(timersContainer.querySelectorAll('input')).map(
-        input => parseFloat(input.value) * 60
-      ).filter(v => !isNaN(v) && v > 0);
+    function getPartsValues() {
+      // return Array.from(timersContainer.querySelectorAll('input')).map(
+      //   input => parseFloat(input.value) * 60
+      // ).filter(v => !isNaN(v) && v > 0);
+      return Array.from(timersContainer.children).map(
+        cont => {
+          const mode = cont.querySelectorAll('[name="mode"]')[0].textContent;
+          const target = cont.querySelectorAll('[name="target"]')[0].textContent;
+          let input = parseFloat(cont.querySelector('input').value);
+          if (target === 'T') {
+            input *= 60;
+          }
+          return {mode, target, input};
+        }
+      ).filter(v => !isNaN(v.input) && v.input > 0.0);
     }
+
+
     function setTimerStats(i, stat_text) {
       timersContainer.querySelector(`.time-entry:nth-child(${i + 1}) .step-stats`).textContent = stat_text;
     }
-    function setTimerCompleted(i) {
+    function setPartCompleted(i) {
       const entry = timersContainer.querySelector(`.time-entry:nth-child(${i + 1})`);
       entry.classList.add('timer-completed');
     }
@@ -337,11 +372,6 @@
         entry.classList.remove('timer-completed');
         entry.querySelector('.step-stats').textContent = '';
       });
-    }
-    function getTimersModes() {
-      return Array.from(timersContainer.querySelectorAll('.time-entry button')).map(
-        button => button.textContent
-      );
     }
 
     function speak(text) {
@@ -382,11 +412,10 @@
       }
 
       // Not running at all, start fresh
-      timerList = getTimerValues();
-      timerModes = getTimersModes();
+      partsList = getPartsValues();
       currentIndex = 0;
 
-      if (timerList.length === 0) return;
+      if (partsList.length === 0) return;
 
       setMode("run");
       running = true;
@@ -399,9 +428,9 @@
     function skipTimers() {
       if (!running || paused) return;
 
-      clearTimeout(timeoutID);
+      //clearTimeout(timeoutID);
       //cancelAnimationFrame(animationFrameID);
-      setTimerCompleted(currentIndex);
+      setPartCompleted(currentIndex);
       setTimerStats(currentIndex, `${km.toFixed(3)}, ${pace.toFixed(2)} Skipped`);
       speak(`Stage ${currentIndex + 1} skipped`);
       currentIndex++;
@@ -412,7 +441,7 @@
     }
 
     function runCurrentTimer() {
-      if (currentIndex >= timerList.length) {
+      if (currentIndex >= partsList.length) {
         setMode("off");
         running = false;
         releaseWakeLock();
@@ -421,12 +450,12 @@
         return;
       }
 
-      const duration = paused ? remaining : timerList[currentIndex];
+      const stillToGo = paused ? remaining : partsList[currentIndex].input;
       startTimestamp = Date.now();
       if (!paused) {
         totalDistance = 0;
       } else {
-        startTime = Date.now() - (timerList[currentIndex] - remaining) * 1000;
+        startTime = Date.now() - (partsList[currentIndex].input - stillToGo) * 1000;
         startTimestamp = startTime;
       }
       setMode("run");
@@ -434,18 +463,18 @@
       paused = false;
 
       startTracking();
-      timeoutID = setTimeout(() => {
-        // upon timer completion
-        setTimerCompleted(currentIndex);
-        setTimerStats(currentIndex, `${km.toFixed(3)}, ${pace.toFixed(2)}`);
-        speak(`Stage ${currentIndex + 1} finished`);
-        beep();
-        currentIndex++;
-        paused = false;
-        remaining = 0;
-        stopTracking();
-        runCurrentTimer();
-      }, duration * 1000);
+      // timeoutID = setTimeout(() => {
+      //   // upon timer completion
+      //   setPartCompleted(currentIndex);
+      //   setTimerStats(currentIndex, `${km.toFixed(3)}, ${pace.toFixed(2)}`);
+      //   speak(`Stage ${currentIndex + 1} finished`);
+      //   beep();
+      //   currentIndex++;
+      //   paused = false;
+      //   remaining = 0;
+      //   stopTracking();
+      //   runCurrentTimer();
+      // }, duration * 1000);
     }
 
     function pauseTimers() {
@@ -459,9 +488,9 @@
 
       releaseWakeLock();
 
-      clearTimeout(timeoutID);
+      //clearTimeout(timeoutID);
       cancelAnimationFrame(animationFrameID);
-      remaining = timerList[currentIndex] - (Date.now() - startTimestamp) / 1000;
+      remaining = partsList[currentIndex] - (Date.now() - startTimestamp) / 1000;
     }
 
     function resetTimers() {
@@ -469,7 +498,7 @@
       pace = 0;
       resetTimersView();
       stopTracking();
-      clearTimeout(timeoutID);
+      //clearTimeout(timeoutID);
       cancelAnimationFrame(animationFrameID);
       releaseWakeLock();
       setMode("off");
@@ -480,19 +509,33 @@
       countdownDisplay.textContent = "Play to Start";
     }
 
+    function toTimeString(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      const tenths = Math.floor((seconds % 1) * 10);
+      return `${minutes}:${secs < 10 ? '0' : ''}${secs}.${tenths}`;
+    }
     function updateDisplay() {
-      if (!running || paused || currentIndex >= timerList.length) return;
+      if (!running || paused || currentIndex >= partsList.length) return;
 
-      const elapsed = (Date.now() - startTimestamp) / 1000;
-      const total = timerList[currentIndex];
-      const timeLeft = Math.max(0, total - elapsed);
-      // turn to minutes and seconds
-      const minutes = Math.floor(timeLeft / 60);
-      const seconds = Math.floor(timeLeft % 60);
-      const tenths = Math.floor((timeLeft % 1) * 10);
-      countdownDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}.${tenths}`;
+      target = partsList[currentIndex].target
+      const targetCovered = target == "T" ? (Date.now() - startTimestamp) / 1000 : totalDistance;
+      const targetTotal = partsList[currentIndex].input;
+      const targetLeft = Math.max(0, targetTotal - targetCovered);
+      countdownDisplay.textContent = target == "T" ? toTimeString(targetLeft) : `${targetLeft.toFixed(3)} km`;
 
       animationFrameID = requestAnimationFrame(updateDisplay);
+      if (targetLeft <= 0) {
+        setPartCompleted(currentIndex);
+        setTimerStats(currentIndex, `${km.toFixed(3)}, ${pace.toFixed(2)}`);
+        speak(`Stage ${currentIndex + 1} finished`);
+        beep();
+        currentIndex++;
+        paused = false;
+        remaining = 0;
+        stopTracking();
+        runCurrentTimer();
+      }
     }
 
     document.addEventListener('gesturestart', function (e) {
