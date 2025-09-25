@@ -242,13 +242,13 @@
 
       watchId = navigator.geolocation.watchPosition(
         pos => {
-          const { latitude, longitude, altitude, accuracy, altitudeAccuracy } = pos.coords;
-          document.getElementById("gps-stat").textContent = `on ${Date.now()} ${altitude}, ${altitudeAccuracy}`;
+          const { latitude, longitude, altitude, accuracy } = pos.coords;
+          document.getElementById("gps-stat").textContent = `on ${Date.now()} ${altitude.toFixed(3)}`;
 
           document.getElementById("gps-last3").textContent = document.getElementById("gps-last2").textContent;
           document.getElementById("gps-last2").textContent = document.getElementById("gps-last1").textContent;
           document.getElementById("gps-last1").textContent = 
-            `${accuracy > 5 ? "X" : ""} ${accuracy.toFixed(2)}, ${altitude.toFixed(3)}, ${altitudeAccuracy.toFixed(2)}`;
+            `${accuracy > 5 ? "X" : ""} ${accuracy.toFixed(2)}, ${altitude.toFixed(3)}`;
 
           if (accuracy > 5) {
             console.warn(`Ignoring inaccurate position: ${accuracy}m`);
