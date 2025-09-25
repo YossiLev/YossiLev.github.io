@@ -512,7 +512,7 @@
 
       target = partsList[currentIndex].target
       const targetCovered = target == "T" ? (Date.now() - startTimestamp) / 1000 : totalDistance;
-      const targetTotal = partsList[currentIndex].input * (target == "T" ? 60 : 1);
+      const targetTotal = partsList[currentIndex].input * (target == "T" ? 60 : 1000);
       const targetLeft = Math.max(0, targetTotal - targetCovered);
       countdownDisplay.textContent = target == "T" ? toTimeString(targetLeft) : `${(targetLeft * 0.001).toFixed(3)} km`;
 
