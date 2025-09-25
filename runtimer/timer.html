@@ -172,7 +172,7 @@
     // Listen for back
     window.addEventListener("popstate", function(e) {
       e.preventDefault();
-      if (!running) {
+      if (!running || paused) {
         // Not running, allow back
         history.back();
       } else {
