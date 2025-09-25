@@ -144,7 +144,8 @@
     const countdownDisplay = document.getElementById('countdown-display');
 
     let endedSafariVerificaiton = false;
-    let partsList = [];
+    let tt = localStorage.getItem("partsList");
+    let partsList = tt ? JSON.parse(tt) : [];
     let currentIndex = 0;
     let running = false;
     let paused = false;
@@ -161,6 +162,8 @@
     let startTime;
 
     let wakeLock = null;
+
+    setPartValuse(partsList);
 
     // Push an initial state so back button triggers popstate
     history.pushState({page: 1}, "", "");
@@ -303,28 +306,29 @@
       document.getElementById("pace").textContent = pace.toFixed(2);
     }
 
-    function addTimer(value = '') {
+    function addTimer(obj = {}) {
       const entry = document.createElement('div');
       entry.className = 'time-entry';
 
       const mode = document.createElement('button');
       mode.name = 'mode';
-      mode.textContent = "R";
+      mode.textContent = 'mode' in obj ? obj.mode : "R";
       mode.onclick = () => { mode.textContent = mode.textContent === 'R' ? 'W' : 'R';};
 
       const target = document.createElement('button');
       target.name = 'target';
-      target.textContent = "T";
+      target.textContent = 'target' in obj ? obj.target : "T";
       target.onclick = () => { target.textContent = target.textContent === 'T' ? 'D' : 'T';};
 
       const input = document.createElement('input');
       input.type = 'number';
       input.min = '0';
-      input.value = value;
+      input.value = 'input' in obj ? obj.input : '';
       input.style.width = '100px';
 
       const stats = document.createElement('div');
       stats.className = 'step-stats';
+      stats.textContent = 'stats' in obj ? obj.stats : '';
 
       const delButton = document.createElement('button');
       delButton.innerHTML = '&#10060;';
@@ -342,22 +346,21 @@
     }
 
     function getPartsValues() {
-      // return Array.from(timersContainer.querySelectorAll('input')).map(
-      //   input => parseFloat(input.value) * 60
-      // ).filter(v => !isNaN(v) && v > 0);
       return Array.from(timersContainer.children).map(
         cont => {
           const mode = cont.querySelectorAll('[name="mode"]')[0].textContent;
           const target = cont.querySelectorAll('[name="target"]')[0].textContent;
           let input = parseFloat(cont.querySelector('input').value);
-          if (target === 'T') {
-            input *= 60;
-          }
-          return {mode, target, input};
+          const stats = cont.querySelector('.step-stats').textContent;
+          return {mode, target, input, stats};
         }
       ).filter(v => !isNaN(v.input) && v.input > 0.0);
     }
 
+    function setPartValuse(parts) {
+      Array.from(timersContainer.children).forEach(c => c.remove());
+      parts.forEach(p => addTimer(p));
+    }
 
     function setTimerStats(i, stat_text) {
       timersContainer.querySelector(`.time-entry:nth-child(${i + 1}) .step-stats`).textContent = stat_text;
@@ -413,6 +416,7 @@
 
       // Not running at all, start fresh
       partsList = getPartsValues();
+      localStorage.setItem("partsList", JSON.stringify(partsList));
       currentIndex = 0;
 
       if (partsList.length === 0) return;
@@ -428,8 +432,6 @@
     function skipTimers() {
       if (!running || paused) return;
 
-      //clearTimeout(timeoutID);
-      //cancelAnimationFrame(animationFrameID);
       setPartCompleted(currentIndex);
       setTimerStats(currentIndex, `${km.toFixed(3)}, ${pace.toFixed(2)} Skipped`);
       speak(`Stage ${currentIndex + 1} skipped`);
@@ -455,7 +457,7 @@
       if (!paused) {
         totalDistance = 0;
       } else {
-        startTime = Date.now() - (partsList[currentIndex].input - stillToGo) * 1000;
+        startTime = Date.now() - (partsList[currentIndex].input * 60.0 - stillToGo * 60) * 1000;
         startTimestamp = startTime;
       }
       setMode("run");
@@ -463,18 +465,7 @@
       paused = false;
 
       startTracking();
-      // timeoutID = setTimeout(() => {
-      //   // upon timer completion
-      //   setPartCompleted(currentIndex);
-      //   setTimerStats(currentIndex, `${km.toFixed(3)}, ${pace.toFixed(2)}`);
-      //   speak(`Stage ${currentIndex + 1} finished`);
-      //   beep();
-      //   currentIndex++;
-      //   paused = false;
-      //   remaining = 0;
-      //   stopTracking();
-      //   runCurrentTimer();
-      // }, duration * 1000);
+
     }
 
     function pauseTimers() {
@@ -520,7 +511,7 @@
 
       target = partsList[currentIndex].target
       const targetCovered = target == "T" ? (Date.now() - startTimestamp) / 1000 : totalDistance;
-      const targetTotal = partsList[currentIndex].input;
+      const targetTotal = partsList[currentIndex].input * (target == "T" ? 60 : 1);
       const targetLeft = Math.max(0, targetTotal - targetCovered);
       countdownDisplay.textContent = target == "T" ? toTimeString(targetLeft) : `${targetLeft.toFixed(3)} km`;
 
