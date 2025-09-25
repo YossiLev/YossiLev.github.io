@@ -243,6 +243,7 @@
       watchId = navigator.geolocation.watchPosition(
         pos => {
           const { latitude, longitude, altitude, accuracy, altitudeAccuracy } = pos.coords;
+          document.getElementById("gps-stat").textContent = "on ${Date.now()} ";
 
           document.getElementById("gps-last3").textContent = document.getElementById("gps-last2").textContent;
           document.getElementById("gps-last2").textContent = document.getElementById("gps-last1").textContent;
