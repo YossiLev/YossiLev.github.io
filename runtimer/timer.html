@@ -29,13 +29,13 @@
 
     /* Show when body has the right mode */
     body.mode-run .disp-on-mode-run {
-      display: block;
+      display: inline-block;
     }
     body.mode-pause .disp-on-mode-pause {
-      display: block;
+      display: inline-block;
     }
     body.mode-off .disp-on-mode-off {
-      display: block;
+      display: inline-block;
     }
 
     #countdown-display {
@@ -60,6 +60,7 @@
       padding: 10px;
       font-size: 16px !important;
       margin: 5px 5px 5px 0;
+      display: inline-block;
     }
     #timers-container {
       width: 100%;
@@ -137,7 +138,12 @@
   </div>
   <div id="timers-container"></div>
   <button onclick="addTimer()" class="disp-on-mode-pause disp-on-mode-off">Add Stage</button>
-  <br><br>
+  <button onclick="addTimer()" class="disp-on-mode-pause disp-on-mode-off">Clear</button>
+  <button onclick="saveNewTraining()" class="disp-on-mode-pause disp-on-mode-off">Save</button>
+  <button onclick="showTrainings()" class="disp-on-mode-pause disp-on-mode-off">Restore</button>
+  <div id="trainings-list" class="disp-on-mode-pause disp-on-mode-off"></div>
+
+  </div>
 
   <script>
     const timersContainer = document.getElementById('timers-container');
@@ -149,7 +155,6 @@
     let currentIndex = 0;
     let running = false;
     let paused = false;
-    //let timeoutID = null;
     let remaining = 0;
     let startTimestamp = null;
     let animationFrameID = null;
@@ -163,11 +168,10 @@
 
     let wakeLock = null;
 
-    setPartValuse(partsList);
+    setPartValus(partsList);
 
     // Push an initial state so back button triggers popstate
     history.pushState({page: 1}, "", "");
-
 
     // Listen for back
     window.addEventListener("popstate", function(e) {
@@ -357,10 +361,54 @@
         }
       ).filter(v => !isNaN(v.input) && v.input > 0.0);
     }
-
-    function setPartValuse(parts) {
+    function setPartValus(parts) {
       Array.from(timersContainer.children).forEach(c => c.remove());
       parts.forEach(p => addTimer(p));
+    }
+    function saveNewTraining() {
+      const parts = getPartsValues();
+      let trainings = localStorage.getItem("Trainings") || "[]";
+      trainings = JSON.parse(trainings);
+      trainings.push({ date: new Date().toISOString(), summary: "--", parts });     
+      localStorage.setItem("Trainings", JSON.stringify(trainings));
+      alert("Saved");
+    }
+    function restoreTraining(index) {
+      let trainings = localStorage.getItem("Trainings") || "[]";
+      trainings = JSON.parse(trainings);
+      if (index < 0 || index >= trainings.length) {
+        return;
+      }
+      const training = trainings[index];
+      setPartValus(training.parts);
+      localStorage.setItem("partsList", JSON.stringify(training.parts));
+    }
+    function showTrainings() {
+      let trainings = localStorage.getItem("Trainings") || "[]";
+      trainings = JSON.parse(trainings);
+      const container = document.getElementById("trainings-list");
+      container.innerHTML = "";
+      trainings.forEach((t, i) => {
+        const div = document.createElement("div");
+        div.textContent = `${i + 1}. ${t.date} - ${t.summary} (${t.parts.length} parts)`;
+        const btnRestore = document.createElement("button");
+        btnRestore.textContent = "R";
+        btnRestore.onclick = () => restoreTraining(i);
+        div.appendChild(btnRestore);
+        const btnDelete = document.createElement("button");
+        btnDelete.textContent = "X";
+        btnDelete.onclick = () => {
+          if (confirm("Delete this training?")) {
+            let trainings = localStorage.getItem("Trainings") || "[]";
+            trainings = JSON.parse(trainings);
+            trainings.splice(i, 1);
+            localStorage.setItem("Trainings", JSON.stringify(trainings));
+            showTrainings();
+          }
+        };
+        div.appendChild(btnDelete);
+        container.appendChild(div);
+      });
     }
 
     function setTimerStats(i, stat_text) {
