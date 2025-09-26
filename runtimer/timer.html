@@ -79,6 +79,9 @@
       display: flex;
       gap: 10px;
     }
+    #trainings-list {
+      display: block;
+    }
     .dbdata {
       font-size: 24px;
       display: flex;
@@ -371,7 +374,7 @@
       trainings = JSON.parse(trainings);
       trainings.push({ date: new Date().toISOString(), summary: "--", parts });     
       localStorage.setItem("Trainings", JSON.stringify(trainings));
-      alert("Saved");
+      showTrainings();
     }
     function restoreTraining(index) {
       let trainings = localStorage.getItem("Trainings") || "[]";
@@ -383,6 +386,17 @@
       setPartValus(training.parts);
       localStorage.setItem("partsList", JSON.stringify(training.parts));
     }
+    function ShortDate(datestr) {
+      const date = new Date(datestr);
+      const pad = (n) => String(n).padStart(2, '0');
+
+      const month = pad(date.getMonth() + 1); // Months are 0-based
+      const day = pad(date.getDate());
+      const hours = pad(date.getHours());
+      const minutes = pad(date.getMinutes());
+
+      return `${month}-${day} ${hours}:${minutes}`;
+    } 
     function showTrainings() {
       let trainings = localStorage.getItem("Trainings") || "[]";
       trainings = JSON.parse(trainings);
@@ -390,7 +404,7 @@
       container.innerHTML = "";
       trainings.forEach((t, i) => {
         const div = document.createElement("div");
-        div.textContent = `${i + 1}. ${t.date} - ${t.summary} (${t.parts.length} parts)`;
+        div.textContent = `${ShortDate(t.date)} ${t.summary} (${t.parts.length} parts)`;
         const btnRestore = document.createElement("button");
         btnRestore.textContent = "R";
         btnRestore.onclick = () => restoreTraining(i);
