@@ -23,7 +23,7 @@
           margin: 0;
     }
     /* By default, hide all */
-    .disp-on-mode-run, .disp-on-mode-pause, .disp-on-mode-off {
+    .disp-on-mode-run, .disp-on-mode-pause, .disp-on-mode-off, .disp-on-page-run, .disp-on-page-list {
       display: none;
     }
 
@@ -37,13 +37,20 @@
     body.mode-off .disp-on-mode-off {
       display: inline-block;
     }
+    body.page-run .disp-on-page-run {
+      display: block;
+    }
+    body.page-list .disp-on-page-list {
+      display: block;
+    }
 
-    #countdown-display {
+    .head-line {
       font-size: 48px;
       font-weight: bold;
       margin-bottom: 20px;
       text-align: center;
     }
+    
     .time-entry {
       display: flex;
       flex-wrap: wrap;
@@ -109,45 +116,59 @@
 </head>
 <body>
   <div id="app-scroll">
+  <div class="disp-on-page-run">
+    <div id="countdown-display" class="head-line">Play to Start</div>
+    <div id="stats">
+      <div><span id="distance">0</span><span id="distance-units">km</span></div>
+      <div><span id="pace">0</span><span id="pace-units">min/km</span></div>
+    </div> 
 
-  <div id="countdown-display">Play to Start</div>
-  <div id="stats">
-    <div><span id="distance">0</span><span id="distance-units">km</span></div>
-    <div><span id="pace">0</span><span id="pace-units">min/km</span></div>
-  </div> 
-  <div class="dbdata">
-    <div><span id="gps-stat">--</span></div>
-    <div><span id="gps-dist">--</span></div>
-  </div>
-  <div class="dbdata">
-    <div><span id="gps-last1">--</span></div>
-  </div>
-  <div class="dbdata">
-    <div><span id="gps-last2">--</span></div>
-  </div>
-  <div class="dbdata">
-    <div><span id="gps-last3">--</span></div>
-  </div>
-  <div style="display: flex; gap:5px; justify-content: center; align-items: center;">
-    <button onclick="startTimers()" class="bigb disp-on-mode-pause disp-on-mode-off"add>
-      <img src="but-run.png" alt="Run" width="72" height="72"></button>
-    <button onclick="pauseTimers()" class="bigb disp-on-mode-run">
-      <img src="but-pause.png" alt="Pause" width="72" height="72"></button>
-    <button onclick="resetTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
-      <img src="but-restart.png" alt="Restart" width="72" height="72"></button>
-    <button onclick="skipTimers()" class="bigb disp-on-mode-run">
-      <img src="but-skip.png" alt="Skip" width="72" height="72"></button>
+    <div style="display: flex; gap:5px; justify-content: center; align-items: center;">
+      <button onclick="startTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
+        <img src="but-run.png" alt="Run" width="72" height="72"></button>
+      <button onclick="pauseTimers()" class="bigb disp-on-mode-run">
+        <img src="but-pause.png" alt="Pause" width="72" height="72"></button>
+      <button onclick="resetTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
+        <img src="but-restart.png" alt="Restart" width="72" height="72"></button>
+      <button onclick="skipTimers()" class="bigb disp-on-mode-run">
+        <img src="but-skip.png" alt="Skip" width="72" height="72"></button>
 
-  </div>
-  <div id="timers-container"></div>
-  <button onclick="addTimer()" class="disp-on-mode-pause disp-on-mode-off">Add Stage</button>
-  <button onclick="addTimer()" class="disp-on-mode-pause disp-on-mode-off">Clear</button>
-  <button onclick="saveNewTraining()" class="disp-on-mode-pause disp-on-mode-off">Save</button>
-  <button onclick="showTrainings()" class="disp-on-mode-pause disp-on-mode-off">Restore</button>
-  <div id="trainings-list" class="disp-on-mode-pause disp-on-mode-off"></div>
+    </div>
+    <div id="timers-container"></div>
+    <button onclick="addTimer()" class="disp-on-mode-pause disp-on-mode-off">Add Stage</button>
+    <button onclick="addTimer()" class="disp-on-mode-pause disp-on-mode-off">Clear</button>
+    <button onclick="saveNewTraining()" class="disp-on-mode-pause disp-on-mode-off">Save</button>
+    <button onclick="showTrainings()" class="disp-on-mode-pause disp-on-mode-off">Restore</button>
 
+    <div class="dbdata">
+      <div><span id="gps-stat">--</span></div>
+      <div><span id="gps-dist">--</span></div>
+    </div>
+    <div class="dbdata">
+      <div><span id="gps-last1">--</span></div>
+    </div>
+    <div class="dbdata">
+      <div><span id="gps-last2">--</span></div>
+    </div>
+    <div class="dbdata">
+      <div><span id="gps-last3">--</span></div>
+    </div>
   </div>
 
+  <!-- page 2 - a list of saved tranings-->
+  <div class="disp-on-page-list">
+    <div class="head-line">Saved Trainings</div>
+    <div id="trainings-list" class="disp-on-mode-pause disp-on-mode-off"></div>
+
+  </div>
+
+  <div style="height: 150px; width:100%; "></div>
+  <div style="height: 60px; background-color: rgb(187, 187, 202); display: flex; gap: 20px;padding: 20px; position: fixed; bottom: 0; left: 0; right: 0 ;z-index: 10;">
+    <div style="width:60px; height:60px; background-color: yellow;" onclick="setPage('run');">RUN</div>
+    <div style="width:60px; height:60px; background-color: yellow;" onclick="setPage('list');">LIST</div>
+    <div style="width:60px; height:60px; background-color: yellow;">C</div>
+  </div>
+  </br></br>
   <script>
     const timersContainer = document.getElementById('timers-container');
     const countdownDisplay = document.getElementById('countdown-display');
@@ -193,6 +214,11 @@
       document.body.classList.add(`mode-${mode}`);
     }
     setMode("off");
+    function setPage(page) {
+      document.body.classList.remove("page-run", "page-list");
+      document.body.classList.add(`page-${page}`);
+    }
+    setPage("run");
 
     async function requestWakeLock() {
       try {
