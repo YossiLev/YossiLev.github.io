@@ -110,7 +110,18 @@
     .step-stats {
       font-size: 26px;
     }
-    
+    .tab-button-active {
+      border: 2px solid red;
+      background-color: white!important;
+    }
+    .tab-button {
+      background-color: lightgray;
+      width:60px;
+      height:60px; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
   </style>
 </head>
@@ -164,9 +175,9 @@
 
   <div style="height: 150px; width:100%; "></div>
   <div style="height: 60px; background-color: rgb(187, 187, 202); display: flex; gap: 20px;padding: 20px; position: fixed; bottom: 0; left: 0; right: 0 ;z-index: 10;">
-    <div style="width:60px; height:60px; background-color: yellow;" onclick="setPage('run');">RUN</div>
-    <div style="width:60px; height:60px; background-color: yellow;" onclick="setPage('list');">LIST</div>
-    <div style="width:60px; height:60px; background-color: yellow;">C</div>
+    <div id="tab-run" class="tab-button" onclick="setPage('run');">RUN</div>
+    <div id="tab-list" class="tab-button" onclick="setPage('list');">LIST</div>
+    <div id="tab-map" class="tab-button" onclick="setPage('map');">MAP</div>
   </div>
   </br></br>
   <script>
@@ -217,6 +228,8 @@
     function setPage(page) {
       document.body.classList.remove("page-run", "page-list");
       document.body.classList.add(`page-${page}`);
+      Array.from(document.getElementsByClassName("tab-button")).forEach(b => b.classList.remove("tab-button-active"));
+      document.getElementById(`tab-${page}`).classList.add("tab-button-active");
     }
     setPage("run");
 
