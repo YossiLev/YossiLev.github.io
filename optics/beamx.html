@@ -153,7 +153,7 @@ document.getElementById('captureBtn').addEventListener('click',()=>{
   
   // Record measurement
   const dist = parseFloat(document.getElementById("distance").textContent);
-  measurements.push({distance:dist,width:widthPx,side:sideDist});
+  measurements.push({distance:dist,width:widthPx,side:sideDist,maxLeftIdx:maxLeftIdx,maxRightIdx:maxRightIdx});
   updateTable();
 });
 
@@ -177,8 +177,8 @@ function drawGraph(avgProfile,redProfile){
 
 function updateTable(){
   const table=document.getElementById('measurementsTable');
-  table.innerHTML="<tr><th>Distance (cm)</th><th>Beam Width (px)</th><th>Side Distance (px)</th></tr>";
-  measurements.forEach(m=>{ table.innerHTML+=`<tr><td>${m.distance.toFixed(1)}</td><td>${m.width}</td><td>${m.side}</td></tr>`; });
+  table.innerHTML="<tr><th>Distance (cm)</th><th>Beam Width (px)</th><th>Side Distance (px)</th><th>Max Left Index</th><th>Max Right Index</th></tr>";
+  measurements.forEach(m=>{ table.innerHTML+=`<tr><td>${m.distance.toFixed(1)}</td><td>${m.width}</td><td>${m.side}</td><td>${m.maxLeftIdx}</td><td>${m.maxRightIdx}</td></tr>`; });
 }
 
 // Initialize camera
