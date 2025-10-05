@@ -117,7 +117,8 @@ document.getElementById('captureBtn').addEventListener('click',()=>{
 
   // Find brightest pixel
   let maxI=-1,maxIdx=-1;
-  for(let i=0;i<data.length;i+=4){
+  margin = data.length / 4;
+  for(let i=margin;i<data.length - margin;i+=4){
     const I=(data[i]+data[i+1]+data[i+2])/3;
     if(I>maxI){ maxI=I; maxIdx=i; }
   }
@@ -128,7 +129,7 @@ document.getElementById('captureBtn').addEventListener('click',()=>{
   const avgProfile=[], redProfile=[];
   for(let x0=0;x0<canvas.width;x0++){
     const idx=(py*canvas.width+x0)*4;
-    avgProfile.push((data[idx]+data[idx+1]+data[idx+2])/3);
+    avgProfile.push(255 - (data[idx]+data[idx+1]+data[idx+2])/3);
     redProfile.push(data[idx]);
   }
 
@@ -141,9 +142,17 @@ document.getElementById('captureBtn').addEventListener('click',()=>{
   for(let i=canvas.width-1;i>=0;i--){ if(avgProfile[i]>=halfMax){ right=i; break; } }
   const widthPx=right-left;
 
+  // measure two side lines distance
+  let maxLeft=0,maxRight=0, maxLeftIdx=-1,maxRightIdx=-1;
+  for(let i=0;i<canvas.width / 2 - 1;i++){
+    if(avgProfile[i]>maxLeft){ maxLeft=avgProfile[i]; maxLeftIdx=i; }
+    if(avgProfile[i + canvas.width / 2]>maxRight){ maxRight=avgProfile[i + canvas.width / 2]; maxRightIdx=i; }
+  }
+  const sideDist=Math.abs(maxRightIdx-maxLeftIdx);
+  
   // Record measurement
   const dist = parseFloat(document.getElementById("distance").textContent);
-  measurements.push({distance:dist,width:widthPx});
+  measurements.push({distance:dist,width:widthPx,side:sideDist});
   updateTable();
 });
 
@@ -167,8 +176,8 @@ function drawGraph(avgProfile,redProfile){
 
 function updateTable(){
   const table=document.getElementById('measurementsTable');
-  table.innerHTML="<tr><th>Distance (cm)</th><th>Beam Width (px)</th></tr>";
-  measurements.forEach(m=>{ table.innerHTML+=`<tr><td>${m.distance.toFixed(1)}</td><td>${m.width}</td></tr>`; });
+  table.innerHTML="<tr><th>Distance (cm)</th><th>Beam Width (px)</th><th>Side Distance (px)</th></tr>";
+  measurements.forEach(m=>{ table.innerHTML+=`<tr><td>${m.distance.toFixed(1)}</td><td>${m.width}</td><td>${m.side}</td></tr>`; });
 }
 
 // Initialize camera
