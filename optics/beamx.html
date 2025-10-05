@@ -148,7 +148,7 @@ document.getElementById('captureBtn').addEventListener('click',()=>{
   let maxLeft=0,maxRight=0, maxLeftIdx=-1,maxRightIdx=-1;
   for(let i=0;i<canvas.width / 2 - 1;i++){
     if(avgProfile[i]>maxLeft){ maxLeft=avgProfile[i]; maxLeftIdx=i; }
-    if(avgProfile[i + canvas.width / 2]>maxRight){ maxRight=avgProfile[i + canvas.width / 2]; maxRightIdx=i; }
+    if(avgProfile[i + canvas.width / 2]>maxRight){ maxRight=avgProfile[i + canvas.width / 2]; maxRightIdx=i + canvas.width / 2
   }
   const sideDist=Math.abs(maxRightIdx-maxLeftIdx);
   
@@ -179,7 +179,7 @@ function drawGraph(avgProfile,redProfile){
 function updateTable(){
   const table=document.getElementById('measurementsTable');
   table.innerHTML="<tr><th>Distance (cm)</th><th>Beam Width (px)</th><th>Side Distance (px)</th><th>Max Left Index</th><th>Max Right Index</th><th>Left</th><th>Right</th></tr>";
-  measurements.forEach(m=>{ table.innerHTML+=`<tr><td>${m.distance.toFixed(1)}</td><td>${m.width}</td><td>${m.side}</td><td>${m.maxLeftIdx}</td><td>${m.maxRightIdx}</td><td>${m.leftPx}</td><td>${m.rightPx}/td></tr>`; });
+  measurements.forEach(m=>{ table.innerHTML+=`<tr><td>${m.distance.toFixed(1)}</td><td>${m.width}</td><td>${m.side}</td><td>${m.maxLeftIdx}</td><td>${m.maxRightIdx}</td><td>${m.leftPx}</td><td>${m.rightPx}</td></tr>`; });
 }
 
 // Initialize camera
