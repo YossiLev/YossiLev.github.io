@@ -148,7 +148,7 @@ document.getElementById('captureBtn').addEventListener('click',()=>{
   let maxLeft=0,maxRight=0, maxLeftIdx=-1,maxRightIdx=-1;
   for(let i=0;i<canvas.width / 2 - 1;i++){
     if(avgProfile[i]>maxLeft){ maxLeft=avgProfile[i]; maxLeftIdx=i; }
-    if(avgProfile[i + canvas.width / 2]>maxRight){ maxRight=avgProfile[i + canvas.width / 2]; maxRightIdx=i + canvas.width / 2
+    if(avgProfile[i + canvas.width / 2]>maxRight){ maxRight=avgProfile[i + canvas.width / 2]; maxRightIdx=i + canvas.width / 2;}
   }
   const sideDist=Math.abs(maxRightIdx-maxLeftIdx);
   
