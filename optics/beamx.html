@@ -137,6 +137,7 @@ document.getElementById('captureBtn').addEventListener('click',()=>{
   drawGraph(avgProfile,redProfile);
 
   // Measure beam width (example: FWHM)
+  maxI=Math.max(...redProfile);
   const halfMax=maxI/2;
   let left=0,right=canvas.width-1;
   for(let i=0;i<canvas.width;i++){ if(redProfile[i]>=halfMax){ left=i; break; } }
