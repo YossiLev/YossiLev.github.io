@@ -139,8 +139,8 @@ document.getElementById('captureBtn').addEventListener('click',()=>{
   // Measure beam width (example: FWHM)
   const halfMax=maxI/2;
   let left=0,right=canvas.width-1;
-  for(let i=0;i<canvas.width;i++){ if(avgProfile[i]>=halfMax){ left=i; break; } }
-  for(let i=canvas.width-1;i>=0;i--){ if(avgProfile[i]>=halfMax){ right=i; break; } }
+  for(let i=0;i<canvas.width;i++){ if(redProfile[i]>=halfMax){ left=i; break; } }
+  for(let i=canvas.width-1;i>=0;i--){ if(redProfile[i]>=halfMax){ right=i; break; } }
   const widthPx=right-left;
 
   // measure two side lines distance
