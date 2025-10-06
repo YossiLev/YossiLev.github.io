@@ -22,7 +22,7 @@
     }
     body {
       font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
-      background: linear-gradient(180deg, #fefefe 0%, #f5f5f9 100%);
+      background: linear-gradient(180deg, #f7f8fa 0%, #f5f5f9 100%);
       color: #111;
       margin: 0;
       padding: 0;
@@ -101,7 +101,7 @@
       border-radius: 8px;
       font-size: 18px;
       font-weight: 600;
-      padding: 8px 12px;
+      padding: 6px 10px;
       background-color: #f0f0f0;
       color: #333;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -156,7 +156,6 @@
       font-size: 26px;
     }
 
-
     #bottom-tabs {
       position: fixed;
       bottom: 16px;
@@ -196,7 +195,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 6px;
       background: white;
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
@@ -215,10 +214,10 @@
   }
 
   .time-entry input {
-    width: 90px;
+    width: 50px;
     text-align: center;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 2px solid #ccc;
     font-size: 22px;
     padding: 4px;
   }
@@ -258,9 +257,8 @@
     </div>
     <div id="timers-container"></div>
     <button onclick="addTimer()" class="disp-on-mode-pause disp-on-mode-off">Add Stage</button>
-    <button onclick="addTimer()" class="disp-on-mode-pause disp-on-mode-off">Clear</button>
-    <button onclick="saveNewTraining()" class="disp-on-mode-pause disp-on-mode-off">Save</button>
-    <button onclick="showTrainings()" class="disp-on-mode-pause disp-on-mode-off">Restore</button>
+    <button onclick="clearParts()" class="disp-on-mode-off">Clear</button>
+    <button onclick="saveNewTraining()" class="disp-on-mode-off">Save</button>
 
     <div class="dbdata">
       <div><span id="gps-stat">--</span></div>
@@ -288,6 +286,7 @@
     <div id="tab-run" class="tab-button" onclick="setPage('run');">RUN</div>
     <div id="tab-list" class="tab-button" onclick="setPage('list');">LIST</div>
     <div id="tab-map" class="tab-button" onclick="setPage('map');">MAP</div>
+    <div id="tab-data" class="tab-button" onclick="setPage('data');">DATA</div>
   </div>
   </br></br>
   <script>
@@ -329,6 +328,7 @@
         history.pushState({page: 1}, "", "");
       }
     });
+    updateTranings();
 
     function setMode(mode) {
       document.body.classList.remove("mode-run", "mode-pause", "mode-off");
@@ -481,7 +481,7 @@
       input.type = 'number';
       input.min = '0';
       input.value = 'input' in obj ? obj.input : '';
-      input.style.width = '100px';
+      input.style.width = '80px';
 
       const stats = document.createElement('div');
       stats.className = 'step-stats';
@@ -517,13 +517,18 @@
       Array.from(timersContainer.children).forEach(c => c.remove());
       parts.forEach(p => addTimer(p));
     }
+    function clearParts() {
+      partsList = [];
+      localStorage.setItem("partsList", JSON.stringify(partsList));
+      setPartValus(partsList);
+    }
     function saveNewTraining() {
       const parts = getPartsValues();
       let trainings = localStorage.getItem("Trainings") || "[]";
       trainings = JSON.parse(trainings);
       trainings.push({ date: new Date().toISOString(), summary: "--", parts });     
       localStorage.setItem("Trainings", JSON.stringify(trainings));
-      showTrainings();
+      updateTranings();
     }
     function restoreTraining(index) {
       let trainings = localStorage.getItem("Trainings") || "[]";
@@ -534,6 +539,7 @@
       const training = trainings[index];
       setPartValus(training.parts);
       localStorage.setItem("partsList", JSON.stringify(training.parts));
+      setPage("run");
     }
     function ShortDate(datestr) {
       const date = new Date(datestr);
@@ -546,7 +552,7 @@
 
       return `${month}-${day} ${hours}:${minutes}`;
     } 
-    function showTrainings() {
+    function updateTranings() {
       let trainings = localStorage.getItem("Trainings") || "[]";
       trainings = JSON.parse(trainings);
       const container = document.getElementById("trainings-list");
@@ -566,7 +572,7 @@
             trainings = JSON.parse(trainings);
             trainings.splice(i, 1);
             localStorage.setItem("Trainings", JSON.stringify(trainings));
-            showTrainings();
+            updateTranings();
           }
         };
         div.appendChild(btnDelete);
