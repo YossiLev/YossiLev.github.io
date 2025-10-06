@@ -117,10 +117,12 @@ document.getElementById('captureBtn').addEventListener('click',()=>{
 
   // Find brightest pixel
   let maxI=-1,maxIdx=-1;
-  for(let i=0;i<data.length;i+=4){
+  margin = data.length / 2;
+  for(let i=margin - canvas.width * 8 ;i<margin + canvas.width * 8;i+=4){
     const I=(data[i]+data[i+1]+data[i+2])/3;
     if(I>maxI){ maxI=I; maxIdx=i; }
   }
+
   const px = maxIdx/4 % canvas.width;
   const py = Math.floor(maxIdx/4/canvas.width);
 
@@ -128,22 +130,31 @@ document.getElementById('captureBtn').addEventListener('click',()=>{
   const avgProfile=[], redProfile=[];
   for(let x0=0;x0<canvas.width;x0++){
     const idx=(py*canvas.width+x0)*4;
-    avgProfile.push((data[idx]+data[idx+1]+data[idx+2])/3);
+    avgProfile.push(255 - (data[idx]+data[idx+1]+data[idx+2])/3);
     redProfile.push(data[idx]);
   }
 
   drawGraph(avgProfile,redProfile);
 
   // Measure beam width (example: FWHM)
+  maxI=Math.max(...redProfile);
   const halfMax=maxI/2;
   let left=0,right=canvas.width-1;
-  for(let i=0;i<canvas.width;i++){ if(avgProfile[i]>=halfMax){ left=i; break; } }
-  for(let i=canvas.width-1;i>=0;i--){ if(avgProfile[i]>=halfMax){ right=i; break; } }
+  for(let i=0;i<canvas.width;i++){ if(redProfile[i]>=halfMax){ left=i; break; } }
+  for(let i=canvas.width-1;i>=0;i--){ if(redProfile[i]>=halfMax){ right=i; break; } }
   const widthPx=right-left;
 
+  // measure two side lines distance
+  let maxLeft=0,maxRight=0, maxLeftIdx=-1,maxRightIdx=-1;
+  for(let i=0;i<canvas.width / 2 - 1;i++){
+    if(avgProfile[i]>maxLeft){ maxLeft=avgProfile[i]; maxLeftIdx=i; }
+    if(avgProfile[i + canvas.width / 2]>maxRight){ maxRight=avgProfile[i + canvas.width / 2]; maxRightIdx=i + canvas.width / 2;}
+  }
+  const sideDist=Math.abs(maxRightIdx-maxLeftIdx);
+  
   // Record measurement
   const dist = parseFloat(document.getElementById("distance").textContent);
-  measurements.push({distance:dist,width:widthPx});
+  measurements.push({distance:dist,width:widthPx,side:sideDist,maxLeftIdx:maxLeftIdx,maxRightIdx:maxRightIdx, leftPx:left, rightPx:right});
   updateTable();
 });
 
@@ -167,8 +178,8 @@ function drawGraph(avgProfile,redProfile){
 
 function updateTable(){
   const table=document.getElementById('measurementsTable');
-  table.innerHTML="<tr><th>Distance (cm)</th><th>Beam Width (px)</th></tr>";
-  measurements.forEach(m=>{ table.innerHTML+=`<tr><td>${m.distance.toFixed(1)}</td><td>${m.width}</td></tr>`; });
+  table.innerHTML="<tr><th>Distance (cm)</th><th>Beam Width (px)</th><th>Side Distance (px)</th><th>Max Left Index</th><th>Max Right Index</th><th>Left</th><th>Right</th></tr>";
+  measurements.forEach(m=>{ table.innerHTML+=`<tr><td>${m.distance.toFixed(1)}</td><td>${m.width}</td><td>${m.side}</td><td>${m.maxLeftIdx}</td><td>${m.maxRightIdx}</td><td>${m.leftPx}</td><td>${m.rightPx}</td></tr>`; });
 }
 
 // Initialize camera
