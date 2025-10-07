@@ -75,7 +75,7 @@
       font-size: 42px;
       font-weight: 700;
       color: #222;
-      margin: 20px 0;
+      margin: 10px 0;
     }
 
     .time-entry {
@@ -101,7 +101,7 @@
       border-radius: 8px;
       font-size: 18px;
       font-weight: 600;
-      padding: 6px 10px;
+      padding: 6px 6px;
       background-color: #f0f0f0;
       color: #333;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -204,8 +204,8 @@
     }
 
   .time-entry button {
-    background: none;
-    border: 2px solid #ccc;
+    background: #f9efcb;
+    border: 0px solid #ccc;
     color: #333;
     font-weight: 700;
     border-radius: 8px;
@@ -231,11 +231,36 @@
   .timer-completed {
     background-color: #c6f6c6;
   }
-
+  .orange-icon {
+    filter: invert(48%) sepia(91%) saturate(432%) hue-rotate(360deg) brightness(98%) contrast(94%);
+  }
+  .tab-button-active .orange-icon {
+    filter: invert(98%) sepia(91%) saturate(432%) hue-rotate(360deg) brightness(98%) contrast(94%);
+  }
 
   </style>
 </head>
 <body>
+<!-- <div >
+  <img src="https://unpkg.com/lucide-static@latest/icons/navigation.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/play.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/repeat-1.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/skip-forward.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/trash-2.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/pause.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/map.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/locate-fixed.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/map-pin.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/list.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/bug.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/database.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/turtle.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/rabbit.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/mountain-snow.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/ruler-dimension-line.svg" width="40"  class="orange-icon"/>
+  <img src="https://unpkg.com/lucide-static@latest/icons/clock-8.svg" width="40"  class="orange-icon"/>
+</div> -->
+
   <div id="app-scroll">
   <div class="disp-on-page-run">
     <div id="countdown-display" class="head-line">Play to Start</div>
@@ -246,13 +271,13 @@
 
     <div style="display: flex; gap:5px; justify-content: center; align-items: center;">
       <button onclick="startTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
-        <img src="but-run.png" alt="Run" width="72" height="72"></button>
+        <img src="https://unpkg.com/lucide-static@latest/icons/play.svg" class="orange-icon" alt="Run" width="72" height="72"></button>
       <button onclick="pauseTimers()" class="bigb disp-on-mode-run">
-        <img src="but-pause.png" alt="Pause" width="72" height="72"></button>
+        <img src="https://unpkg.com/lucide-static@latest/icons/pause.svg" class="orange-icon" alt="Pause" width="72" height="72"></button>
       <button onclick="resetTimers()" class="bigb disp-on-mode-pause disp-on-mode-off">
-        <img src="but-restart.png" alt="Restart" width="72" height="72"></button>
+        <img src="https://unpkg.com/lucide-static@latest/icons/repeat-1.svg" class="orange-icon" alt="Restart" width="72" height="72"></button>
       <button onclick="skipTimers()" class="bigb disp-on-mode-run">
-        <img src="but-skip.png" alt="Skip" width="72" height="72"></button>
+        <img src="https://unpkg.com/lucide-static@latest/icons/skip-forward.svg" class="orange-icon" alt="Skip" width="72" height="72"></button>
 
     </div>
     <div id="timers-container"></div>
@@ -283,10 +308,19 @@
 
   <div style="height: 150px; width:100%; "></div>
   <div id="bottom-tabs">
-    <div id="tab-run" class="tab-button" onclick="setPage('run');">RUN</div>
-    <div id="tab-list" class="tab-button" onclick="setPage('list');">LIST</div>
-    <div id="tab-map" class="tab-button" onclick="setPage('map');">MAP</div>
-    <div id="tab-data" class="tab-button" onclick="setPage('data');">DATA</div>
+    <div id="tab-run" class="tab-button" onclick="setPage('run');">
+      <img src="https://unpkg.com/lucide-static@latest/icons/activity.svg" width="40" class="orange-icon"/>
+    </div>
+    <div id="tab-list" class="tab-button" onclick="setPage('list');">
+      <img src="https://unpkg.com/lucide-static@latest/icons/list.svg" width="40" class="orange-icon"/>
+    </div>
+    <div id="tab-map" class="tab-button" onclick="setPage('map');">
+      <img src="https://unpkg.com/lucide-static@latest/icons/map.svg" width="40" class="orange-icon"/>
+
+    </div>
+    <div id="tab-debug" class="tab-button" onclick="setPage('debug');">
+      <img src="https://unpkg.com/lucide-static@latest/icons/bug.svg" width="40" class="orange-icon"/>
+    </div>
   </div>
   </br></br>
   <script>
@@ -488,7 +522,7 @@
       stats.textContent = 'stats' in obj ? obj.stats : '';
 
       const delButton = document.createElement('button');
-      delButton.innerHTML = '&#10060;';
+      delButton.innerHTML = '<img src="https://unpkg.com/lucide-static@latest/icons/trash-2.svg" class="orange-icon" alt="Remove" width="24">';
       delButton.classList.add('disp-on-mode-pause', 'disp-on-mode-off');
       delButton.onclick = () => entry.remove();
       
