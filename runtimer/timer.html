@@ -452,11 +452,20 @@
             `${accuracy > 5 ? "X" : ""} ${accuracy.toFixed(2)}, ${altitude.toFixed(3)}`;
           if (autoAddNextLocation) {
             autoAddNextLocation = false;
-            locationsList.push({ name: `Point ${locationsList.length + 1}`, lat: latitude, lon: longitude, alt: altitude });
+            let distH = locationsList.length > 0 ? haversineDistance(
+              locationsList[locationsList.length - 1].lat,
+              locationsList[locationsList.length - 1].lon,
+              latitude,
+              longitude
+            ) : 0;
+            let distV = locationsList.length > 0 ? Math.abs(locationsList[locationsList.length - 1].alt - altitude) : 0;
+            locationsList.push({ name: `P ${locationsList.length + 1}`,
+                   lat: latitude,lon: longitude, 
+                   alt: altitude, distH: distH, distV: distV });
             localStorage.setItem("locationsList", JSON.stringify(locationsList));
             addLocation(locationsList[locationsList.length - 1]);
           } 
-          
+
           if (accuracy > 5) {
             console.warn(`Ignoring inaccurate position: ${accuracy}m`);
             return;  
@@ -601,6 +610,13 @@
       alt.value = 'alt' in loc ? loc.alt : '';
       alt.style.width = '100px';
 
+      const distH = document.createElement('div');
+      distH.textContent = 'distH' in loc ? `H: ${loc.distH.toFixed(1)}m` : '';
+      distH.style.width = '80px';
+      const distV = document.createElement('div');
+      distV.textContent = 'distV' in loc ? `V: ${loc.distV.toFixed(1)}m` : '';
+      distV.style.width = '80px';
+
       const delButton = document.createElement('button');
       delButton.innerHTML = '<img src="./icons/trash-2.svg" class="orange-icon" alt="Remove" width="24">';
       delButton.onclick = () => entry.remove();
@@ -609,6 +625,8 @@
       entry.appendChild(lat);
       entry.appendChild(lon);
       entry.appendChild(alt);
+      entry.appendChild(distH);
+      entry.appendChild(distV);
       entry.appendChild(delButton);
       locationsContainer.appendChild(entry);
 
