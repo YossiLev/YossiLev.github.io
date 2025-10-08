@@ -264,6 +264,8 @@
         <img src="./icons/repeat-1.svg" class="orange-icon" alt="Restart" width="72" height="72"></button>
       <button onclick="skipTimers()" class="bigb disp-on-mode-run">
         <img src="./icons/skip-forward.svg" class="orange-icon" alt="Skip" width="72" height="72"></button>
+      <button onclick="autoAddNextLocation = true;" class="bigb disp-on-mode-runס">
+        <img src="./icons/map-pin.svg" class="orange-icon" alt="Skip" width="72" height="72"></button>
 
     </div>
     <div id="timers-container"></div>
@@ -305,6 +307,8 @@
     <div class="dbdata">
       <div><span id="gps-last3">--</span></div>
     </div>
+    <div id="locations-container"></div>
+
   </div>
 
   <div style="height: 150px; width:100%; "></div>
@@ -327,11 +331,15 @@
   </br></br>
   <script>
     const timersContainer = document.getElementById('timers-container');
+    const locationsContainer = document.getElementById('locations-container');
     const countdownDisplay = document.getElementById('countdown-display');
 
     let endedSafariVerificaiton = false;
     let tt = localStorage.getItem("partsList");
     let partsList = tt ? JSON.parse(tt) : [];
+    tt = localStorage.getItem("locationsList");
+    let locationsList = tt ? JSON.parse(tt) : [];
+    let autoAddNextLocation = false;
     let currentIndex = 0;
     let running = false;
     let paused = false;
@@ -348,7 +356,8 @@
 
     let wakeLock = null;
 
-    setPartValus(partsList);
+    setPartValues(partsList);
+    setLocationsValues(locationsList);
 
     // Push an initial state so back button triggers popstate
     history.pushState({page: 1}, "", "");
@@ -441,11 +450,18 @@
           document.getElementById("gps-last2").textContent = document.getElementById("gps-last1").textContent;
           document.getElementById("gps-last1").textContent = 
             `${accuracy > 5 ? "X" : ""} ${accuracy.toFixed(2)}, ${altitude.toFixed(3)}`;
-
+          if (autoAddNextLocation) {
+            autoAddNextLocation = false;
+            locationsList.push({ name: `Point ${locationsList.length + 1}`, lat: latitude, lon: longitude, alt: altitude });
+            localStorage.setItem("locationsList", JSON.stringify(locationsList));
+            addLocation(locationsList[locationsList.length - 1]);
+          } 
+          
           if (accuracy > 5) {
             console.warn(`Ignoring inaccurate position: ${accuracy}m`);
             return;  
           }
+
           if (lastPosition) {
             const d = haversineDistance(
               lastPosition.lat,
@@ -549,14 +565,62 @@
         }
       ).filter(v => !isNaN(v.input) && v.input > 0.0);
     }
-    function setPartValus(parts) {
+    function setPartValues(parts) {
       Array.from(timersContainer.children).forEach(c => c.remove());
       parts.forEach(p => addTimer(p));
     }
     function clearParts() {
       partsList = [];
       localStorage.setItem("partsList", JSON.stringify(partsList));
-      setPartValus(partsList);
+      setPartValues(partsList);
+    }
+    function addLocation(loc) {
+      const entry = document.createElement('div');
+      entry.className = 'time-entry';
+
+      const name = document.createElement('input');
+      name.type = 'text';
+      name.value = 'name' in loc ? loc.name : '';
+      name.style.width = '150px';
+
+      const lat = document.createElement('input');
+      lat.type = 'number';
+      lat.step = '0.000001';
+      lat.value = 'lat' in loc ? loc.lat : '';
+      lat.style.width = '120px';
+
+      const lon = document.createElement('input');
+      lon.type = 'number';
+      lon.step = '0.000001';
+      lon.value = 'lon' in loc ? loc.lon : '';
+      lon.style.width = '120px';
+
+      const alt = document.createElement('input');
+      alt.type = 'number';
+      alt.step = '0.1';
+      alt.value = 'alt' in loc ? loc.alt : '';
+      alt.style.width = '100px';
+
+      const delButton = document.createElement('button');
+      delButton.innerHTML = '<img src="./icons/trash-2.svg" class="orange-icon" alt="Remove" width="24">';
+      delButton.onclick = () => entry.remove();
+      
+      entry.appendChild(name);
+      entry.appendChild(lat);
+      entry.appendChild(lon);
+      entry.appendChild(alt);
+      entry.appendChild(delButton);
+      locationsContainer.appendChild(entry);
+
+    }
+    function setLocationsValues(locations) {
+      Array.from(locationsContainer.children).forEach(c => c.remove());
+      locations.forEach(p => addLocation(p));
+    }
+    function clearLocations() {
+      locationsList = [];
+      localStorage.setItem("locationsList", JSON.stringify(locationsList));
+      setLocationsValues(locationsList);
     }
     function saveNewTraining() {
       const parts = getPartsValues();
@@ -573,7 +637,7 @@
         return;
       }
       const training = trainings[index];
-      setPartValus(training.parts);
+      setPartValues(training.parts);
       localStorage.setItem("partsList", JSON.stringify(training.parts));
       setPage("run");
     }
