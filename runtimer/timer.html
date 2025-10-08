@@ -619,7 +619,11 @@
 
       const delButton = document.createElement('button');
       delButton.innerHTML = '<img src="./icons/trash-2.svg" class="orange-icon" alt="Remove" width="24">';
-      delButton.onclick = () => entry.remove();
+      delButton.onclick = () => {
+        entry.remove();
+        locationsList = locationsList.filter(l => l !== loc);
+        localStorage.setItem("locationsList", JSON.stringify(locationsList));
+      }
       
       entry.appendChild(name);
       entry.appendChild(lat);
