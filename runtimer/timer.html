@@ -270,12 +270,15 @@
     </div>
     <div id="timers-container"></div>
     <button onclick="addTimer()" class="disp-on-mode-pause disp-on-mode-off">
-      <img src="./icons/calendar-plus.svg" class="orange-icon" alt="Remove" width="48">
+      <img src="./icons/calendar-plus.svg" class="orange-icon" alt="Add" width="48">
     </button>
     <button onclick="clearParts()" class="disp-on-mode-off">
       <img src="./icons/eraser.svg" class="orange-icon" alt="Remove" width="48"></button>
     <button onclick="saveNewTraining()" class="disp-on-mode-off">
-      <img src="./icons/save.svg" class="orange-icon" alt="Remove" width="48">
+      <img src="./icons/save.svg" class="orange-icon" alt="Save" width="48">
+    </button>
+    <button onclick="repeatLast(2)" class="disp-on-mode-off">
+      <img src="./icons/rows-2.svg" class="orange-icon" alt="Repeat" width="48">
     </button>
 
   </div>
@@ -524,6 +527,13 @@
       document.getElementById("pace").textContent = pace.toFixed(2);
     }
 
+    function rotatePartType(current) {
+      if (current === 'R') return 'W';
+      if (current === 'W') return 'F';
+      if (current === 'F') return 'U';
+      return 'R';
+    }
+    
     function addTimer(obj = {}) {
       const entry = document.createElement('div');
       entry.className = 'time-entry';
@@ -531,7 +541,7 @@
       const mode = document.createElement('button');
       mode.name = 'mode';
       mode.textContent = 'mode' in obj ? obj.mode : "R";
-      mode.onclick = () => { mode.textContent = mode.textContent === 'R' ? 'W' : 'R';};
+      mode.onclick = () => { mode.textContent = rotatePartType(mode.textContent);};
 
       const target = document.createElement('button');
       target.name = 'target';
@@ -561,6 +571,15 @@
       timersContainer.appendChild(entry);
 
       input.focus();
+    }
+
+    function repeatLast(n) {
+      partsList = getPartsValues();
+      if (partsList.length < n) return;
+      const toAdd = partsList.slice(-n);
+      partsList = partsList.concat(toAdd);
+      localStorage.setItem("partsList", JSON.stringify(partsList));
+      setPartValues(partsList);
     }
 
     function getPartsValues() {
