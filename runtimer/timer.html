@@ -840,7 +840,11 @@
 
       //clearTimeout(timeoutID);
       cancelAnimationFrame(animationFrameID);
-      remaining = partsList[currentIndex] - (Date.now() - startTimestamp) / 1000;
+      if (partsList[currentIndex].target == "D") {
+        remaining = Math.max(0, partsList[currentIndex].input - totalDistance * 0.001);
+      } else {
+        remaining = partsList[currentIndex].input - (Date.now() - startTimestamp) / 60000;
+      }
     }
 
     function resetTimers() {
