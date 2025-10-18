@@ -347,6 +347,7 @@
     let running = false;
     let paused = false;
     let remaining = 0;
+    let coveredTime = 0;
     let startTimestamp = null;
     let animationFrameID = null;
     let km = 0;
@@ -812,12 +813,12 @@
       }
 
       const stillToGo = paused ? remaining : partsList[currentIndex].input;
-      startTimestamp = Date.now();
+      startTimestamp = paused ? Date.now() - coveredTime : Date.now();
       if (!paused) {
         totalDistance = 0;
+        coveredTime = 0;
       } else {
         startTime = Date.now() - (partsList[currentIndex].input * 60.0 - stillToGo * 60) * 1000;
-        startTimestamp = startTime;
       }
       setMode("run");
       running = true;
@@ -835,6 +836,7 @@
       paused = true;
       stopTracking();
       lastPosition = null;
+      coveredTime = Date.now() - startTimestamp;
 
       releaseWakeLock();
 
