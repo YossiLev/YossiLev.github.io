@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Relativistic Spacetime</title>
+<style>
+body {
+  margin: 0;
+  display: flex;
+  background: #111;
+  color: #eee;
+  font-family: "Segoe UI", sans-serif;
+}
+#left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+canvas {
+  background: #000;
+  border: 1px solid #444;
+}
+#right {
+  width: 360px;
+  background: #1e1e1e;
+  padding: 15px;
+  overflow-y: auto;
+}
+h2 { margin-top: 0; color: #9cf; }
+button {
+  display: inline-block;
+  margin-top: 1px;
+  padding: 6px;
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover { background: #444; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td {
+  border: 1px solid #444;
+  padding: 4px;
+  text-align: center;
+  font-size: 0.9em;
+}
+.color-box {
+  width: 20px; height: 20px;
+  border-radius: 4px;
+  border: 1px solid #555;
+}
+#infoBox { margin-top: 10px; font-size: 0.9em; color: #ccc; }
+
+/* modal */
+#particleModal {
+  position: fixed;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  background: #222;
+  border: 1px solid #555;
+  padding: 20px;
+  border-radius: 8px;
+  color: #fff;
+  display: none;
+  width: 320px;
+  box-shadow: 0 0 15px #000;
+}
+#particleModal input, #particleModal select {
+  width: 100%;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+#segmentsTable th, #segmentsTable td { font-size: 0.85em; }
+</style>
+</head>
+<body>
+<div id="left">
+  <canvas id="canvas" width="800" height="600"></canvas>
+</div>
+
+<div id="right">
+  <h2>Settings</h2>
+    <label>Width: <input type="range" id="widthSlider" min="0.1" max="2" step="0.1" value="1"></label></br>
+    <label>Ether: <input type="range" id="etherSpeed" min="-10" max="10" step="0.5" value="0"></label></br>
+    <label>Observer: <input type="range" id="observerSpeed" min="-10" max="10" step="0.5" value="0"></label></br>
+</br>
+  <h2>Scenes</h2>
+  <button id="scene-1" style="background-color: black;"><img src="./static/sr-twin.png" height="30"/></button>
+  <button id="scene-2" style="background-color: white;"><img src="./static/s2.png" width="30"/></button>
+</br></br>
+  <h2>Particles</h2>
+  <button id="addParticleBtn">Add Particle</button>
+  <table id="particleTable">
+    <thead><tr><th>Color</th><th>x₀</th><th>Segments</th><th>Actions</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <div id="infoBox">Click canvas for coordinates.</div>
+</div>
+
+<!-- Particle Modal -->
+<div id="particleModal">
+  <h3 id="modalTitle">Add Particle</h3>
+  <label>x₀: <input type="number" id="x0Input" step="0.1"></label>
+  <label>t₀: <input type="number" id="t0Input" step="0.1" value="0"></label>
+  <label>Color: <input type="color" id="colorInput" value="#ff5555"></label>
+
+  <h4>Segments (T, β)</h4>
+  <table id="segmentsTable">
+    <thead><tr><th>T</th><th>β</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <button id="addSegmentBtn">Add Segment</button>
+
+  <div style="display:flex;justify-content:space-between;margin-top:10px;">
+    <button id="cancelBtn">Cancel</button>
+    <button id="saveBtn">Save</button>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let editIndex = null;
+let particleWidth = 1;
+
+// coordinate system
+let view = { xMin: -8, xMax: 8, tMin: 0, tMax: 10 };
+function scale() {
+  const sx = canvas.width / (view.xMax - view.xMin);
+  const st = canvas.height / (view.tMax - view.tMin);
+  const s = Math.min(sx, st);
+  return { sx: s, st: s };
+}
+function toCanvasX(x) { const s=scale(); return (x - view.xMin)*s.sx; }
+function toCanvasT(t) { const s=scale(); return canvas.height - (t - view.tMin)*s.st; }
+
+// draw grid + axes
+function drawGrid() {
+  const s = scale();
+  ctx.strokeStyle = "#222";
+  ctx.lineWidth = 1;
+  const dx = 1, dt = 1;
+  for (let x = Math.ceil(view.xMin); x <= view.xMax; x += dx) {
+    const cx = toCanvasX(x);
+    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); ctx.stroke();
+  }
+  for (let t = Math.ceil(view.tMin); t <= view.tMax; t += dt) {
+    const ct = toCanvasT(t);
+    ctx.beginPath(); ctx.moveTo(0, ct); ctx.lineTo(canvas.width, ct); ctx.stroke();
+  }
+  // axes
+  ctx.strokeStyle = "#555"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(toCanvasX(0),0); ctx.lineTo(toCanvasX(0),canvas.height); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,toCanvasT(0)); ctx.lineTo(canvas.width,toCanvasT(0)); ctx.stroke();
+
+  // ticks
+  ctx.fillStyle = "#aaa"; ctx.font = "12px Segoe UI";
+  for (let x = Math.ceil(view.xMin); x <= view.xMax; x++) {
+    const cx = toCanvasX(x);
+    ctx.fillText(x, cx+2, toCanvasT(0)-2);
+  }
+  for (let t = Math.ceil(view.tMin); t <= view.tMax; t++) {
+    const ct = toCanvasT(t);
+    ctx.fillText(t, toCanvasX(0)+4, ct-2);
+  }
+}
+
+// user’s fixed light path
+function drawLightPaths(isDraw, xLeft, xRight, beta, L, tStart, tEnd, startX, startDir, startLightTime) {
+  const c = 1;
+  const xLeftAt = t => xLeft + beta*(t - tStart);
+  const xRightAt = t => xRight + beta*(t - tStart);
+  let segments = [];
+  let dir = startDir;
+  let x = startX, t = tStart;
+  for (let n = 0; n < 500; n++) {
+    const wall = dir > 0 ? xRightAt : xLeftAt;
+    let dt = (wall(t) - x) / (dir*c - beta);
+    let tNext = t + dt;
+    if (tNext > tEnd) {
+      dt -= (tNext - tEnd);
+      const xNext = x + dir*c*dt;
+      tNext = tEnd;
+      segments.push({x1:x, t1:t, x2:xNext, t2:tNext});
+      x = xNext; t = tNext;
+      break;
+    }
+    const xNext = x + dir*c*dt;
+    segments.push({x1:x, t1:t, x2:xNext, t2:tNext});
+    x = xNext; t = tNext; dir *= -1;
+    startLightTime += 0.5;
+  }
+  if (isDraw) {
+    ctx.strokeStyle = "yellow"; ctx.lineWidth = 1.5;
+    for (const s of segments) {
+        ctx.beginPath();
+        ctx.moveTo(toCanvasX(s.x1), toCanvasT(s.t1));
+        ctx.lineTo(toCanvasX(s.x2), toCanvasT(s.t2));
+        ctx.stroke();
+    }
+  }
+  return [x, dir, startLightTime];
+}
+
+// draw particle with all segments
+function drawParticle(p) {
+  const { x0, t0, segments, color } = p;
+  let xPrev = x0;
+  let tPrev = t0;
+  let startX = x0;
+  let startDir = 1;
+  let startLightTime = 0.0;
+  const W = particleWidth;
+  ctx.globalAlpha = 0.6;
+  for (let i = 0; i < segments.length; i++) {
+    const beta = segments[i].v;
+    const tStart = segments[i].t;
+    const tEnd = (i < segments.length - 1) ? segments[i+1].t : view.tMax;
+    const dt = tEnd - tStart;
+    const L = Math.sqrt(1 - beta**2);
+    const xStart = xPrev + beta*(tStart - tPrev);
+    const xEnd = xStart + beta*(tEnd - tStart);
+    const halfW = W/2;
+
+    const xLeftBottom = xStart - halfW;
+    const xRightBottom = xStart + halfW;
+    const xLeftTop = xEnd - halfW;
+    const xRightTop = xEnd + halfW;
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(toCanvasX(xLeftBottom), toCanvasT(tStart));
+    ctx.lineTo(toCanvasX(xRightBottom), toCanvasT(tStart));
+    ctx.lineTo(toCanvasX(xRightTop), toCanvasT(tEnd));
+    ctx.lineTo(toCanvasX(xLeftTop), toCanvasT(tEnd));
+    ctx.closePath(); ctx.fill();
+
+    // inner contracted parallelogram
+    const innerHalf = W*L/2;
+    const xLeftBottomIn = xStart - innerHalf;
+    const xRightBottomIn = xStart + innerHalf;
+    const xLeftTopIn = xEnd - innerHalf;
+    const xRightTopIn = xEnd + innerHalf;
+
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    ctx.beginPath();
+    ctx.moveTo(toCanvasX(xLeftBottomIn), toCanvasT(tStart));
+    ctx.lineTo(toCanvasX(xRightBottomIn), toCanvasT(tStart));
+    ctx.lineTo(toCanvasX(xRightTopIn), toCanvasT(tEnd));
+    ctx.lineTo(toCanvasX(xLeftTopIn), toCanvasT(tEnd));
+    ctx.closePath(); ctx.fill();
+    if (i == 0) {
+        startX = xLeftBottomIn;
+        startDir = 1;
+        startLightTime = 0.0;
+    }
+
+    ctx.globalAlpha = 1.0;
+
+    [startX, startDir, startLightTime] = drawLightPaths(
+      true, xLeftBottomIn, xRightBottomIn, beta, L,
+      tStart, tEnd, startX, startDir, startLightTime
+    );
+    ctx.globalAlpha = 0.6;
+
+    xPrev = xEnd; tPrev = tEnd;
+  }
+  ctx.globalAlpha = 1;
+}
+
+// calc light time of a particle at a certain absolute time
+function lightTimeOfParticle(p, absTime) {
+  const { x0, t0, segments, color } = p;
+  let xPrev = x0;
+  let tPrev = t0;
+  let startX = x0;
+  let startDir = 1;
+  let startLightTime = 0.0;
+  const W = particleWidth;
+  for (let i = 0; i < segments.length; i++) {
+    const beta = segments[i].v;
+    const tStart = segments[i].t;
+    const tEnd = Math.min(absTime, (i < segments.length - 1) ? segments[i+1].t : view.tMax);
+    if (tStart >= absTime) break;
+    const dt = tEnd - tStart;
+    const L = Math.sqrt(1 - beta**2);
+    const xStart = xPrev + beta*(tStart - tPrev);
+    const xEnd = xStart + beta*(tEnd - tStart);
+    const halfW = W/2;
+
+    const xLeftBottom = xStart - halfW;
+    const xRightBottom = xStart + halfW;
+    const xLeftTop = xEnd - halfW;
+    const xRightTop = xEnd + halfW;
+
+    // inner contracted parallelogram
+    const innerHalf = W*L/2;
+    const xLeftBottomIn = xStart - innerHalf;
+    const xRightBottomIn = xStart + innerHalf;
+    const xLeftTopIn = xEnd - innerHalf;
+    const xRightTopIn = xEnd + innerHalf;
+
+    if (i == 0) {
+        startX = xLeftBottomIn;
+        startDir = 1;
+        startLightTime = 0.0;
+    }
+
+    [startX, startDir, startLightTime] = drawLightPaths(
+      false, xLeftBottomIn, xRightBottomIn, beta, L,
+      tStart, tEnd, startX, startDir, startLightTime
+    );
+
+    xPrev = xEnd; tPrev = tEnd;
+  }
+  return startLightTime;
+}
+
+function drawAll() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawGrid();
+  for (const p of particles.filter(pp => pp.show)) drawParticle(p);
+}
+
+// click info
+canvas.addEventListener("click", e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = view.xMin + (e.clientX - rect.left) / scale().sx;
+  const t = view.tMax - (e.clientY - rect.top) / scale().st;
+  let msg = `x=${x.toFixed(2)}, t=${t.toFixed(2)}<br>`;
+  particles.forEach((p,i)=> {
+    const lt = lightTimeOfParticle(p, t);
+    msg += `<div style="color:${p.color}">Particle ${i+1} @ lt=${lt.toFixed(2)}<div>`;
+  });
+  document.getElementById("infoBox").innerHTML = msg;
+});
+
+// width slider
+document.getElementById("widthSlider").oninput = e=>{
+  particleWidth=parseFloat(e.target.value); drawAll();
+};
+
+// ==== UI ====
+function updateParticleTable() {
+  const tbody = document.querySelector("#particleTable tbody");
+  tbody.innerHTML = "";
+  particles.forEach((p,i)=>{
+    const tr=document.createElement("tr");
+    const colorTd=document.createElement("td");
+    colorTd.innerHTML=`<div class="color-box" style="background:${p.color}"></div>`;
+    tr.appendChild(colorTd);
+    tr.innerHTML+=`<td>${p.x0}</td><td>${p.segments.length}</td>`;
+    const act=document.createElement("td");
+    const show=p.show?"Hide":"Show";
+    act.innerHTML=`<button onclick="editParticle(${i})">Edit</button>
+                   <button onclick="deleteParticle(${i})">Del</button>
+                   <button onclick="toggleShowParticle(${i})">${show}</button>`;
+    tr.appendChild(act);
+    tbody.appendChild(tr);
+  });
+}
+
+function deleteParticle(i){ particles.splice(i,1); updateParticleTable(); drawAll(); }
+function toggleShowParticle(i){ particles[i].show = !particles[i].show; updateParticleTable(); drawAll(); }
+document.getElementById("addParticleBtn").onclick = ()=>openParticleModal();
+document.querySelectorAll(`[id^=scene]`).forEach(el => el.onclick = ()=>buildNewScene(el.id));
+
+function editParticle(index) {
+  const p = particles[index];
+  if (!p) return;
+  // set global edit index used by save handler
+  editIndex = index;
+  // populate modal fields
+  document.getElementById('modalTitle').textContent = 'Edit Particle';
+  document.getElementById('x0Input').value = p.x0;
+  document.getElementById('t0Input').value = p.t0;
+  document.getElementById('colorInput').value = p.color;
+  // copy segments into the modal editor and render
+  currentSegs = p.segments.map(s => ({ t: s.t, v: s.v }));
+  renderSegments();
+  // show modal
+  document.getElementById('particleModal').style.display = 'block';
+}
+
+function openParticleModal(i=null){
+  editIndex=i;
+  const modal=document.getElementById("particleModal");
+  const title=document.getElementById("modalTitle");
+  if(i==null){ title.textContent="Add Particle"; document.getElementById("x0Input").value=0;
+    document.getElementById("colorInput").value="#"+Math.floor(Math.random()*16777215).toString(16);
+    document.getElementById("t0Input").value=0;
+    currentSegs=[{t:0,v:0}];
+  } else {
+    const p=particles[i];
+    title.textContent="Edit Particle";
+    document.getElementById("x0Input").value=p.x0;
+    document.getElementById("t0Input").value=p.t0;
+    document.getElementById("colorInput").value=p.color;
+    currentSegs=p.segments.map(s=>({...s}));
+  }
+  renderSegments();
+  modal.style.display="block";
+}
+
+function buildNewScene(sceneId) {
+  particles = [];
+  if (sceneId === 'scene-1') {
+    particles.push({
+      x0: 0, t0: 0, color: '#ff5555', show: true,
+      segments: [{ t: 0, v: 0 }]
+    });
+    particles.push({
+      x0: 0, t0: 0, color: '#55ff55', show: true,
+      segments: [{ t: 0, v: 0.866 }, { t: 2, v: -0.866 }]
+    });
+    particles.push({
+      x0: 0, t0: 0, color: '#5555ff', show: true,
+      segments: [{ t: 0, v: 0 }, { t: 1, v: -0.989 }]
+    });
+    particles.push({
+      x0: 0, t0: 0, color: '#ff55ff', show: true,
+      segments: [{ t: 0, v: -0.866 }]
+    });
+  } else if (sceneId === 'scene-2') {
+    particles.push({
+      x0: 0, t0: 0, color: '#5555ff', show: true,
+      segments: [{ t: 0, v: 0.8 }]
+    });
+    particles.push({
+      x0: -6, t0: 2, color: '#ffff55', show: true,
+      segments: [{ t: 2, v: 0.3 }, { t: 7, v: -0.3 }]
+    });
+  }
+  updateParticleTable();
+  drawAll();
+}
+
+let currentSegs=[];
+function renderSegments(){
+  const tbody=document.querySelector("#segmentsTable tbody");
+  tbody.innerHTML="";
+  currentSegs.forEach((s,idx)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td><input type="number" value="${s.t}" step="0.1" onchange="currentSegs[${idx}].t=parseFloat(this.value)"></td>
+                  <td><input type="number" value="${s.v}" step="0.01" onchange="currentSegs[${idx}].v=parseFloat(this.value)"></td>
+                  <td><button onclick="currentSegs.splice(${idx},1);renderSegments()">✖</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+document.getElementById("addSegmentBtn").onclick=()=>{
+  currentSegs.push({t:(currentSegs.at(-1)?.t||0)+1,v:0});
+  renderSegments();
+};
+
+document.getElementById("cancelBtn").onclick=()=>document.getElementById("particleModal").style.display="none";
+document.getElementById("saveBtn").onclick=()=>{
+  const x0=parseFloat(document.getElementById("x0Input").value);
+  const t0=parseFloat(document.getElementById("t0Input").value);
+  const color=document.getElementById("colorInput").value;
+  const show=true;
+  currentSegs.sort((a,b)=>a.t-b.t);
+  const newP={x0,t0,color, show ,segments:currentSegs.map(s=>({...s}))};
+  if(editIndex==null) particles.push(newP); else particles[editIndex]=newP;
+  document.getElementById("particleModal").style.display="none";
+  updateParticleTable(); drawAll();
+};
+
+// resize keep equal scale
+window.addEventListener("resize", ()=>{canvas.width=window.innerWidth-400; canvas.height=window.innerHeight-20; drawAll();});
+canvas.width=window.innerWidth-400; canvas.height=window.innerHeight-20;
+updateParticleTable(); drawAll();
+</script>
+</body>
+</html>
