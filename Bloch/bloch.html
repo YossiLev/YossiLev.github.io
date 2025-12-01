@@ -78,7 +78,7 @@
 <canvas id="c" width="920" height="520"></canvas>
 
 <div class="footer">
-  Explanation: u = U (horizontal) ; w = W (vertical). P = (u - i v)/2. The model uses simple Bloch-equations with dephasing and pump/spontaneous lifetime. Noise seeds coherence. See code comments for details.
+  Explanation: v = V (horizontal) ; w = W (vertical). P = (u - i v)/2. The model uses simple Bloch-equations with dephasing and pump/spontaneous lifetime. Noise seeds coherence. See code comments for details.
 </div>
 
 <script>
@@ -109,15 +109,16 @@ const btnPlay = document.getElementById('btnPlay');
 const btnRestart = document.getElementById('btnRestart');
 
 let u = 0, v = 0, w = 0;      // Bloch components (u,v,w)
+let dut = 0, dvt = 0, dwt = 0;      // Bloch components (u,v,w)
 let tSim = 0;                // time (s)
-let path = [];               // store points for drawing (u,w)
+let path = [];               // store points for drawing (v,w)
 let maxPoints = 20000;       // limit to avoid memory explosion
 
 // drawing scale
-function mapX(uVal, uMax) {
+function mapX(vVal, vMax) {
   const margin = 60;
   const w = canvas.width;
-  return margin + (uVal + uMax) / (2 * uMax) * (w - 2*margin);
+  return margin + (vVal + vMax) / (2 * vMax) * (w - 2*margin);
 }
 function mapY(wVal, wMax) {
   const margin = 40;
@@ -142,13 +143,13 @@ function clearCanvas() {
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
   // axes
-  const uMax = parseFloat(inNmax.value) || 1;
-  const wMax = uMax;
+  const vMax = parseFloat(inNmax.value) || 1;
+  const wMax = vMax;
   // center lines
   ctx.strokeStyle = "#333";
   ctx.lineWidth = 1;
-  // vertical center (U axis)
-  const cx = mapX(0, uMax);
+  // vertical center (V axis)
+  const cx = mapX(0, vMax);
   ctx.beginPath(); ctx.moveTo(cx, 10); ctx.lineTo(cx, canvas.height-10); ctx.stroke();
   // horizontal center (W axis)
   const cy = mapY(0, wMax);
@@ -168,8 +169,8 @@ function clearCanvas() {
 // draw path
 function drawPath() {
   clearCanvas();
-  const uMax = parseFloat(inNmax.value) || 1;
-  const wMax = uMax;
+  const vMax = parseFloat(inNmax.value) || 1;
+  const wMax = vMax;
 
   // draw path polyline
   ctx.lineWidth = 1.5;
@@ -177,7 +178,7 @@ function drawPath() {
   ctx.beginPath();
   for (let i=0; i<path.length; i++) {
     const p = path[i];
-    const x = mapX(p.u, uMax);
+    const x = mapX(p.v, vMax);
     const y = mapY(p.w, wMax);
     if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   }
@@ -186,7 +187,7 @@ function drawPath() {
   // draw last point highlight
   if (path.length>0) {
     const last = path[path.length-1];
-    const x = mapX(last.u, uMax);
+    const x = mapX(last.v, vMax);
     const y = mapY(last.w, wMax);
     ctx.fillStyle = "#ff7";
     ctx.beginPath();
@@ -205,10 +206,16 @@ function drawPath() {
   const Nval = w.toExponential(6);
   const Uval = u.toExponential(6);
   const Vval = v.toExponential(6);
+  const Dwval = dwt.toExponential(6);
+  const DUval = dut.toExponential(6);
+  const DVval = dvt.toExponential(6);
   const timeStr = tSim.toExponential(3) + " s";
-  ctx.fillText("N (W) = " + Nval, 12, 18);
+  ctx.fillText("W = " + Nval, 12, 18);
+  ctx.fillText("DW = " + Dwval, 212, 18);
   ctx.fillText("U = " + Uval, 12, 36);
+  ctx.fillText("DU = " + DUval, 212, 36);
   ctx.fillText("V = " + Vval, 12, 54);
+  ctx.fillText("DV = " + DVval, 212, 54);
   ctx.fillText("P = " + P_real + "  + i " + P_imag, 12, 72);
   ctx.fillText("Time = " + timeStr, 12, 90);
 
@@ -219,7 +226,7 @@ function drawPath() {
   const Eamp = parseFloat(inE.value);
   const f = parseFloat(inFreq.value);
   const dip = parseFloat(inDipole.value);
-  ctx.fillText(`Γ=${Gamma.toExponential(2)}  E=${Eamp}  f=${f.toExponential(2)}  f0=${dip.toExponential(2)}`, 300, 18);
+  ctx.fillText(`Γ=${Gamma.toExponential(2)}  E=${Eamp}  f=${f.toExponential(2)}  f0=${dip.toExponential(2)}`, 400, 18);
 }
 
 // perform one Euler step of the Bloch equations
@@ -256,9 +263,12 @@ function stepOnce() {
   const dw = (Omega * v) + Rpump - (w / tau);
 
   // update
-  u += du * dt;
-  v += dv * dt;
-  w += dw * dt;
+  dut = du * dt;
+  dvt = dv * dt;
+  dwt = dw * dt;
+  u += dut;
+  v += dvt;
+  w += dwt;
 
   tSim += dt;
 
