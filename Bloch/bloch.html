@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Bloch U-W Demo (Absorber Bleaching)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 12px; background:#f7f7f7; color:#111 }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .ctrl { background:#fff; padding:8px; border-radius:6px; box-shadow:0 1px 2px rgba(0,0,0,0.06); }
+  label { display:block; font-size:12px; color:#444 }
+  input[type="number"], input[type="text"] { width:110px; padding:6px; margin-top:4px; border:1px solid #ddd; border-radius:4px }
+  button { padding:8px 12px; border-radius:6px; border:0; background:#1565c0; color:#fff; cursor:pointer }
+  button.secondary { background:#666; margin-left:8px }
+  canvas { background:#111; border-radius:6px; display:block; margin-top:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2) }
+  .footer { margin-top:8px; font-size:12px; color:#666 }
+</style>
+</head>
+<body>
+
+<h2>Bloch (U-W) demo — absorber bleaching</h2>
+<div class="controls">
+  <div class="ctrl">
+    <label>Gamma (1/s) — dephasing Γ</label>
+    <input id="inGamma" type="number" value="5e12" step="any">
+  </div>
+
+  <div class="ctrl">
+    <label>Max Inversion N (|w| scale)</label>
+    <input id="inNmax" type="number" value="1" step="any">
+  </div>
+
+  <div class="ctrl">
+    <label>Pump Rate (units/s)</label>
+    <input id="inPump" type="number" value="0" step="any">
+  </div>
+
+  <div class="ctrl">
+    <label>Spontaneous lifetime τ_s (s)</label>
+    <input id="inTau" type="number" value="1e-9" step="any">
+  </div>
+
+  <div class="ctrl">
+    <label>Field amplitude E (arb units)</label>
+    <input id="inE" type="number" value="1e-3" step="any">
+  </div>
+
+  <div class="ctrl">
+    <label>Field frequency (Hz)</label>
+    <input id="inFreq" type="number" value="2.82e14" step="any">
+  </div>
+
+  <div class="ctrl">
+    <label>Noise level (additive)</label>
+    <input id="inNoise" type="number" value="1e-4" step="any">
+  </div>
+
+  <div class="ctrl">
+    <label>Dipole transition freq (Hz)</label>
+    <input id="inDipole" type="number" value="2.82e14" step="any">
+  </div>
+
+  <div class="ctrl">
+    <label>Delta time unit Δt (s)</label>
+    <input id="inDt" type="number" value="1e-13" step="any">
+  </div>
+
+  <div class="ctrl">
+    <label>n steps per Play</label>
+    <input id="inSteps" type="number" value="200" step="1">
+  </div>
+
+  <div style="display:flex; align-items:center; gap:8px; margin-left:8px;">
+    <button id="btnPlay">Play</button>
+    <button id="btnRestart" class="secondary">Restart</button>
+  </div>
+</div>
+
+<canvas id="c" width="920" height="520"></canvas>
+
+<div class="footer">
+  Explanation: u = U (horizontal) ; w = W (vertical). P = (u - i v)/2. The model uses simple Bloch-equations with dephasing and pump/spontaneous lifetime. Noise seeds coherence. See code comments for details.
+</div>
+
+<script>
+/* Bloch U-W demo
+   - u = Re-coherence*2, v = -2 Im(P) ; w = inversion (N)
+   - du/dt = -Delta * v - Gamma * u
+   - dv/dt =  Delta * u - Omega * w - Gamma * v
+   - dw/dt =  Omega * v + R_pump - w / tau_s
+   - Omega(t) = 2 * beta * E_amp  (beta set to 1 here; scale field amplitude to control strength)
+   - Add noise each step: u += noise * randn(), etc.
+*/
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+const inGamma = document.getElementById('inGamma');
+const inNmax = document.getElementById('inNmax');
+const inPump = document.getElementById('inPump');
+const inTau = document.getElementById('inTau');
+const inE = document.getElementById('inE');
+const inFreq = document.getElementById('inFreq');
+const inNoise = document.getElementById('inNoise');
+const inDipole = document.getElementById('inDipole');
+const inDt = document.getElementById('inDt');
+const inSteps = document.getElementById('inSteps');
+
+const btnPlay = document.getElementById('btnPlay');
+const btnRestart = document.getElementById('btnRestart');
+
+let u = 0, v = 0, w = 0;      // Bloch components (u,v,w)
+let tSim = 0;                // time (s)
+let path = [];               // store points for drawing (u,w)
+let maxPoints = 20000;       // limit to avoid memory explosion
+
+// drawing scale
+function mapX(uVal, uMax) {
+  const margin = 60;
+  const w = canvas.width;
+  return margin + (uVal + uMax) / (2 * uMax) * (w - 2*margin);
+}
+function mapY(wVal, wMax) {
+  const margin = 40;
+  const h = canvas.height;
+  // W up (positive) should be upward in canvas coordinate
+  return h - (margin + (wVal + wMax) / (2 * wMax) * (h - 2*margin));
+}
+
+// utility: gaussian random (Box-Muller)
+function randn_bm() {
+  let u1 = 0, u2 = 0;
+  while (u1 === 0) u1 = Math.random();
+  while (u2 === 0) u2 = Math.random();
+  return Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+}
+
+// clear and draw axes
+function clearCanvas() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // background
+  ctx.fillStyle = "#060606";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // axes
+  const uMax = parseFloat(inNmax.value) || 1;
+  const wMax = uMax;
+  // center lines
+  ctx.strokeStyle = "#333";
+  ctx.lineWidth = 1;
+  // vertical center (U axis)
+  const cx = mapX(0, uMax);
+  ctx.beginPath(); ctx.moveTo(cx, 10); ctx.lineTo(cx, canvas.height-10); ctx.stroke();
+  // horizontal center (W axis)
+  const cy = mapY(0, wMax);
+  ctx.beginPath(); ctx.moveTo(10, cy); ctx.lineTo(canvas.width-10, cy); ctx.stroke();
+
+  // labels
+  ctx.fillStyle = "#9bd";
+  ctx.font = "13px monospace";
+  ctx.fillText("U (Re(P) *2) →", canvas.width - 120, cy - 8);
+  ctx.save();
+  ctx.translate(cx + 8, 12);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText("↑ W (Inversion)", 0,0);
+  ctx.restore();
+}
+
+// draw path
+function drawPath() {
+  clearCanvas();
+  const uMax = parseFloat(inNmax.value) || 1;
+  const wMax = uMax;
+
+  // draw path polyline
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = "#6ee";
+  ctx.beginPath();
+  for (let i=0; i<path.length; i++) {
+    const p = path[i];
+    const x = mapX(p.u, uMax);
+    const y = mapY(p.w, wMax);
+    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // draw last point highlight
+  if (path.length>0) {
+    const last = path[path.length-1];
+    const x = mapX(last.u, uMax);
+    const y = mapY(last.w, wMax);
+    ctx.fillStyle = "#ff7";
+    ctx.beginPath();
+    ctx.arc(x,y,4,0,Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = "#ffa";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2); ctx.stroke();
+  }
+
+  // info box: print N, P, W, U, V, time
+  ctx.fillStyle = "#dbe";
+  ctx.font = "13px monospace";
+  const P_real = (u/2).toExponential(3);
+  const P_imag = (-v/2).toExponential(3);
+  const Nval = w.toExponential(6);
+  const Uval = u.toExponential(6);
+  const Vval = v.toExponential(6);
+  const timeStr = tSim.toExponential(3) + " s";
+  ctx.fillText("N (W) = " + Nval, 12, 18);
+  ctx.fillText("U = " + Uval, 12, 36);
+  ctx.fillText("V = " + Vval, 12, 54);
+  ctx.fillText("P = " + P_real + "  + i " + P_imag, 12, 72);
+  ctx.fillText("Time = " + timeStr, 12, 90);
+
+  // parameter snapshot
+  ctx.fillStyle = "#9bd";
+  ctx.font = "11px monospace";
+  const Gamma = parseFloat(inGamma.value);
+  const Eamp = parseFloat(inE.value);
+  const f = parseFloat(inFreq.value);
+  const dip = parseFloat(inDipole.value);
+  ctx.fillText(`Γ=${Gamma.toExponential(2)}  E=${Eamp}  f=${f.toExponential(2)}  f0=${dip.toExponential(2)}`, 300, 18);
+}
+
+// perform one Euler step of the Bloch equations
+function stepOnce() {
+  const Gamma = parseFloat(inGamma.value) || 1e12;      // dephasing rate
+  const tau = parseFloat(inTau.value) || 1e-9;          // tau_s
+  const Rpump = parseFloat(inPump.value) || 0;          // pump rate
+  const Eamp = parseFloat(inE.value) || 0;
+  const freq = parseFloat(inFreq.value) || 0;
+  const dip = parseFloat(inDipole.value) || freq;
+  const noise = parseFloat(inNoise.value) || 0;
+  const dt = parseFloat(inDt.value) || 1e-13;
+
+  // Beta coupling constant (set to 1 for demonstration). If you want to link to physical dipole moment change here.
+  const beta = 1.0;
+
+  // detuning (rad/s)
+  const Delta = 2 * Math.PI * (freq - dip);
+
+  // Rabi frequency (rad/s) (simple model)
+  const Omega = 2 * beta * Eamp;
+
+  // add random noise vector before the time step (as requested)
+  if (noise !== 0) {
+    const nscale = parseFloat(noise);
+    u += nscale * randn_bm();
+    v += nscale * randn_bm();
+    w += nscale * randn_bm();
+  }
+
+  // Euler integration
+  const du = (-Delta * v) - (Gamma * u);
+  const dv = (Delta * u) - (Omega * w) - (Gamma * v);
+  const dw = (Omega * v) + Rpump - (w / tau);
+
+  // update
+  u += du * dt;
+  v += dv * dt;
+  w += dw * dt;
+
+  tSim += dt;
+
+  // keep path
+  path.push({u:u, v:v, w:w, t:tSim});
+  if (path.length > maxPoints) path.shift();
+}
+
+// Play n steps
+function playNSteps() {
+  const n = parseInt(inSteps.value, 10) || 100;
+  for (let i=0; i<n; i++) stepOnce();
+  drawPath();
+}
+
+// Restart
+function restartSim() {
+  u = 0; v = 0; w = 0;
+  tSim = 0;
+  path = [];
+  clearCanvas();
+  drawPath();
+}
+
+// wire up buttons
+btnPlay.addEventListener('click', () => {
+  playNSteps();
+});
+btnRestart.addEventListener('click', () => {
+  restartSim();
+});
+
+// initial draw
+restartSim();
+
+</script>
+</body>
+</html>
