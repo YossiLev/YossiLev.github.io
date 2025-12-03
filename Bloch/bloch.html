@@ -72,6 +72,7 @@
   <div style="display:flex; align-items:center; gap:8px; margin-left:8px;">
     <button id="btnPlay">Play</button>
     <button id="btnRestart" class="secondary">Restart</button>
+    <button id="btnCenter" class="secondary">Center View</button>
   </div>
 </div>
 
@@ -93,6 +94,8 @@
 
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
+let centerViewX = 0;
+let centerViewY = 0;
 
 const inGamma = document.getElementById('inGamma');
 const inNmax = document.getElementById('inNmax');
@@ -107,6 +110,7 @@ const inSteps = document.getElementById('inSteps');
 
 const btnPlay = document.getElementById('btnPlay');
 const btnRestart = document.getElementById('btnRestart');
+const btnCenter = document.getElementById('btnCenter');
 
 let u = 0, v = 0, w = 0;      // Bloch components (u,v,w)
 let dut = 0, dvt = 0, dwt = 0;      // Bloch components (u,v,w)
@@ -135,6 +139,9 @@ function randn_bm() {
   return Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
 }
 
+function tc(x, y) {
+  return [x - centerViewX, y - centerViewY];
+}
 // clear and draw axes
 function clearCanvas() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -146,14 +153,14 @@ function clearCanvas() {
   const vMax = parseFloat(inNmax.value) || 1;
   const wMax = vMax;
   // center lines
-  ctx.strokeStyle = "#333";
+  ctx.strokeStyle = "#888";
   ctx.lineWidth = 1;
   // vertical center (V axis)
   const cx = mapX(0, vMax);
-  ctx.beginPath(); ctx.moveTo(cx, 10); ctx.lineTo(cx, canvas.height-10); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(...tc(cx, 10)); ctx.lineTo(...tc(cx, canvas.height-10)); ctx.stroke();
   // horizontal center (W axis)
   const cy = mapY(0, wMax);
-  ctx.beginPath(); ctx.moveTo(10, cy); ctx.lineTo(canvas.width-10, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(...tc(10, cy)); ctx.lineTo(...tc(canvas.width-10, cy)); ctx.stroke();
 
   // labels
   ctx.fillStyle = "#9bd";
@@ -180,7 +187,7 @@ function drawPath() {
     const p = path[i];
     const x = mapX(p.v, vMax);
     const y = mapY(p.w, wMax);
-    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    if (i===0) ctx.moveTo(...tc(x,y)); else ctx.lineTo(...tc(x,y));
   }
   ctx.stroke();
 
@@ -191,11 +198,11 @@ function drawPath() {
     const y = mapY(last.w, wMax);
     ctx.fillStyle = "#ff7";
     ctx.beginPath();
-    ctx.arc(x,y,4,0,Math.PI*2);
+    ctx.arc(...tc(x,y),4,0,Math.PI*2);
     ctx.fill();
     ctx.strokeStyle = "#ffa";
     ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(...tc(x,y),7,0,Math.PI*2); ctx.stroke();
   }
 
   // info box: print N, P, W, U, V, time
@@ -299,6 +306,19 @@ btnPlay.addEventListener('click', () => {
 });
 btnRestart.addEventListener('click', () => {
   restartSim();
+});
+btnCenter.addEventListener('click', () => {
+  // center view on last point
+  if (path.length>0) {
+    const last = path[path.length-1];
+    const vMax = parseFloat(inNmax.value) || 1;
+    const wMax = vMax;
+    const x = mapX(last.v, vMax);
+    const y = mapY(last.w, wMax);
+    centerViewX = x - canvas.width/2;
+    centerViewY = y - canvas.height/2;
+    drawPath();
+  }
 });
 
 // initial draw
