@@ -33,6 +33,11 @@
     <label>Pump Rate (units/s)</label>
     <input id="inPump" type="number" value="0" step="any">
   </div>
+  
+  <div class="ctrl">
+    <label>Equilibrium Level (units)</label>
+    <input id="inEqLevel" type="number" value="0" step="any">
+  </div>
 
   <div class="ctrl">
     <label>Spontaneous lifetime τ_s (s)</label>
@@ -100,6 +105,7 @@ let centerViewY = 0;
 const inGamma = document.getElementById('inGamma');
 const inNmax = document.getElementById('inNmax');
 const inPump = document.getElementById('inPump');
+const inEqLevel = document.getElementById('inEqLevel');
 const inTau = document.getElementById('inTau');
 const inE = document.getElementById('inE');
 const inFreq = document.getElementById('inFreq');
@@ -189,6 +195,14 @@ function drawPath() {
     const y = mapY(p.w, wMax);
     if (i===0) ctx.moveTo(...tc(x,y)); else ctx.lineTo(...tc(x,y));
   }
+  ctx.stroke();  ctx.strokeStyle = "#e6e";
+  ctx.beginPath();
+  for (let i=0; i<path.length; i++) {
+    const p = path[i];
+    const x = mapX(p.u, vMax);
+    const y = mapY(p.w, wMax);
+    if (i===0) ctx.moveTo(...tc(x,y)); else ctx.lineTo(...tc(x,y));
+  }
   ctx.stroke();
 
   // draw last point highlight
@@ -241,6 +255,7 @@ function stepOnce() {
   const Gamma = parseFloat(inGamma.value) || 1e12;      // dephasing rate
   const tau = parseFloat(inTau.value) || 1e-9;          // tau_s
   const Rpump = parseFloat(inPump.value) || 0;          // pump rate
+  const ReqLevel = parseFloat(inEqLevel.value) || 0;    // equilibrium level
   const Eamp = parseFloat(inE.value) || 0;
   const freq = parseFloat(inFreq.value) || 0;
   const dip = parseFloat(inDipole.value) || freq;
@@ -267,7 +282,7 @@ function stepOnce() {
   // Euler integration
   const du = (-Delta * v) - (Gamma * u);
   const dv = (Delta * u) - (Omega * w) - (Gamma * v);
-  const dw = (Omega * v) + Rpump - (w / tau);
+  const dw = (Omega * v) + Rpump - (w - ReqLevel) / tau;
 
   // update
   dut = du * dt;
