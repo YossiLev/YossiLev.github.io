@@ -13,79 +13,87 @@
   button.secondary { background:#666; margin-left:8px }
   canvas { background:#111; border-radius:6px; display:block; margin-top:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2) }
   .footer { margin-top:8px; font-size:12px; color:#666 }
+  .pageLayout { display:flex; flex-direction: column; gap:24px; }
+  @media (min-width: 1000px) 
+  { .pageLayout { flex-direction: row; } }
+
 </style>
 </head>
 <body>
+<div class = 'pageLayout'>
+<div>
+  <h2>Bloch (U-W) demo — absorber bleaching</h2>
+  <div class="controls">
+    <div class="ctrl">
+      <label>Gamma (1/s) — dephasing Γ</label>
+      <input id="inGamma" type="number" value="5e12" step="any">
+    </div>
 
-<h2>Bloch (U-W) demo — absorber bleaching</h2>
-<div class="controls">
-  <div class="ctrl">
-    <label>Gamma (1/s) — dephasing Γ</label>
-    <input id="inGamma" type="number" value="5e12" step="any">
-  </div>
+    <div class="ctrl">
+      <label>Max Inversion N (|w| scale)</label>
+      <input id="inNmax" type="number" value="1" step="any">
+    </div>
 
-  <div class="ctrl">
-    <label>Max Inversion N (|w| scale)</label>
-    <input id="inNmax" type="number" value="1" step="any">
-  </div>
+    <div class="ctrl">
+      <label>Pump Rate (units/s)</label>
+      <input id="inPump" type="number" value="0" step="any">
+    </div>
+    
+    <div class="ctrl">
+      <label>Equilibrium Level (units)</label>
+      <input id="inEqLevel" type="number" value="0" step="any">
+    </div>
 
-  <div class="ctrl">
-    <label>Pump Rate (units/s)</label>
-    <input id="inPump" type="number" value="0" step="any">
-  </div>
-  
-  <div class="ctrl">
-    <label>Equilibrium Level (units)</label>
-    <input id="inEqLevel" type="number" value="0" step="any">
-  </div>
+    <div class="ctrl">
+      <label>Spontaneous lifetime τ_s (s)</label>
+      <input id="inTau" type="number" value="1e-9" step="any">
+    </div>
 
-  <div class="ctrl">
-    <label>Spontaneous lifetime τ_s (s)</label>
-    <input id="inTau" type="number" value="1e-9" step="any">
-  </div>
+    <div class="ctrl">
+      <label>Field amplitude E (arb units)</label>
+      <input id="inE" type="number" value="1e-3" step="any">
+    </div>
 
-  <div class="ctrl">
-    <label>Field amplitude E (arb units)</label>
-    <input id="inE" type="number" value="1e-3" step="any">
-  </div>
+    <div class="ctrl">
+      <label>Field frequency (Hz)</label>
+      <input id="inFreq" type="number" value="2.82e14" step="any">
+    </div>
 
-  <div class="ctrl">
-    <label>Field frequency (Hz)</label>
-    <input id="inFreq" type="number" value="2.82e14" step="any">
-  </div>
+    <div class="ctrl">
+      <label>Noise level (additive)</label>
+      <input id="inNoise" type="number" value="1e-4" step="any">
+    </div>
 
-  <div class="ctrl">
-    <label>Noise level (additive)</label>
-    <input id="inNoise" type="number" value="1e-4" step="any">
-  </div>
+    <div class="ctrl">
+      <label>Dipole transition freq (Hz)</label>
+      <input id="inDipole" type="number" value="2.82e14" step="any">
+    </div>
 
-  <div class="ctrl">
-    <label>Dipole transition freq (Hz)</label>
-    <input id="inDipole" type="number" value="2.82e14" step="any">
-  </div>
+    <div class="ctrl">
+      <label>Delta time unit Δt (s)</label>
+      <input id="inDt" type="number" value="1e-13" step="any">
+    </div>
 
-  <div class="ctrl">
-    <label>Delta time unit Δt (s)</label>
-    <input id="inDt" type="number" value="1e-13" step="any">
-  </div>
+    <div class="ctrl">
+      <label>n steps per Play</label>
+      <input id="inSteps" type="number" value="200" step="1">
+    </div>
 
-  <div class="ctrl">
-    <label>n steps per Play</label>
-    <input id="inSteps" type="number" value="200" step="1">
+    <div style="display:flex; align-items:center; gap:8px; margin-left:8px;">
+      <button id="btnPlay">Play</button>
+      <button id="btnRestart" class="secondary">Restart</button>
+      <button id="btnCenter" class="secondary">Center View</button>
+      <button id="btnNoLight" class="secondary">No Light</button>
+    </div>
   </div>
-
-  <div style="display:flex; align-items:center; gap:8px; margin-left:8px;">
-    <button id="btnPlay">Play</button>
-    <button id="btnRestart" class="secondary">Restart</button>
-    <button id="btnCenter" class="secondary">Center View</button>
+  <div class="footer">
+    Explanation: v = V (horizontal) ; w = W (vertical). P = (u - i v)/2. The model uses simple Bloch-equations with dephasing and pump/spontaneous lifetime. Noise seeds coherence. See code comments for details.
   </div>
 </div>
-
-<canvas id="c" width="920" height="920"></canvas>
-
-<div class="footer">
-  Explanation: v = V (horizontal) ; w = W (vertical). P = (u - i v)/2. The model uses simple Bloch-equations with dephasing and pump/spontaneous lifetime. Noise seeds coherence. See code comments for details.
+<div>
+  <canvas id="c" width="920" height="920"></canvas>
 </div>
+
 
 <script>
 /* Bloch U-W demo
@@ -117,12 +125,14 @@ const inSteps = document.getElementById('inSteps');
 const btnPlay = document.getElementById('btnPlay');
 const btnRestart = document.getElementById('btnRestart');
 const btnCenter = document.getElementById('btnCenter');
+const btnNoLight = document.getElementById('btnNoLight');
 
 let u = 0, v = 0, w = 0;      // Bloch components (u,v,w)
 let dut = 0, dvt = 0, dwt = 0;      // Bloch components (u,v,w)
 let tSim = 0;                // time (s)
 let path = [];               // store points for drawing (v,w)
 let maxPoints = 20000;       // limit to avoid memory explosion
+let modeNoLight = false;
 
 // drawing scale
 function mapX(vVal, vMax) {
@@ -256,10 +266,10 @@ function stepOnce() {
   const tau = parseFloat(inTau.value) || 1e-9;          // tau_s
   const Rpump = parseFloat(inPump.value) || 0;          // pump rate
   const ReqLevel = parseFloat(inEqLevel.value) || 0;    // equilibrium level
-  const Eamp = parseFloat(inE.value) || 0;
+  const Eamp = modeNoLight ? 0.0 : (parseFloat(inE.value) || 0);          // field amplitude
   const freq = parseFloat(inFreq.value) || 0;
   const dip = parseFloat(inDipole.value) || freq;
-  const noise = parseFloat(inNoise.value) || 0;
+  const noise = modeNoLight ? 0.0 : (parseFloat(inNoise.value) || 0);
   const dt = parseFloat(inDt.value) || 1e-13;
 
   // Beta coupling constant (set to 1 for demonstration). If you want to link to physical dipole moment change here.
@@ -301,7 +311,7 @@ function stepOnce() {
 
 // Play n steps
 function playNSteps() {
-  const n = parseInt(inSteps.value, 10) || 100;
+  const n = modeNoLight ? 10000000 : (parseInt(inSteps.value, 10) || 100);
   for (let i=0; i<n; i++) stepOnce();
   drawPath();
 }
@@ -334,6 +344,11 @@ btnCenter.addEventListener('click', () => {
     centerViewY = y - canvas.height/2;
     drawPath();
   }
+});
+btnNoLight.addEventListener('click', () => {
+  modeNoLight = true;
+  playNSteps();
+  modeNoLight = false;
 });
 
 // initial draw

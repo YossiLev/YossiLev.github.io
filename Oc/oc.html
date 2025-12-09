@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Bloch U-W Demo (Absorber Bleaching)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 12px; background:#f7f7f7; color:#111 }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .ctrl { background:#fff; padding:8px; border-radius:6px; box-shadow:0 1px 2px rgba(0,0,0,0.06); }
+  label { display:block; font-size:12px; color:#444 }
+  input[type="number"], input[type="text"] { width:110px; padding:6px; margin-top:4px; border:1px solid #ddd; border-radius:4px }
+  button { padding:8px 12px; border-radius:6px; border:0; background:#1565c0; color:#fff; cursor:pointer }
+  button.secondary { background:#666; margin-left:8px }
+  canvas { background:#111; border-radius:6px; display:block; margin-top:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2) }
+  .footer { margin-top:8px; font-size:12px; color:#666 }
+  .pageLayout { display:flex; flex-direction: column; gap:24px; }
+  @media (min-width: 1000px) 
+  { .pageLayout { flex-direction: row; } }
+
+</style>
+</head>
+<body>
+<div class = 'pageLayout'>
+<div>
+  <h2>Bloch (U-W) demo — absorber bleaching</h2>
+  <div class="controls">
+
+    <div class="ctrl">
+        <label for="angle1">Angle 1 (°):</label><br>
+        <input type="range" id="angle1" min="0" max="360" value="180" step="0.5" oninput="angle1View.innerText = this.value" style="width: 300px;">
+        <div><strong id="angle1View">180</strong>°</div>
+    </div>
+    <div class="ctrl">
+        <label for="angle2">Angle 2 (°):</label><br>
+        <input type="range" id="angle2" min="0" max="360" value="180" step="0.5" oninput="angle2View.innerText = this.value" style="width: 300px;">
+        <div><strong id="angle2View">180</strong>°</div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:8px; margin-left:8px;">
+      <button id="btnLight1">Light 1</button>
+      <button id="btnLight2">Light 2</button>
+ 
+    </div>
+  </div>
+  <div class="footer">
+    Explanation: v = V (horizontal) ; w = W (vertical). P = (u - i v)/2. The model uses simple Bloch-equations with dephasing and pump/spontaneous lifetime. Noise seeds coherence. See code comments for details.
+  </div>
+</div>
+<div>
+  <canvas id="c" width="920" height="920"></canvas>
+</div>
+
+
+<script>
+/* Bloch U-W demo
+   - u = Re-coherence*2, v = -2 Im(P) ; w = inversion (N)
+   - du/dt = -Delta * v - Gamma * u
+   - dv/dt =  Delta * u - Omega * w - Gamma * v
+   - dw/dt =  Omega * v + R_pump - w / tau_s
+   - Omega(t) = 2 * beta * E_amp  (beta set to 1 here; scale field amplitude to control strength)
+   - Add noise each step: u += noise * randn(), etc.
+*/
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let centerViewX = 0;
+let centerViewY = 0;
+let angleLight = - 100.0
+
+const btnLight1 = document.getElementById('btnLight1');
+const btnLight2 = document.getElementById('btnLight2');
+const sliderAngle1 = document.getElementById('angle1');
+const sliderAngle2 = document.getElementById('angle2');
+
+let u = 0, v = 0, w = 0;      // Bloch components (u,v,w)
+let dut = 0, dvt = 0, dwt = 0;      // Bloch components (u,v,w)
+let tSim = 0;                // time (s)
+let path = [];               // store points for drawing (v,w)
+let maxPoints = 20000;       // limit to avoid memory explosion
+let modeNoLight = false;
+
+// drawing scale
+function mapX(vVal, vMax) {
+  const margin = 60;
+  const w = canvas.width;
+  return margin + (vVal + vMax) / (2 * vMax) * (w - 2*margin);
+}
+function mapY(wVal, wMax) {
+  const margin = 40;
+  const h = canvas.height;
+  // W up (positive) should be upward in canvas coordinate
+  return h - (margin + (wVal + wMax) / (2 * wMax) * (h - 2*margin));
+}
+
+// utility: gaussian random (Box-Muller)
+function randn_bm() {
+  let u1 = 0, u2 = 0;
+  while (u1 === 0) u1 = Math.random();
+  while (u2 === 0) u2 = Math.random();
+  return Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+}
+
+function tc(x, y) {
+  return [x - centerViewX, y - centerViewY];
+}
+// clear and draw axes
+function clearCanvas() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // background
+  ctx.fillStyle = "#060606";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // axes
+  const vMax = 1;
+  const wMax = vMax;
+  // center lines
+  ctx.strokeStyle = "#888";
+  ctx.lineWidth = 1;
+  // vertical center (V axis)
+  const cx = mapX(0, vMax);
+  ctx.beginPath(); ctx.moveTo(...tc(cx, 10)); ctx.lineTo(...tc(cx, canvas.height-10)); ctx.stroke();
+  // horizontal center (W axis)
+  const cy = mapY(0, wMax);
+  ctx.beginPath(); ctx.moveTo(...tc(10, cy)); ctx.lineTo(...tc(canvas.width-10, cy)); ctx.stroke();
+
+  // labels
+  ctx.fillStyle = "#9bd";
+  ctx.font = "13px monospace";
+  ctx.fillText("U (Re(P) *2) →", canvas.width - 120, cy - 8);
+  ctx.save();
+  ctx.translate(cx + 8, 12);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText("↑ W (Inversion)", 0,0);
+  ctx.restore();
+}
+
+// draw path
+function drawPath() {
+  clearCanvas();
+  const vMax = 1;
+  const wMax = vMax;
+  const anglesSt = [[parseFloat(sliderAngle1.value) * Math.PI / 180, parseFloat(sliderAngle2.value) * Math.PI / 180], [angleLight]];
+
+  // draw path polyline
+  ctx.lineWidth = 1.5;
+
+
+  for (let angles of anglesSt) {
+    ctx.strokeStyle = angles.length == 2 ? "#6ee" : "yellow";
+    ctx.beginPath();
+    for (let angle of angles) {
+        if (angle < 0) continue;
+        for (let i = 0; i < 2; i++) {
+            const tcos = Math.cos(angle + i * Math.PI / 2);
+            const tsin = Math.sin(angle + i * Math.PI / 2);
+            let x = mapX(tcos, vMax);
+            let y = mapY(tsin, wMax);
+            ctx.moveTo(...tc(x,y));
+            x = mapX(- tcos, vMax);
+            y = mapY(- tsin, wMax);
+            ctx.lineTo(...tc(x,y));
+        }
+    }
+    ctx.stroke();  ctx.strokeStyle = "#e6e";
+  }
+
+}
+
+
+// wire up buttons
+btnLight1.addEventListener('click', () => {
+  const angles = [parseFloat(sliderAngle1.value) * Math.PI / 180, parseFloat(sliderAngle2.value) * Math.PI / 180];
+  angleLight = 0.5 * (angles[0] + angles[1]);
+  drawPath();
+})
+btnLight2.addEventListener('click', () => {
+  const angles = [parseFloat(sliderAngle1.value) * Math.PI / 180, parseFloat(sliderAngle2.value) * Math.PI / 180];
+  angleLight = 0.5 * (angles[0] + angles[1]) + Math.PI / 4;
+  drawPath();
+});
+
+sliderAngle1.addEventListener('input', () => {
+  angleLight = - 100.0;  
+  drawPath();
+});
+sliderAngle2.addEventListener('input', () => {
+  angleLight = - 100.0;  
+  drawPath();
+});
+
+
+
+</script>
+</body>
+</html>
