@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spectrum Bandwidth Tool</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  canvas { border: 1px solid #ccc; }
+  .controls { margin-top: 10px; }
+  input[type="number"] { width: 60px; }
+</style>
+</head>
+<body>
+
+<h2>Laser Spectrum Bandwidth</h2>
+
+<input type="file" id="fileInput">
+<div class="controls">
+  dB level:
+  <input type="number" id="dbInput" value="3" step="0.1">
+  <button id="calcBtn">Calc</button>
+</div>
+
+<p>Bandwidth: <input type="text" id="bwOutput" size="40" readonly></p>
+
+<canvas id="plot" width="900" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById("plot");
+const ctx = canvas.getContext("2d");
+
+let freq = [], Iraw = [], Ismooth = [];
+let crossings = null;
+let threshold = null;
+
+// ---------- CSV parsing ----------
+document.getElementById("fileInput").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => parseCSV(reader.result);
+  reader.readAsText(file);
+});
+
+function parseCSV(text) {
+  freq = [];
+  Iraw = [];
+  Ismooth = [];
+  crossings = null;
+
+  const lines = text.split(/\r?\n/);
+  let start = false;
+
+  for (const line of lines) {
+    const cols = line.split(/[,;\t]/);
+    if (cols[0].trim().includes("[TRACE DATA]")) {
+      start = true;
+      continue;
+    }
+    if (!start) continue;
+    if (cols.length < 2) continue;
+
+    const f = parseFloat(cols[0]);
+    const i = parseFloat(cols[1]);
+    if (!isNaN(f) && !isNaN(i)) {
+      freq.push(f);
+      Iraw.push(i);
+    }
+  }
+
+  Ismooth = gaussianSmooth(Iraw, 7);
+  draw();
+}
+
+// ---------- Gaussian smoothing ----------
+function gaussianSmooth(data, sigma) {
+  const r = Math.ceil(3 * sigma);
+  const kernel = [];
+  let sum = 0;
+
+  for (let k = -r; k <= r; k++) {
+    const v = Math.exp(-(k * k) / (2 * sigma * sigma));
+    kernel.push(v);
+    sum += v;
+  }
+  for (let i = 0; i < kernel.length; i++) kernel[i] /= sum;
+
+  const out = new Array(data.length).fill(0);
+  for (let i = 0; i < data.length; i++) {
+    for (let k = -r; k <= r; k++) {
+      const j = i + k;
+      if (j >= 0 && j < data.length) {
+        out[i] += data[j] * kernel[k + r];
+      }
+    }
+  }
+  return out;
+}
+
+// ---------- Bandwidth calculation ----------
+document.getElementById("calcBtn").addEventListener("click", () => {
+  if (!Ismooth.length) return;
+
+  const dB = parseFloat(document.getElementById("dbInput").value);
+  const imax = Math.max(...Ismooth);
+  const ip = Ismooth.indexOf(imax);
+
+  threshold = imax - dB;//* Math.pow(10, -dB / 10);
+
+  let left = null, right = null;
+
+  for (let i = ip; i > 0; i--) {
+    if (Ismooth[i - 1] < threshold && Ismooth[i] >= threshold) {
+      left = interp(i - 1, i);
+      break;
+    }
+  }
+
+  for (let i = ip; i < Ismooth.length - 1; i++) {
+    if (Ismooth[i] >= threshold && Ismooth[i + 1] < threshold) {
+      right = interp(i, i + 1);
+      break;
+    }
+  }
+
+  if (left && right) {
+    crossings = { left, right };
+    const bw = right.f - left.f;
+    document.getElementById("bwOutput").value = `${bw.toPrecision(5)} (from ${left.f.toPrecision(7)} to ${right.f.toPrecision(7)})`;
+  } else {
+    document.getElementById("bwOutput").value = "N/A";
+    crossings = null;
+  }
+
+  draw();
+});
+
+function interp(i1, i2) {
+  const x1 = freq[i1], x2 = freq[i2];
+  const y1 = Ismooth[i1], y2 = Ismooth[i2];
+  const t = (threshold - y1) / (y2 - y1);
+  return { f: x1 + t * (x2 - x1), I: threshold };
+}
+
+// ---------- Plotting ----------
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!freq.length) return;
+
+  const xmin = Math.min(...freq);
+  const xmax = Math.max(...freq);
+  const ymin = Math.min(...Ismooth);
+  const ymax = Math.max(...Ismooth);
+
+  const X = x => (x - xmin) / (xmax - xmin) * canvas.width;
+  const Y = y => canvas.height * (1 - (y - ymin) / (ymax - ymin));
+
+  plotCurve(freq, Iraw, "red");
+  plotCurve(freq, Ismooth, "blue");
+
+  if (crossings) {
+    ctx.strokeStyle = "green";
+    ctx.beginPath();
+    ctx.moveTo(X(crossings.left.f), Y(threshold));
+    ctx.lineTo(X(crossings.right.f), Y(threshold));
+    ctx.stroke();
+
+    drawCircle(crossings.left);
+    drawCircle(crossings.right);
+  }
+}
+
+function plotCurve(x, y, color) {
+  const mxx = Math.max(...x);
+  const mnx = Math.min(...x);
+  const mxy = Math.max(...y);
+  const mny = Math.min(...y);
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  for (let i = 0; i < x.length; i++) {
+    const px = (x[i] - mnx) / (mxx - mnx) * canvas.width;
+    const py = canvas.height * (1 - (y[i] - mny) / (mxy - mny));
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+}
+
+function drawCircle(p) {
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.arc(
+    (p.f - freq[0]) / (freq[freq.length - 1] - freq[0]) * canvas.width,
+    canvas.height * (1 - p.I / Math.max(...Iraw)),
+    4, 0, 2 * Math.PI
+  );
+  ctx.fill();
+}
+</script>
+
+</body>
+</html>
