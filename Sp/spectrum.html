@@ -13,6 +13,10 @@
 <body>
 
 <h2>Laser Spectrum Bandwidth</h2>
+<select id="inputSelect">
+  <option value="Intensity">Intensity</option>
+  <option value="DB">DB</option>
+</select>
 
 <input type="file" id="fileInput">
 <div class="controls">
@@ -32,6 +36,8 @@ const ctx = canvas.getContext("2d");
 let freq = [], Iraw = [], Ismooth = [];
 let crossings = null;
 let threshold = null;
+const inputSelect = document.getElementById("inputSelect");
+let dataType = "Intensity";
 
 // ---------- CSV parsing ----------
 document.getElementById("fileInput").addEventListener("change", e => {
@@ -39,7 +45,10 @@ document.getElementById("fileInput").addEventListener("change", e => {
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = () => parseCSV(reader.result);
+  reader.onload = () => {
+    parseCSV(reader.result);
+    fileInput.value = "";
+  };
   reader.readAsText(file);
 });
 
@@ -61,11 +70,16 @@ function parseCSV(text) {
     if (!start) continue;
     if (cols.length < 2) continue;
 
+    dataType = inputSelect.value;
     const f = parseFloat(cols[0]);
     const i = parseFloat(cols[1]);
     if (!isNaN(f) && !isNaN(i)) {
       freq.push(f);
-      Iraw.push(i);
+      if (dataType === "DB") {
+        Iraw.push(i);
+      } else {
+        Iraw.push(Math.exp(i / 10 * Math.log(10))); // Convert dB to linear
+      }
     }
   }
 
@@ -106,7 +120,11 @@ document.getElementById("calcBtn").addEventListener("click", () => {
   const imax = Math.max(...Ismooth);
   const ip = Ismooth.indexOf(imax);
 
-  threshold = imax - dB;//* Math.pow(10, -dB / 10);
+  if (dataType === "DB") {
+    threshold = imax - dB;
+  } else {
+    threshold = imax * Math.pow(10, -dB / 10);
+  }
 
   let left = null, right = null;
 
@@ -192,7 +210,7 @@ function drawCircle(p) {
   ctx.beginPath();
   ctx.arc(
     (p.f - freq[0]) / (freq[freq.length - 1] - freq[0]) * canvas.width,
-    canvas.height * (1 - p.I / Math.max(...Iraw)),
+    canvas.height * (1 - p.I / Math.max(...Ismooth)),
     4, 0, 2 * Math.PI
   );
   ctx.fill();
