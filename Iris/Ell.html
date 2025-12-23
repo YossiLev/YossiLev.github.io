@@ -48,6 +48,15 @@
         <button onclick="home()">Home</button>
         <input disabled placeholder="—">
     </div>
+    <div class="cmd-row">
+        <button onclick="moveAbsoluteMm()">Move Abs</button>
+        <input id="absMm" placeholder="mm (e.g. 2.34)">
+    </div>
+
+    <div class="cmd-row">
+        <button onclick="moveRelativeMm()">Move Rel</button>
+        <input id="relMm" placeholder="mm (e.g. -0.002)">
+    </div>
 
     <div class="cmd-row">
         <button onclick="moveAbsolute()">Move Abs</button>
@@ -126,18 +135,81 @@ async function send(cmd) {
 async function readResponse() {
     try {
         const { value, done } = await reader.read();
-        if (done) return;
-        const text = new TextDecoder().decode(value);
-        log("RX: " + text.trim());
+        if (done || !value) return;
+
+        const text = new TextDecoder().decode(value).trim();
+        log("RX: " + text);
+
+        /* Position reply example:
+           0PO00000FA0
+        */
+        if (text.includes("PO")) {
+            const hex = text.slice(-8);
+            const counts = hexToInt32(hex);
+            const mm = countsToMm(counts);
+
+            log(`→ Position: ${mm.toFixed(3)} mm`);
+        }
+
     } catch (e) {
         log("RX ERROR: " + e);
     }
+}
+
+/* ===== Micron-based conversion ===== */
+/* 1 count = 1 µm = 0.001 mm */
+
+function mmToCounts(mm) {
+    return Math.round(mm * 1000);
+}
+
+function countsToMm(counts) {
+    return counts / 1000;
+}
+
+/* signed 32-bit int → 8-digit hex */
+function int32ToHex(value) {
+    return (value >>> 0).toString(16).toUpperCase().padStart(8, "0");
+}
+
+/* 8-digit hex → signed 32-bit int */
+function hexToInt32(hex) {
+    let v = parseInt(hex, 16);
+    if (v & 0x80000000) v -= 0x100000000;
+    return v;
 }
 
 /* ===== Command Implementations ===== */
 
 async function home() {
     await send("ho0");
+    await refresh();
+}
+async function moveAbsoluteMm() {
+    const mm = parseFloat(document.getElementById("absMm").value);
+    if (isNaN(mm)) {
+        alert("Invalid mm value");
+        return;
+    }
+
+    const counts = mmToCounts(mm);
+    const hex = int32ToHex(counts);
+
+    await send("ma" + hex);
+    await refresh();
+}
+
+async function moveRelativeMm() {
+    const mm = parseFloat(document.getElementById("relMm").value);
+    if (isNaN(mm)) {
+        alert("Invalid mm value");
+        return;
+    }
+
+    const counts = mmToCounts(mm);
+    const hex = int32ToHex(counts);
+
+    await send("mr" + hex);
     await refresh();
 }
 
