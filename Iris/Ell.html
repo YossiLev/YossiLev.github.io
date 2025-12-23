@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Thorlabs ELL15Z Iris Controller</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+    }
+    #controls {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 300px;
+    }
+    .cmd-row {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+    button {
+        width: 120px;
+    }
+    input {
+        width: 140px;
+    }
+    #status {
+        white-space: pre;
+        background: #111;
+        color: #0f0;
+        padding: 10px;
+        width: 420px;
+        height: 400px;
+        overflow-y: auto;
+        font-family: monospace;
+    }
+</style>
+</head>
+<body>
+
+<div id="controls">
+    <button onclick="connect()">Connect</button>
+
+    <div class="cmd-row">
+        <button onclick="home()">Home</button>
+        <input disabled placeholder="—">
+    </div>
+
+    <div class="cmd-row">
+        <button onclick="moveAbsolute()">Move Abs</button>
+        <input id="absVal" placeholder="Hex (8 chars)">
+    </div>
+
+    <div class="cmd-row">
+        <button onclick="moveRelative()">Move Rel</button>
+        <input id="relVal" placeholder="Hex (8 chars)">
+    </div>
+
+    <div class="cmd-row">
+        <button onclick="getPosition()">Get Pos</button>
+        <input disabled placeholder="—">
+    </div>
+
+    <div class="cmd-row">
+        <button onclick="getStatus()">Get Status</button>
+        <input disabled placeholder="—">
+    </div>
+
+    <div class="cmd-row">
+        <button onclick="stopMotion()">Stop</button>
+        <input disabled placeholder="—">
+    </div>
+
+    <div class="cmd-row">
+        <button onclick="saveSettings()">Save</button>
+        <input disabled placeholder="—">
+    </div>
+</div>
+
+<div id="status"></div>
+
+<script>
+let port;
+let reader;
+let writer;
+const deviceAddr = "0";   // Change if your ELL15 address is not 0
+
+function log(msg) {
+    const s = document.getElementById("status");
+    s.textContent += msg + "\n";
+    s.scrollTop = s.scrollHeight;
+}
+
+async function connect() {
+    try {
+        port = await navigator.serial.requestPort();
+        await port.open({
+            baudRate: 9600,
+            dataBits: 8,
+            stopBits: 1,
+            parity: "none",
+            flowControl: "none"
+        });
+
+        writer = port.writable.getWriter();
+        reader = port.readable.getReader();
+
+        log("Connected to serial port");
+        await getStatus();
+        await getPosition();
+    } catch (e) {
+        log("ERROR: " + e);
+    }
+}
+
+async function send(cmd) {
+    const fullCmd = deviceAddr + cmd + "\r\n";
+    log("TX: " + fullCmd.trim());
+    await writer.write(new TextEncoder().encode(fullCmd));
+    await readResponse();
+}
+
+async function readResponse() {
+    try {
+        const { value, done } = await reader.read();
+        if (done) return;
+        const text = new TextDecoder().decode(value);
+        log("RX: " + text.trim());
+    } catch (e) {
+        log("RX ERROR: " + e);
+    }
+}
+
+/* ===== Command Implementations ===== */
+
+async function home() {
+    await send("ho0");
+    await refresh();
+}
+
+async function moveAbsolute() {
+    const v = document.getElementById("absVal").value;
+    if (v.length !== 8) {
+        alert("Absolute value must be 8 hex characters");
+        return;
+    }
+    await send("ma" + v);
+    await refresh();
+}
+
+async function moveRelative() {
+    const v = document.getElementById("relVal").value;
+    if (v.length !== 8) {
+        alert("Relative value must be 8 hex characters");
+        return;
+    }
+    await send("mr" + v);
+    await refresh();
+}
+
+async function getPosition() {
+    await send("gp");
+}
+
+async function getStatus() {
+    await send("gs");
+}
+
+async function stopMotion() {
+    await send("st");
+}
+
+async function saveSettings() {
+    await send("us");
+}
+
+/* ===== Utility ===== */
+
+async function refresh() {
+    await getStatus();
+    await getPosition();
+}
+</script>
+
+</body>
+</html>
