@@ -13,12 +13,21 @@
 <body>
 
 <h2>Laser Spectrum Bandwidth</h2>
+<div>
+<label>
+  Load directory:
+<input type="file" id="fileDirectoryInput" accept=".csv">
+</label>
+</div>
+
+<label>
+  Load data files:
+<input type="file" id="fileDataInput" accept=".csv" multiple>
+</label>
 <select id="inputSelect">
   <option value="Intensity">Intensity</option>
   <option value="DB">DB</option>
 </select>
-
-<input type="file" id="fileInput">
 <div class="controls">
   dB level:
   <input type="number" id="dbInput" value="3" step="0.1">
@@ -27,35 +36,98 @@
 
 <p>Bandwidth: <input type="text" id="bwOutput" size="40" readonly></p>
 
-<canvas id="plot" width="900" height="400"></canvas>
+<canvas id="plotBandWidth" width="900" height="400"></canvas>
+<canvas id="plotSpectrum" width="900" height="400"></canvas>
 
 <script>
-const canvas = document.getElementById("plot");
-const ctx = canvas.getContext("2d");
+const canvasBandWidth = document.getElementById("plotBandWidth");
+const ctxBandWidth = canvasBandWidth.getContext("2d");
+const canvasSpectrum = document.getElementById("plotSpectrum");
+const ctxSpectrum = canvasSpectrum.getContext("2d");
 
-let freq = [], Iraw = [], Ismooth = [];
+class spectrumData {
+  constructor(fileName, gridsDistance) {
+    this.fileName = fileName;
+    this.gridsDistance = gridsDistance;
+    this.freq = [];
+    this.Iraw = [];
+    this.Ismooth = [];
+    this.bandWidth = null;
+    this.IrawDb = [];
+    this.IsmoothDb = [];
+    this.bandWidthDb = null;
+  }
+}
+
+let spectrums = [];
 let crossings = null;
 let threshold = null;
 const inputSelect = document.getElementById("inputSelect");
 let dataType = "Intensity";
 
 // ---------- CSV parsing ----------
-document.getElementById("fileInput").addEventListener("change", e => {
+document.getElementById("fileDirectoryInput").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
   reader.onload = () => {
-    parseCSV(reader.result);
-    fileInput.value = "";
+    parseDirectoryCSV(reader.result);
+    fileDirectoryInput.value = "";
   };
   reader.readAsText(file);
 });
 
-function parseCSV(text) {
-  freq = [];
-  Iraw = [];
-  Ismooth = [];
+function parseDirectoryCSV(text) {
+  spectrums = [];
+
+
+  const lines = text.split(/\r?\n/);
+  for (const line of lines) {
+    const cols = line.split(/[,;\t]/);
+    if (cols.length < 2) continue;
+    const distance = parseFloat(cols[1].trim());
+    const filename = `W000${cols[0].trim()}.CSV`;
+    if (!isNaN(distance) && filename) {
+      spectrums.push(new spectrumData(filename, distance));
+    }
+  }
+  console.log("Parsed directory CSV:", spectrums);
+}
+
+document.getElementById("fileDataInput").addEventListener("change", () => {
+  const files = Array.from(fileDataInput.files);
+  if (!files.length) return;
+
+  files.forEach(file => {
+
+    // ✅ filename condition
+    const sIndex = spectrums.findIndex(s => s.fileName === file.name);
+    if (sIndex < 0) {
+      return;   // skip this file
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      parseCSV(reader.result, sIndex);
+    };
+
+    reader.readAsText(file);
+  });
+
+  spectrums.sort((a, b) => a.gridsDistance - b.gridsDistance);
+
+  // allow re-selecting same files again
+  fileDataInput.value = "";
+});
+
+function parseCSV(text, sIndex) {
+  spectrums[sIndex].freq = [];
+  spectrums[sIndex].Iraw = [];
+  spectrums[sIndex].Ismooth = [];
+  spectrums[sIndex].IrawDb = [];
+  spectrums[sIndex].IsmoothDb = [];
   crossings = null;
 
   const lines = text.split(/\r?\n/);
@@ -70,21 +142,17 @@ function parseCSV(text) {
     if (!start) continue;
     if (cols.length < 2) continue;
 
-    dataType = inputSelect.value;
     const f = parseFloat(cols[0]);
     const i = parseFloat(cols[1]);
     if (!isNaN(f) && !isNaN(i)) {
-      freq.push(f);
-      if (dataType === "DB") {
-        Iraw.push(i);
-      } else {
-        Iraw.push(Math.exp(i / 10 * Math.log(10))); // Convert dB to linear
-      }
+      spectrums[sIndex].freq.push(f);
+      spectrums[sIndex].Iraw.push(Math.pow(10, i / 10)); // Convert dB to linear
+      spectrums[sIndex].IrawDb.push(i);
     }
   }
 
-  Ismooth = gaussianSmooth(Iraw, 7);
-  draw();
+  spectrums[sIndex].Ismooth = gaussianSmooth(spectrums[sIndex].Iraw, 7);
+  spectrums[sIndex].IsmoothDb = gaussianSmooth(spectrums[sIndex].IrawDb, 7);
 }
 
 // ---------- Gaussian smoothing ----------
@@ -114,13 +182,32 @@ function gaussianSmooth(data, sigma) {
 
 // ---------- Bandwidth calculation ----------
 document.getElementById("calcBtn").addEventListener("click", () => {
+
+//let listFreq = [], listIraw = [], listIsmooth = [];`
+  if (!spectrums.length) return;
+  spectrums.forEach(s => {
+    s.bandWidth = calculateBandwidth(s.freq, s.Iraw, s.Ismooth, "Intensity");
+    s.bandWidthDb = calculateBandwidth(s.freq, s.IrawDb, s.IsmoothDb, "DB");
+  });
+
+  const dataType = inputSelect.value;
+  const Ismooth = dataType === "Intensity" ? spectrums[0].Ismooth : spectrums[0].IsmoothDb;
+  calculateBandwidth(spectrums[0].freq, spectrums[0].Iraw, Ismooth, dataType);
+  drawSpectrum(0, dataType); // Draw first spectrum by default
+  const bw = dataType === "Intensity" ? spectrums.map(s => s.bandWidth) : spectrums.map(s => s.bandWidthDb);
+  ctxBandWidth.clearRect(0, 0, canvasBandWidth.width, canvasBandWidth.height);
+  plotGrid(canvasBandWidth, ctxBandWidth, spectrums.map(s => s.gridsDistance), bw, "lightgray");
+  plotCurve(canvasBandWidth, ctxBandWidth, spectrums.map(s => s.gridsDistance), bw, "red");
+});
+
+function calculateBandwidth(freq, Iraw, Ismooth, type) {
   if (!Ismooth.length) return;
 
   const dB = parseFloat(document.getElementById("dbInput").value);
   const imax = Math.max(...Ismooth);
   const ip = Ismooth.indexOf(imax);
 
-  if (dataType === "DB") {
+  if (type === "DB") {
     threshold = imax - dB;
   } else {
     threshold = imax * Math.pow(10, -dB / 10);
@@ -130,14 +217,14 @@ document.getElementById("calcBtn").addEventListener("click", () => {
 
   for (let i = ip; i > 0; i--) {
     if (Ismooth[i - 1] < threshold && Ismooth[i] >= threshold) {
-      left = interp(i - 1, i);
+      left = interp(freq, Ismooth, i - 1, i);
       break;
     }
   }
 
   for (let i = ip; i < Ismooth.length - 1; i++) {
     if (Ismooth[i] >= threshold && Ismooth[i + 1] < threshold) {
-      right = interp(i, i + 1);
+      right = interp(freq, Ismooth, i, i + 1);
       break;
     }
   }
@@ -146,50 +233,56 @@ document.getElementById("calcBtn").addEventListener("click", () => {
     crossings = { left, right };
     const bw = right.f - left.f;
     document.getElementById("bwOutput").value = `${bw.toPrecision(5)} (from ${left.f.toPrecision(7)} to ${right.f.toPrecision(7)})`;
+    return bw;
   } else {
     document.getElementById("bwOutput").value = "N/A";
     crossings = null;
+    return 0.0;
   }
 
-  draw();
-});
+  //draw();
+}
 
-function interp(i1, i2) {
+function interp(freq, Ismooth, i1, i2) {
   const x1 = freq[i1], x2 = freq[i2];
   const y1 = Ismooth[i1], y2 = Ismooth[i2];
   const t = (threshold - y1) / (y2 - y1);
   return { f: x1 + t * (x2 - x1), I: threshold };
 }
 
+const marginPlot = 40;
 // ---------- Plotting ----------
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (!freq.length) return;
+function drawSpectrum(sIndex, type) {
+  ctxSpectrum.clearRect(0, 0, canvasSpectrum.width, canvasSpectrum.height);
+  if (!spectrums[sIndex].freq.length) return;
 
-  const xmin = Math.min(...freq);
-  const xmax = Math.max(...freq);
-  const ymin = Math.min(...Ismooth);
-  const ymax = Math.max(...Ismooth);
+  const IRaw = type === "Intensity" ? spectrums[sIndex].Iraw : spectrums[sIndex].IrawDb;
+  const ISmooth = type === "Intensity" ? spectrums[sIndex].Ismooth : spectrums[sIndex].IsmoothDb;
+  const xmin = Math.min(...spectrums[sIndex].freq);
+  const xmax = Math.max(...spectrums[sIndex].freq);
+  const ymin = Math.min(...ISmooth);
+  const ymax = Math.max(...ISmooth);
 
-  const X = x => (x - xmin) / (xmax - xmin) * canvas.width;
-  const Y = y => canvas.height * (1 - (y - ymin) / (ymax - ymin));
+  const X = x => (x - xmin) / (xmax - xmin) * (canvasSpectrum.width - 2 * marginPlot) + marginPlot;
+  const Y = y => (canvasSpectrum.height - 2 * marginPlot) * (1 - (y - ymin) / (ymax - ymin)) + marginPlot;
 
-  plotCurve(freq, Iraw, "red");
-  plotCurve(freq, Ismooth, "blue");
+
+  plotCurve(canvasSpectrum, ctxSpectrum, spectrums[sIndex].freq, IRaw, "red");
+  plotCurve(canvasSpectrum, ctxSpectrum, spectrums[sIndex].freq, ISmooth, "blue");
 
   if (crossings) {
-    ctx.strokeStyle = "green";
-    ctx.beginPath();
-    ctx.moveTo(X(crossings.left.f), Y(threshold));
-    ctx.lineTo(X(crossings.right.f), Y(threshold));
-    ctx.stroke();
-
-    drawCircle(crossings.left);
-    drawCircle(crossings.right);
+    ctxSpectrum.strokeStyle = "green";
+    ctxSpectrum.beginPath();
+    ctxSpectrum.moveTo(X(crossings.left.f), Y(threshold));
+    ctxSpectrum.lineTo(X(crossings.right.f), Y(threshold));
+    ctxSpectrum.stroke();
+    drawCircle(canvasSpectrum, ctxSpectrum, X(crossings.left.f), Y(threshold));
+    drawCircle(canvasSpectrum, ctxSpectrum, X(crossings.right.f), Y(threshold));
   }
 }
 
-function plotCurve(x, y, color) {
+
+function plotCurve(canvas, ctx, x, y, color) {
   const mxx = Math.max(...x);
   const mnx = Math.min(...x);
   const mxy = Math.max(...y);
@@ -197,22 +290,52 @@ function plotCurve(x, y, color) {
   ctx.strokeStyle = color;
   ctx.beginPath();
   for (let i = 0; i < x.length; i++) {
-    const px = (x[i] - mnx) / (mxx - mnx) * canvas.width;
-    const py = canvas.height * (1 - (y[i] - mny) / (mxy - mny));
+    const px = (x[i] - mnx) / (mxx - mnx) * (canvas.width - 2 * marginPlot) + marginPlot;
+    const py = (canvas.height - 2 * marginPlot) * (1 - (y[i] - mny) / (mxy - mny)) + marginPlot;
     if (i === 0) ctx.moveTo(px, py);
     else ctx.lineTo(px, py);
   }
   ctx.stroke();
 }
+function plotGrid(canvas, ctx, x, y, color) {
+  const nGrid = 10;
+  const mxx = Math.max(...x);
+  const mnx = Math.min(...x);
+  const mxy = Math.max(...y);
+  const mny = Math.min(...y);
+  const xGridStep = (mxx - mnx) / nGrid;
+  const yGridStep = (mxy - mny) / nGrid;
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  for (let i = 0; i <= nGrid; i++) {
+    const gx = mnx + i * xGridStep;
+    const px = (gx - mnx) / (mxx - mnx) * (canvas.width - 2 * marginPlot) + marginPlot;
+    ctx.moveTo(px, marginPlot);
+    ctx.lineTo(px, canvas.height - marginPlot);
+  }
+  for (let i = 0; i <= nGrid; i++) {
+    const gy = mny + i * yGridStep;
+    const py = (canvas.height - 2 * marginPlot) * (1 - (gy - mny) / (mxy - mny)) + marginPlot;
+    ctx.moveTo(marginPlot, py);
+    ctx.lineTo(canvas.width - marginPlot, py);
+  }
+  ctx.stroke();
+  for (let i = 0; i <= nGrid; i++) {
+    const gx = mnx + i * xGridStep;
+    const px = (gx - mnx) / (mxx - mnx) * (canvas.width - 2 * marginPlot) + marginPlot;
+    ctx.fillText(gx.toFixed(2), px - 10, canvas.height - marginPlot + 15);
+  }
+  for (let i = 0; i <= nGrid; i++) {
+    const gy = mny + i * yGridStep;
+    const py = (canvas.height - 2 * marginPlot) * (1 - (gy - mny) / (mxy - mny)) + marginPlot;
+    ctx.fillText(gy.toFixed(3), marginPlot - 35, py + 5); 
+  }
+}
 
-function drawCircle(p) {
+function drawCircle(canvas, ctx, x, y) {
   ctx.fillStyle = "red";
   ctx.beginPath();
-  ctx.arc(
-    (p.f - freq[0]) / (freq[freq.length - 1] - freq[0]) * canvas.width,
-    canvas.height * (1 - p.I / Math.max(...Ismooth)),
-    4, 0, 2 * Math.PI
-  );
+  ctx.arc(x, y, 4, 0, 2 * Math.PI);
   ctx.fill();
 }
 </script>
