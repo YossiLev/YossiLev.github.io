@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Thorlabs ELL15Z Iris Controller</title>
 <style>
-    body {
+    lay {
         font-family: Arial, sans-serif;
         display: flex;
         gap: 20px;
@@ -41,12 +41,12 @@
 </head>
 <body>
 <H1>Thorlabs ELL15Z Iris Controller</H1>
+<div class="lay">
 <div id="controls">
     <button onclick="connect()">Connect</button>
 
     <div class="cmd-row">
         <button onclick="home()">Home</button>
-        <input disabled placeholder="—">
     </div>
     <div class="cmd-row">
         <button onclick="moveAbsoluteMm()">Move Abs</button>
@@ -70,27 +70,23 @@
 
     <div class="cmd-row">
         <button onclick="getPosition()">Get Pos</button>
-        <input disabled placeholder="—">
     </div>
 
     <div class="cmd-row">
         <button onclick="getStatus()">Get Status</button>
-        <input disabled placeholder="—">
     </div>
 
     <div class="cmd-row">
         <button onclick="stopMotion()">Stop</button>
-        <input disabled placeholder="—">
     </div>
 
     <div class="cmd-row">
         <button onclick="saveSettings()">Save</button>
-        <input disabled placeholder="—">
     </div>
 </div>
 
 <div id="status"></div>
-
+</div>
 <script>
 let port;
 let reader;
