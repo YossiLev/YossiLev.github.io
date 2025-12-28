@@ -34,9 +34,8 @@
   <button id="calcBtn">Calc</button>
 </div>
 
-<p>Bandwidth: <input type="text" id="bwOutput" size="40" readonly></p>
-
 <canvas id="plotBandWidth" width="900" height="400"></canvas>
+<p>Bandwidth: <input type="text" id="bwOutput" size="40" readonly></p>
 <canvas id="plotSpectrum" width="900" height="400"></canvas>
 
 <script>
@@ -251,18 +250,20 @@ const marginPlot = 40;
 // ---------- Plotting ----------
 function findNearestPoint(screenPts, mx, my, radius) {
   let best = null;
+  let bestP =- 1
   let bestDist2 = radius * radius;
 
-  for (const p of screenPts) {
-    const dx = p.x - mx;
-    const dy = p.y - my;
+  for (const p in screenPts) {
+    const dx = screenPts[p].x - mx;
+    const dy = screenPts[p].y - my;
     const d2 = dx * dx + dy * dy;
     if (d2 < bestDist2) {
       bestDist2 = d2;
-      best = p;
+      best = screenPts[p];
+      bestP = p;
     }
   }
-  return best;
+  return [best, bestP];
 }
 
 function drawMarker(canvas, ctx, p) {
@@ -299,12 +300,27 @@ canvasBandWidth.addEventListener("mousemove", e => {
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
 
-  const hit = findNearestPoint(bandWidthScreeenPts, mx, my, 25);
+  const [hit, i] = findNearestPoint(bandWidthScreeenPts, mx, my, 25);
   drawBandWidth(inputSelect.value);
   if (hit) {
     drawMarker(canvasBandWidth, ctxBandWidth, hit);
     drawTooltip(canvasBandWidth, ctxBandWidth, hit, mx, my);
   }
+});
+canvasBandWidth.addEventListener("click", e => {
+  if (!bandWidthScreeenPts.length) return;
+  const rect = canvasBandWidth.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  const [hit, i] = findNearestPoint(bandWidthScreeenPts, mx, my, 25);
+  if (hit) {
+    const dataType = inputSelect.value;
+    const Ismooth = dataType === "Intensity" ? spectrums[i].Ismooth : spectrums[i].IsmoothDb;
+    calculateBandwidth(spectrums[i].freq, spectrums[i].Iraw, Ismooth, dataType);
+
+    drawSpectrum(i, dataType); // Draw first spectrum by default
+  } 
 });
 
 function scalesForPlots(canvas, margin, xData, yData) {
