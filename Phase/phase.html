@@ -35,6 +35,9 @@ label {
 
 <div class="controls">
     <button onclick="generateGaussian()">Generate Gaussian Beam</button>
+    <button onclick="initRandomization()">Randomize Phase</button>
+    <button onclick="iterateOneDirection(1)">One Forward Iteration</button>
+    <button onclick="iterateOneDirection(-1)">One Backward Iteration</button>
     <button onclick="iterate(1)">One GS Iteration</button>
     <button onclick="iterate(100)">100 GS Iterations</button>
     <br><br>
@@ -93,16 +96,21 @@ function idx(x,y){ return y*N+x; }
 /* ---------- Gaussian generation ---------- */
 function generateGaussian(){
     const w0 = 40;
+    const factor = 6;
+    const shiftX = 10;
+    const shiftY = 50;
 
     // --- TRUE field (used only to generate intensities) ---
     for(let y=0;y<N;y++){
         for(let x=0;x<N;x++){
-            let X = x - N/2;
-            let Y = y - N/2;
-            let r2a = 2 * X*X + (Y+80)*(Y+80);
-            let r2b = (X+90)*(X+90) + Y*Y;           
-            let r2c = (X+180)*(X+180) + (Y-70)*(Y-70);           
-            I1[idx(x,y)] = Math.exp(-r2a/(w0*w0)) + Math.exp(-r2b/(w0*w0)) + Math.exp(-r2c/(w0*w0));
+            let X = factor * (x - N/2) + shiftX;
+            let Y = factor * (y - N/2) + shiftY;
+            let r2a = 4 * X*X + (Y+180)*(Y+180);
+            let r2b = (X+290)*(X+290) + Y*Y;           
+            let r2c = (X+480)*(X+480) + (Y-70)*(Y-70);
+            let r2d = (X)*(X) + (Y)*(Y);
+
+            I1[idx(x,y)] = Math.exp(-r2a/(w0*w0)) + Math.exp(-r2b/(w0*w0)) + Math.exp(-r2c/(w0*w0)) + Math.exp(-r2d/(w0*w0));
             phase1[idx(x,y)] = 0;   // TRUE phase (hidden)
         }
     }
@@ -111,7 +119,8 @@ function generateGaussian(){
     updateFieldFromIPhase(field1, I1, phase1);
     propagateABCD(field1, field2);
     extractIntensity(field2, I2);
-    extractPhase(field2,phase2);
+    extractPhase(field2, phase2);
+    extractPhase(field1, phase1);
 
 
     // // --- THROW PHASE AWAY ---
@@ -119,8 +128,7 @@ function generateGaussian(){
     //randomizePhase(phase2);
 
     // // Initialize fields with correct intensity but random phase
-    updateFieldFromIPhase(field1, I1, phase1);
-    updateFieldFromIPhase(field2, I2, phase2);
+    //updateFieldFromIPhase(field2, I2, phase2);
 
     drawAll();
 }
@@ -131,22 +139,42 @@ function randomizePhase(phase){
     }
 }
 /* ---------- Single GS iteration ---------- */
+function initRandomization() {
+    randomizePhase(phase1);
+    updateFieldFromIPhase(field1, I1, phase1);
+    drawAll();
+}
+
+function iterateOneDirection(dir) {
+    if (dir === 1) {
+        // Plane 1 → Plane 2
+        enforceIntensity(field1, I1);
+        propagateABCD(field1, field2);
+        extractIntensity(field2, S2);
+        extractPhase(field2, phase2);
+    } else {
+        // Back propagation (inverse ABCD)
+        enforceIntensity(field2, I2);
+        propagateABCD(field2, field1, true);
+        extractIntensity(field1, S1);
+        extractPhase(field1, phase1);
+    }
+    drawAll();
+}
+
 function iterate(n){
     for(let it=0;it<n;it++){
-
         // Plane 1 → Plane 2
-        updateFieldFromIPhase(field1,I1,phase1);
+        enforceIntensity(field1,I1);
         propagateABCD(field1,field2);
-        extractIntensity(field2, S2);
-        enforceIntensity(field2,I2);
+        extractIntensity(field2,S2);
+        extractPhase(field2,phase2);
 
         // Back propagation (inverse ABCD)
+        enforceIntensity(field2,I2);
         propagateABCD(field2,field1,true);
         extractIntensity(field1, S1);
-        enforceIntensity(field1,I1);
-
         extractPhase(field1,phase1);
-        extractPhase(field2,phase2);
     }
     drawAll();
 }
@@ -245,97 +273,20 @@ function propagateABCD(input, output, inverse=false){
     for(let i=0;i<2*N*N;i++){
         output[i] *= scale;
     }
-}
 
-function propagateABCDF(input, output, inverse=false){
-    let field = new Float32Array(2*N*N);
-    let spec  = new Float32Array(2*N*N);
-    for(let i=0;i<2*N*N;i++) field[i] = input[i];
-    fftshift2D(field);
-    fft2(field, spec, false);
-    fftshift2D(spec);
-    for(let i=0;i<2*N*N;i++) output[i] = spec[i] * 20;
-}
-
-
-/* ---------- ABCD Fresnel propagation ---------- */
-function propagateABCDX(input, output, inverse=false){
-    const A = parseFloat(document.getElementById("A").value);
-    const B = parseFloat(document.getElementById("B").value);
-    const D = parseFloat(document.getElementById("D").value);
-
-    const Beff = inverse ? -B : B;
-    if (Math.abs(Beff) < 1e-12){
-        console.error("B = 0 not supported in Fresnel FFT form");
-        return;
-    }
-
-    let field = new Float32Array(2*N*N);
-    let spec  = new Float32Array(2*N*N);
-
-    /* ---------- 1) input quadratic phase ---------- */
-    for(let y=0;y<N;y++){
-        let Y = (y - N/2) * dx;
-        for(let x=0;x<N;x++){
-            let X = (x - N/2) * dx;
-            let q = k*A*(X*X + Y*Y)/(2*Beff);
-            let c = Math.cos(q);
-            let s = Math.sin(q);
-            let i = 2*(y*N+x);
-
-            let re = input[i];
-            let im = input[i+1];
-
-            field[i]   = re*c - im*s;
-            field[i+1] = re*s + im*c;
+    if (inverse) {
+        for(let y=0;y<N;y++){
+            let yr = N - 1 - y;
+            for(let x=0;x<N;x++){
+                let xr = N - 1 - x;
+                let i1 = 2*(y*N+x);
+                let i2 = 2*(yr*N+xr);
+                field[i2]   = output[i1];
+                field[i2+1] = output[i1+1];
+            }
         }
-    }
-
-    /* ---------- 2) centered FFT ---------- */
-    fftshift2D(field);
-    fft2(field, spec, false);
-    fftshift2D(field);
-
-    /* ---------- 3) Fresnel frequency kernel ---------- */
-    for(let y=0;y<N;y++){
-        let fy = (y - N/2) / (N*dx);   // FFT frequency grid
-        for(let x=0;x<N;x++){
-            let fx = (x - N/2) / (N*dx);
-
-            // CORRECT Fresnel kernel
-            let phase = -Math.PI * lambda * Beff * (fx*fx + fy*fy);
-
-            let c = Math.cos(phase);
-            let s = Math.sin(phase);
-            let i = 2*(y*N+x);
-
-            let re = spec[i];
-            let im = spec[i+1];
-
-            spec[i]   = re*c - im*s;
-            spec[i+1] = re*s + im*c;
-        }
-    }
-
-    /* ---------- 4) inverse FFT ---------- */
-    fft2(spec, field, true);
-    fftshift2D(field);
-
-    /* ---------- 5) output quadratic phase ---------- */
-    for(let y=0;y<N;y++){
-        let Y = (y - N/2) * dx;
-        for(let x=0;x<N;x++){
-            let X = (x - N/2) * dx;
-            let q = k*D*(X*X + Y*Y)/(2*Beff);
-            let c = Math.cos(q);
-            let s = Math.sin(q);
-            let i = 2*(y*N+x);
-
-            let re = field[i];
-            let im = field[i+1];
-
-            output[i]   = re*c - im*s;
-            output[i+1] = re*s + im*c;
+        for(let i=0;i<2*N*N;i++){
+            output[i] = field[i];
         }
     }
 }
@@ -462,6 +413,10 @@ function fft2(input,output,inverse=false){
         output[2*i]   = re[i];
         output[2*i+1] = im[i];
     }
+    const Mx = output.reduce((a, b) => Math.max(a, b), -Infinity);
+    for(let i=0;i<2 * N*N;i++){
+        output[i] *= 1/Mx ;
+    }
 }
 
 
@@ -494,17 +449,19 @@ function drawPhase(canvas,phase){
 }
 
 function drawDiff(canvas,Iorig,Icur){
-    let ctx = canvas.getContext("2d");
-    let img = ctx.createImageData(N,N);
-    for(let i=0;i<N*N;i++){
-        let d = Math.abs((Iorig[i]-Icur[i]) * 0.001 + 128);
-        let v = Math.min(255,d);
-        img.data[4*i] = v;
-        img.data[4*i+1] = v;
-        img.data[4*i+2] = v;
-        img.data[4*i+3] = 255;
+    let df = new Float32Array(N*N);
+
+    for(let i=0;i<N*N;i++) {
+        df[i] = (Iorig[i] - Icur[i]) * 1000;
     }
-    ctx.putImageData(img,0,0);
+    const Mx = df.reduce((a, b) => Math.max(a, b), -Infinity);
+    const Mn = df.reduce((a, b) => Math.min(a, b), Infinity);
+    const absMax = Math.max(Math.abs(Mx), Math.abs(Mn));
+    for(let i=0;i<N*N;i++) {
+        df[i] = (df[i] - Mn) * 255.0 / absMax;
+    }
+
+    drawImage(canvas,df);
 }
 
 function drawAll(){
