@@ -194,7 +194,8 @@ document.getElementById("calcBtn").addEventListener("click", () => {
 
   const dataType = inputSelect.value;
   const Ismooth = dataType === "Intensity" ? spectrums[0].Ismooth : spectrums[0].IsmoothDb;
-  calculateBandwidth(spectrums[0].freq, spectrums[0].Iraw, Ismooth, dataType);
+  const IRaw = dataType === "Intensity" ? spectrums[0].Iraw : spectrums[0].IrawDb;  
+  calculateBandwidth(spectrums[0].freq, IRaw, Ismooth, dataType);
   drawSpectrum(0, dataType); // Draw first spectrum by default
   drawBandWidth(dataType);
 });
@@ -326,7 +327,8 @@ canvasBandWidth.addEventListener("click", e => {
   if (hit) {
     const dataType = inputSelect.value;
     const Ismooth = dataType === "Intensity" ? spectrums[i].Ismooth : spectrums[i].IsmoothDb;
-    calculateBandwidth(spectrums[i].freq, spectrums[i].Iraw, Ismooth, dataType);
+    const IRaw = dataType === "Intensity" ? spectrums[i].Iraw : spectrums[i].IrawDb;
+    calculateBandwidth(spectrums[i].freq, IRaw, Ismooth, dataType);
 
     drawSpectrum(i, dataType); // Draw first spectrum by default
   } 
