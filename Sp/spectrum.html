@@ -188,21 +188,21 @@ document.getElementById("calcBtn").addEventListener("click", () => {
 //let listFreq = [], listIraw = [], listIsmooth = [];`
   if (!spectrums.length) return;
   spectrums.forEach(s => {
-    s.bandWidth = calculateBandwidth(s.freq, s.Iraw, s.Ismooth, "Intensity");
-    s.bandWidthDb = calculateBandwidth(s.freq, s.IrawDb, s.IsmoothDb, "DB");
+    s.bandWidth = calculateBandwidth(s, s.Iraw, s.Ismooth, "Intensity");
+    s.bandWidthDb = calculateBandwidth(s, s.IrawDb, s.IsmoothDb, "DB");
   });
 
   const dataType = inputSelect.value;
   const Ismooth = dataType === "Intensity" ? spectrums[0].Ismooth : spectrums[0].IsmoothDb;
   const IRaw = dataType === "Intensity" ? spectrums[0].Iraw : spectrums[0].IrawDb;  
-  calculateBandwidth(spectrums[0].freq, IRaw, Ismooth, dataType);
+  calculateBandwidth(spectrums[0], IRaw, Ismooth, dataType);
   drawSpectrum(0, dataType); // Draw first spectrum by default
   drawBandWidth(dataType);
 });
 
-function calculateBandwidth(freq, Iraw, Ismooth, type) {
+function calculateBandwidth(sp, Iraw, Ismooth, type) {
   if (!Ismooth.length) return;
-
+  const freq = sp.freq;
   const dB = parseFloat(document.getElementById("dbInput").value);
   const imax = Math.max(...Ismooth);
   const ip = Ismooth.indexOf(imax);
@@ -239,6 +239,7 @@ function calculateBandwidth(freq, Iraw, Ismooth, type) {
     }
     str += "</table>";
     document.getElementById("dataTable").innerHTML = str;
+    document.getElementById("specFileName").value = sp.fileName;
 
     return bw;
   } else {
@@ -328,7 +329,7 @@ canvasBandWidth.addEventListener("click", e => {
     const dataType = inputSelect.value;
     const Ismooth = dataType === "Intensity" ? spectrums[i].Ismooth : spectrums[i].IsmoothDb;
     const IRaw = dataType === "Intensity" ? spectrums[i].Iraw : spectrums[i].IrawDb;
-    calculateBandwidth(spectrums[i].freq, IRaw, Ismooth, dataType);
+    calculateBandwidth(spectrums[i], IRaw, Ismooth, dataType);
 
     drawSpectrum(i, dataType); // Draw first spectrum by default
   } 
