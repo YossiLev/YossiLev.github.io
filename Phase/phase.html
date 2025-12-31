@@ -183,7 +183,7 @@ function generateGaussian(mode=0) {
                     let Y = factor * (y - N/2) + shiftY;
                     let r2 = X*X + Y*Y;
     
-                    I1[idx(x,y)] = Math.exp(-r2/(w0*w0));
+                    I1[idx(x,y)] = Math.exp(-r2/(16*w0*w0));
                     phase1[idx(x,y)] = 0;   // TRUE phase (hidden)
                 }
             }
