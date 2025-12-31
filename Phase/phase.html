@@ -26,6 +26,11 @@ canvas {
 label {
     margin-right: 10px;
 }
+button {
+    height:30px;
+    font-size: 20px;
+    margin-right: 10px;
+}
 </style>
 </head>
 
@@ -37,6 +42,9 @@ label {
     <div>
         <button onclick="generateGaussian(0)">Generate Gaussian Beam</button>
         <button onclick="generateGaussian(1)">Generate crazy Beam</button>
+    </div>
+    </br>
+    <div>
         <label>Read image 1<input type="file" id="readimage1"></label>
         <label>Read image 2<input type="file" id="readimage2"></label>
     </div>
@@ -540,9 +548,11 @@ function drawPhase(canvas,phase){
 
 function drawDiff(canvas,Iorig,Icur){
     let df = new Float32Array(N*N);
+    normOrig = 1.0 / Math.sqrt(Iorig.reduce((a, b) => a + b, 0));
+    normCur = 1.0 / Math.sqrt(Icur.reduce((a, b) => a + b, 0));
 
     for(let i=0;i<N*N;i++) {
-        df[i] = (Iorig[i] - Icur[i]) * 1000;
+        df[i] = (Iorig[i] * normOrig - Icur[i] * normCur) * 1000;
     }
     const Mx = df.reduce((a, b) => Math.max(a, b), -Infinity);
     const Mn = df.reduce((a, b) => Math.min(a, b), Infinity);
