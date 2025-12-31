@@ -35,8 +35,10 @@
 </div>
 
 <canvas id="plotBandWidth" width="900" height="400"></canvas>
+<p>File: <input type="text" id="specFileName" size="40" readonly></p>
 <p>Bandwidth: <input type="text" id="bwOutput" size="40" readonly></p>
 <canvas id="plotSpectrum" width="900" height="400"></canvas>
+<div id="dataTable"></div>
 
 <script>
 const canvasBandWidth = document.getElementById("plotBandWidth");
@@ -230,6 +232,13 @@ function calculateBandwidth(freq, Iraw, Ismooth, type) {
     crossings = { left, right };
     const bw = right.f - left.f;
     document.getElementById("bwOutput").value = `${bw.toPrecision(5)} (from ${left.f.toPrecision(7)} to ${right.f.toPrecision(7)})`;
+    let str = "<table border='1'><tr><th>Frequency</th><th>Raw Intensity</th><th>Smoothed Intensity</th></tr>";
+    for (let i = 0; i < freq.length; i++) {
+      str += `<tr><td>${freq[i].toPrecision(7)}</td><td>${Iraw[i].toPrecision(7)}</td><td>${Ismooth[i].toPrecision(7)}</td></tr>`;
+    }
+    str += "</table>";
+    document.getElementById("dataTable").innerHTML = str;
+
     return bw;
   } else {
     document.getElementById("bwOutput").value = "N/A";

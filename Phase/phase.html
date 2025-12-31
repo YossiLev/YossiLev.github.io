@@ -34,12 +34,20 @@ label {
 <h2>Gerchberg–Saxton Phase Retrieval (Two-Plane, ABCD)</h2>
 
 <div class="controls">
-    <button onclick="generateGaussian()">Generate Gaussian Beam</button>
+    <div>
+        <button onclick="generateGaussian(0)">Generate Gaussian Beam</button>
+        <button onclick="generateGaussian(1)">Generate crazy Beam</button>
+        <label>Read image 1<input type="file" id="readimage1"></label>
+        <label>Read image 2<input type="file" id="readimage2"></label>
+    </div>
+    </br>
+    <div>
     <button onclick="initRandomization()">Randomize Phase</button>
     <button onclick="iterateOneDirection(1)">One Forward Iteration</button>
     <button onclick="iterateOneDirection(-1)">One Backward Iteration</button>
     <button onclick="iterate(1)">One GS Iteration</button>
     <button onclick="iterate(100)">100 GS Iterations</button>
+    </div>
     <br><br>
     <label>A <input id="A" value="1" size="4"></label>
     <label>B <input id="B" value="0.055" size="4"></label>
@@ -74,6 +82,8 @@ label {
 </div>
 
 <script>
+
+    
 const N = 512;
 const lambda = 1e-6;
 const dx = 10e-6;
@@ -93,28 +103,108 @@ let field2 = new Float32Array(2*N*N);
 
 function idx(x,y){ return y*N+x; }
 
+document.getElementById("readimage1").addEventListener("change", () => {
+  const file = document.getElementById("readimage1").files[0];
+  if (!file) return;
+
+  const img = new Image();
+  img.onload = () => {
+    const N = img.width;   // assume square image
+
+    canvas = i1;
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = N;
+    canvas.height = N;
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, N, N);
+    const data = imageData.data; // RGBA uint8
+
+    I1 = new Float32Array(N * N);
+
+    for (let i = 0; i < N * N; i++) {
+      // since grayscale: R = G = B
+      I1[i] = data[4 * i] / 255.0;
+    }
+
+    console.log("Float image:", I1);
+  };
+
+  img.src = URL.createObjectURL(file);
+});
+
+
+document.getElementById("readimage2").addEventListener("change", () => {
+  const file = document.getElementById("readimage2").files[0];
+  if (!file) return;
+
+  const img = new Image();
+  img.onload = () => {
+    const N = img.width;   // assume square image
+
+    canvas = i2;
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = N;
+    canvas.height = N;
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, N, N);
+    const data = imageData.data; // RGBA uint8
+
+    I2 = new Float32Array(N * N);
+
+    for (let i = 0; i < N * N; i++) {
+      // since grayscale: R = G = B
+      I2[i] = data[4 * i] / 255.0;
+    }
+
+    console.log("Float image:", I2);
+  };
+
+  img.src = URL.createObjectURL(file);
+});
+
 /* ---------- Gaussian generation ---------- */
-function generateGaussian(){
-    const w0 = 40;
+function generateGaussian(mode=0) {
+    const w0 = 60;
     const factor = 6;
     const shiftX = 10;
     const shiftY = 50;
 
     // --- TRUE field (used only to generate intensities) ---
-    for(let y=0;y<N;y++){
-        for(let x=0;x<N;x++){
-            let X = factor * (x - N/2) + shiftX;
-            let Y = factor * (y - N/2) + shiftY;
-            let r2a = 4 * X*X + (Y+180)*(Y+180);
-            let r2b = (X+290)*(X+290) + Y*Y;           
-            let r2c = (X+480)*(X+480) + (Y-70)*(Y-70);
-            let r2d = (X)*(X) + (Y)*(Y);
+    switch(mode){
+        case 0:
+            // Simple Gaussian
+            for(let y=0;y<N;y++){
+                for(let x=0;x<N;x++){
+                    let X = factor * (x - N/2) + shiftX;
+                    let Y = factor * (y - N/2) + shiftY;
+                    let r2 = X*X + Y*Y;
+    
+                    I1[idx(x,y)] = Math.exp(-r2/(w0*w0));
+                    phase1[idx(x,y)] = 0;   // TRUE phase (hidden)
+                }
+            }
+            break;
+        case 1:
+        
+            for(let y=0;y<N;y++){
+                for(let x=0;x<N;x++){
+                    let X = factor * (x - N/2) + shiftX;
+                    let Y = factor * (y - N/2) + shiftY;
+                    let r2a = 4 * X*X + (Y+180)*(Y+180);
+                    let r2b = (X+290)*(X+290) + Y*Y;           
+                    let r2c = (X+480)*(X+480) + (Y-70)*(Y-70);
+                    let r2d = (X)*(X) + (Y)*(Y);
 
-            I1[idx(x,y)] = Math.exp(-r2a/(w0*w0)) + Math.exp(-r2b/(w0*w0)) + Math.exp(-r2c/(w0*w0)) + Math.exp(-r2d/(w0*w0));
-            phase1[idx(x,y)] = 0;   // TRUE phase (hidden)
-        }
+                    I1[idx(x,y)] = Math.exp(-r2a/(w0*w0)) + Math.exp(-r2b/(w0*w0)) + Math.exp(-r2c/(w0*w0)) + Math.exp(-r2d/(w0*w0));
+                    phase1[idx(x,y)] = 0;   // TRUE phase (hidden)
+                }
+            }
+            break;
     }
-
     // True field → plane 2
     updateFieldFromIPhase(field1, I1, phase1);
     propagateABCD(field1, field2);
