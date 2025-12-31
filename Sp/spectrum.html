@@ -94,6 +94,8 @@ function parseDirectoryCSV(text) {
       spectrums.push(new spectrumData(filename, distance));
     }
   }
+  spectrums.sort((a, b) => a.gridsDistance - b.gridsDistance);
+
   console.log("Parsed directory CSV:", spectrums);
 }
 
@@ -118,7 +120,6 @@ document.getElementById("fileDataInput").addEventListener("change", () => {
     reader.readAsText(file);
   });
 
-  spectrums.sort((a, b) => a.gridsDistance - b.gridsDistance);
 
   // allow re-selecting same files again
   fileDataInput.value = "";
