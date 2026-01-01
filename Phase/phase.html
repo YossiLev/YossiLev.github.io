@@ -39,14 +39,30 @@ button {
 <h2>Gerchberg–Saxton Phase Retrieval (Two-Plane, ABCD)</h2>
 
 <div class="controls">
+
+
     <div>
         <button onclick="generateGaussian(0)">Generate Gaussian Beam</button>
         <button onclick="generateGaussian(1)">Generate crazy Beam</button>
+        <label>Image Size:
+        <select name="N" id="NSelect" value="256">
+            <option value="128">128</option>
+            <option value="256" selected>256</option>
+            <option value="512">512</option>
+            <option value="1024">1024</option>
+        </select></label>&nbsp;&nbsp;
+        <label>A <input id="A" value="1" size="4"></label>
+        <label>B <input id="B" value="0.055" size="4"></label>
+        <label>C <input id="C" value="0" size="4"></label>
+        <label>D <input id="D" value="1" size="4"></label>
     </div>
     </br>
     <div>
-        <label>Read image 1<input type="file" id="readimage1"></label>
-        <label>Read image 2<input type="file" id="readimage2"></label>
+        <label>Image 1&nbsp;&nbsp;<input type="file" id="readimage1"></label>
+    </div>
+    </br>
+    <div>
+        <label>Image 2&nbsp;&nbsp;<input type="file" id="readimage2"></label>
     </div>
     </br>
     <div>
@@ -54,13 +70,9 @@ button {
     <button onclick="iterateOneDirection(1)">One Forward Iteration</button>
     <button onclick="iterateOneDirection(-1)">One Backward Iteration</button>
     <button onclick="iterate(1)">One GS Iteration</button>
+    <button onclick="iterate(10)">10 GS Iterations</button>
     <button onclick="iterate(100)">100 GS Iterations</button>
     </div>
-    <br><br>
-    <label>A <input id="A" value="1" size="4"></label>
-    <label>B <input id="B" value="0.055" size="4"></label>
-    <label>C <input id="C" value="0" size="4"></label>
-    <label>D <input id="D" value="1" size="4"></label>
 </div>
 
 <br>
@@ -69,22 +81,22 @@ button {
 
 <!-- Plane 1 -->
 <div class="column">
-    <canvas id="i1" width="512" height="512"></canvas>
-    <canvas id="c1" width="512" height="512"></canvas>
+    <canvas id="i1" width="256" height="256"></canvas>
+    <canvas id="c1" width="256" height="256"></canvas>
 </div>
 <div class="column">
-    <canvas id="p1" width="512" height="512"></canvas>
-    <canvas id="d1" width="512" height="512"></canvas>
+    <canvas id="p1" width="256" height="256"></canvas>
+    <canvas id="d1" width="256" height="256"></canvas>
 </div>
 
 <!-- Plane 2 -->
 <div class="column">
-    <canvas id="i2" width="512" height="512"></canvas>
-    <canvas id="c2" width="512" height="512"></canvas>
+    <canvas id="i2" width="256" height="256"></canvas>
+    <canvas id="c2" width="256" height="256"></canvas>
 </div>
 <div class="column">
-    <canvas id="p2" width="512" height="512"></canvas>
-    <canvas id="d2" width="512" height="512"></canvas>
+    <canvas id="p2" width="256" height="256"></canvas>
+    <canvas id="d2" width="256" height="256"></canvas>
 </div>
 
 </div>
@@ -92,9 +104,9 @@ button {
 <script>
 
     
-const N = 512;
+let N = 256;
 const lambda = 1e-6;
-const dx = 10e-6;
+const dx = 5.2e-6;
 const k = 2 * Math.PI / lambda;
 
 let I1 = new Float32Array(N*N);
@@ -111,69 +123,116 @@ let field2 = new Float32Array(2*N*N);
 
 function idx(x,y){ return y*N+x; }
 
+function readImageData(file) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        
+        img.onload = () => {
+            const canvas = new OffscreenCanvas(img.width, img.height);
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(0, 0, img.width, img.height);
+            let centerXSum = 0, centerYSum = 0, totalIntensity = 0;
+            console.log("Original image size:", imageData.width, imageData.height);
+            for (let ih = 0; ih < imageData.height; ih++) {
+                for (let iw = 0; iw < imageData.width; iw++) {          
+                    const index = 4 * (ih * imageData.width + iw);
+                    const intensity = imageData.data[index]; // Grayscale, so R=G=B
+                    if (intensity > 2) { // Threshold to ignore background
+                        centerXSum += iw * intensity;
+                        centerYSum += ih * intensity;
+                        totalIntensity += intensity;
+                    }
+                }
+            }
+            centerXSum /= totalIntensity;
+            centerYSum /= totalIntensity;
+            console.log("Total intensity:", totalIntensity);
+            console.log("Center of mass:", centerXSum, centerYSum);
+            let startX = Math.max(0, Math.floor(centerXSum - N / 2));
+            let startY = Math.max(0, Math.floor(centerYSum - N / 2));
+            if (startX + N > imageData.width) {
+                startX = imageData.width - N;
+            }
+            if (startY + N > imageData.height) {
+                startY = imageData.height - N;
+            }
+            console.log("Cropping to:", startX, startY, startX + N, startY + N);
+            const croppedData = new Float32Array(N*N);
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < N; x++) {
+                    const srcIndex = 4 * ((startY + y) * imageData.width + (startX + x));
+                    const dstIndex = y * N + x;
+                    croppedData[dstIndex] = imageData.data[srcIndex];
+
+                }
+            }   
+            console.log("Float croppedData:", croppedData);
+            console.log("Cropped data [256][256]:", croppedData[256 * N + 256]);
+
+            resolve(croppedData);
+        };
+        img.onerror = reject;
+    });
+}
 document.getElementById("readimage1").addEventListener("change", () => {
-  const file = document.getElementById("readimage1").files[0];
-  if (!file) return;
+    const file = document.getElementById("readimage1").files[0];
+    if (!file) return;
+    readImageData(file).then(data => {
+        for (let i = 0; i < N * N; i++) {
+            I1[i] = data[i] / 255.0;
+        }
+        drawImage(i1,I1, -1);
+    
+        console.log("Float image:", I1);
+    }).catch(error => {
+        console.error("Error loading image:", error);
+    });
 
-  const img = new Image();
-  img.onload = () => {
-    const N = img.width;   // assume square image
-
-    canvas = i1;
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = N;
-    canvas.height = N;
-    ctx.drawImage(img, 0, 0);
-
-    const imageData = ctx.getImageData(0, 0, N, N);
-    const data = imageData.data; // RGBA uint8
-
-    I1 = new Float32Array(N * N);
-
-    for (let i = 0; i < N * N; i++) {
-      // since grayscale: R = G = B
-      I1[i] = data[4 * i] / 255.0;
-    }
-
-    console.log("Float image:", I1);
-  };
-
-  img.src = URL.createObjectURL(file);
 });
 
 
 document.getElementById("readimage2").addEventListener("change", () => {
   const file = document.getElementById("readimage2").files[0];
   if (!file) return;
+    readImageData(file).then(data => {
+        for (let i = 0; i < N * N; i++) {
+            I2[i] = data[i] / 255.0;
+        }
+        drawImage(i2,I2, -1);
 
-  const img = new Image();
-  img.onload = () => {
-    const N = img.width;   // assume square image
+        console.log("Float image:", I2);
+    }).catch(error => {
+        console.error("Error loading image:", error);
+    });
 
-    canvas = i2;
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = N;
-    canvas.height = N;
-    ctx.drawImage(img, 0, 0);
-
-    const imageData = ctx.getImageData(0, 0, N, N);
-    const data = imageData.data; // RGBA uint8
-
-    I2 = new Float32Array(N * N);
-
-    for (let i = 0; i < N * N; i++) {
-      // since grayscale: R = G = B
-      I2[i] = data[4 * i] / 255.0;
-    }
-
-    console.log("Float image:", I2);
-  };
-
-  img.src = URL.createObjectURL(file);
 });
 
+document.getElementById("NSelect").addEventListener("change", (event) => {
+    N = parseInt(event.target.value);
+    I1 = new Float32Array(N*N);
+    I2 = new Float32Array(N*N);
+
+    S1 = new Float32Array(N*N);
+    S2 = new Float32Array(N*N);
+
+    phase1 = new Float32Array(N*N);
+    phase2 = new Float32Array(N*N);
+
+    field1 = new Float32Array(2*N*N);
+    field2 = new Float32Array(2*N*N);
+
+    // Update canvas sizes
+    const canvases = ['i1', 'i2', 'c1', 'c2', 'p1', 'p2', 'd1', 'd2'];
+    canvases.forEach(id => {
+        const canvas = document.getElementById(id);
+        canvas.width = N;
+        canvas.height = N;
+    });
+
+    drawAll();
+});
 /* ---------- Gaussian generation ---------- */
 function generateGaussian(mode=0) {
     const w0 = 60;
@@ -311,11 +370,62 @@ function extractPhase(field,phase){
     }
 }
 
+function angularSpectrumPropagate(field, output, {
+  wavelength,
+  dx,
+  dy,
+  z
+}) {
+  const Nf = field.length;
+  const k = 2 * Math.PI / wavelength;
+
+  let Unew = new Float32Array(2*N*N);
+  // 1. Forward FFT
+  fft2(field, Unew, false);
+  fftshift2D(Unew);
+
+  // 2. Apply transfer function
+  for (let y = 0; y < N; y++) {
+    const ky = 2 * Math.PI * (y - N/2) / (N * dy);
+    for (let x = 0; x < N; x++) {
+      const kx = 2 * Math.PI * (x - N/2) / (N * dx);
+      const kxy2 = kx*kx + ky*ky;
+
+      if (kxy2 <= k*k) {
+        const kz = Math.sqrt(k*k - kxy2);
+        const phase = kz * z;
+        const cph = Math.cos(phase);
+        const sph = Math.sin(phase);
+        Unew[2*(y*N + x)] = Unew[2*(y*N + x)] * cph - Unew[2*(y*N + x) + 1] * sph;
+        Unew[2*(y*N + x) + 1] = Unew[2*(y*N + x)] * sph + Unew[2*(y*N + x) + 1] * cph;
+      } else {
+        // Evanescent waves (recommended: suppress)
+        Unew[2*(y*N + x)] = 0;
+        Unew[2*(y*N + x) + 1] = 0;
+      }
+    }
+  }
+
+  // 3. Inverse FFT
+  ifftshift2D(Unew);
+  fft2(Unew, output, true);
+}
+
+
 /* ---------- ABCD Fresnel propagation ---------- */
 function propagateABCD(input, output, inverse=false){
     const A = parseFloat(document.getElementById("A").value);
     const B = parseFloat(document.getElementById("B").value);
     const D = parseFloat(document.getElementById("D").value);
+    angularSpectrumPropagate(input, output, {
+        wavelength: lambda,
+        dx: dx,
+        dy: dx,
+        z: inverse ? -B : B
+    });
+    return;
+
+
 
     const Beff = inverse ? -B : B;
     if (Math.abs(Beff) < 1e-12){
@@ -401,6 +511,9 @@ function fftshift2D(arr){
             let i2 = 2*(ys*N + xs);
             tmp[i2]   = arr[i1];
             tmp[i2+1] = arr[i1+1];
+            if (isNaN(tmp[i2]) || isNaN(tmp[i2+1])) {
+                console.error("NaN detected at", xs, ys);
+            }   
         }
     }
     arr.set(tmp);
@@ -520,6 +633,10 @@ function fft2(input,output,inverse=false){
 
 /* ---------- Drawing ---------- */
 function drawImage(canvas,data,scale=1){
+    if (scale < 0) {
+        const M = data.reduce((a, b) => Math.max(a, b), -Infinity);
+        scale = 255.0 / M;
+    }
     let ctx = canvas.getContext("2d");
     let img = ctx.createImageData(N,N);
     for(let i=0;i<N*N;i++){
@@ -565,14 +682,10 @@ function drawDiff(canvas,Iorig,Icur){
 }
 
 function drawAll(){
-    const M1 = I1.reduce((a, b) => Math.max(a, b), -Infinity);
-    const M2 = I2.reduce((a, b) => Math.max(a, b), -Infinity);
-    drawImage(i1,I1,255.0 / M1);
-    drawImage(i2,I2,255.0 / M2);
-    const MS1 = S1.reduce((a, b) => Math.max(a, b), -Infinity);
-    const MS2 = S2.reduce((a, b) => Math.max(a, b), -Infinity);
-    drawImage(c1,S1,255.0 / MS1);
-    drawImage(c2,S2,255.0 / MS2);
+    drawImage(i1,I1, -1);
+    drawImage(i2,I2, -1);
+    drawImage(c1,S1, -1);
+    drawImage(c2,S2, -1);
     drawPhase(p1,phase1);
     drawPhase(p2,phase2);
     drawDiff(d1,I1,S1);
