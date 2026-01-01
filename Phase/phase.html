@@ -40,7 +40,6 @@ button {
 
 <div class="controls">
 
-
     <div>
         <button onclick="generateGaussian(0)">Generate Gaussian Beam</button>
         <button onclick="generateGaussian(1)">Generate crazy Beam</button>
@@ -66,12 +65,16 @@ button {
     </div>
     </br>
     <div>
-    <button onclick="initRandomization()">Randomize Phase</button>
-    <button onclick="iterateOneDirection(1)">One Forward Iteration</button>
-    <button onclick="iterateOneDirection(-1)">One Backward Iteration</button>
-    <button onclick="iterate(1)">One GS Iteration</button>
-    <button onclick="iterate(10)">10 GS Iterations</button>
-    <button onclick="iterate(100)">100 GS Iterations</button>
+        <button onclick="initRandomization()">Randomize Phase</button>
+        <button onclick="iterateOneDirection(1)">One Forward Iteration</button>
+        <button onclick="iterateOneDirection(-1)">One Backward Iteration</button>
+        <button onclick="iterate(1)">One GS Iteration</button>
+        <button onclick="iterate(10)">10 GS Iterations</button>
+        <button onclick="iterate(100)">100 GS Iterations</button>
+    </div>
+    <div>
+        <button onclick="pushDistance(0.01)">Forward Cm</button>
+        <button onclick="pushDistance(-0.01)">Backward Cm</button>
     </div>
 </div>
 
@@ -108,6 +111,8 @@ let N = 256;
 const lambda = 1e-6;
 const dx = 5.2e-6;
 const k = 2 * Math.PI / lambda;
+
+let currentModeImage = -1;
 
 let I1 = new Float32Array(N*N);
 let I2 = new Float32Array(N*N);
@@ -239,6 +244,7 @@ function generateGaussian(mode=0) {
     const factor = 6;
     const shiftX = 10;
     const shiftY = 50;
+    currentModeImage = mode;
 
     // --- TRUE field (used only to generate intensities) ---
     switch(mode){
@@ -368,6 +374,13 @@ function extractPhase(field,phase){
     for(let i=0;i<N*N;i++){
         phase[i] = Math.atan2(field[2*i+1],field[2*i]);
     }
+}
+
+function pushDistance(dz){
+    const B = parseFloat(document.getElementById("B").value);
+    const newB = B + dz;
+    document.getElementById("B").value = newB.toFixed(6);
+    generateGaussian(currentModeImage);
 }
 
 function angularSpectrumPropagate(field, output, {
