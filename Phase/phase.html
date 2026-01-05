@@ -43,6 +43,9 @@ button {
     <div>
         <button onclick="generateGaussian(0)">Generate Gaussian Beam</button>
         <button onclick="generateGaussian(1)">Generate crazy Beam</button>
+    </div>
+    </br>
+    <div>
         <label>Image Size:
         <select name="N" id="NSelect" value="256">
             <option value="128">128</option>
@@ -54,6 +57,9 @@ button {
         <label>B <input id="B" value="0.055" size="4"></label>
         <label>C <input id="C" value="0" size="4"></label>
         <label>D <input id="D" value="1" size="4"></label>
+        <label>Lambda (Nm) <input id="lambda" value="1064" size="4"></label>
+        <label>Scale <input id="scale" value="0" size="4" readonly style="width: 300px;"></label>
+        
     </div>
     </br>
     <div>
@@ -108,7 +114,8 @@ button {
 
     
 let N = 256;
-const lambda = 1e-6;
+let lambdaNm = 1064;
+let lambda = lambdaNm * 1e-9;
 const dx = 5.2e-6;
 const k = 2 * Math.PI / lambda;
 
@@ -430,13 +437,18 @@ function propagateABCD(input, output, inverse=false){
     const A = parseFloat(document.getElementById("A").value);
     const B = parseFloat(document.getElementById("B").value);
     const D = parseFloat(document.getElementById("D").value);
-    angularSpectrumPropagate(input, output, {
-        wavelength: lambda,
-        dx: dx,
-        dy: dx,
-        z: inverse ? -B : B
-    });
-    return;
+    lambdaNm = parseFloat(document.getElementById("lambda").value);
+    lambda = lambdaNm * 1e-9;
+    let scaleDx = lambda * Math.abs(B) / (N * dx * dx);
+    document.getElementById("scale").value = scaleDx.toFixed(10);
+
+    // angularSpectrumPropagate(input, output, {
+    //     wavelength: lambda,
+    //     dx: dx,
+    //     dy: dx,
+    //     z: inverse ? -B : B
+    // });
+    // return;
 
 
 
@@ -510,6 +522,14 @@ function propagateABCD(input, output, inverse=false){
             output[i] = field[i];
         }
     }
+    /* ---------- 5) zoom to correct sampling ---------- */
+    // for(let i=0;i<2*N*N;i++){
+    //     field[i] = output[i];
+    // }    
+    // const s =  zoomComplexField2D(output, N, scaleDx);
+    // for(let i=0;i<2*N*N;i++){
+    //     output[i] = s[i];
+    // } 
 }
 
 /* ---------- FFT (minimal, slow but clear) ---------- */
@@ -643,6 +663,54 @@ function fft2(input,output,inverse=false){
     }
 }
 
+function zoomComplexField2D(U, N, s) {
+    if (s <= 1) throw new Error("Scale factor s must be > 1");
+
+    const U2 = new Float32Array(2 * N * N);
+
+    const c = (N - 1) / 2;
+    const ampScale = 1 / s; // energy-correct for 2D
+
+    for (let y2 = 0; y2 < N; y2++) {
+        const y = (y2 - c) / s + c;
+        const y0 = Math.floor(y);
+        const dy = y - y0;
+
+        if (y0 < 0 || y0 >= N - 1) continue;
+
+        for (let x2 = 0; x2 < N; x2++) {
+            const x = (x2 - c) / s + c;
+            const x0 = Math.floor(x);
+            const dx = x - x0;
+
+            if (x0 < 0 || x0 >= N - 1) continue;
+
+            const i00 = 2 * (y0 * N + x0);
+            const i10 = 2 * (y0 * N + x0 + 1);
+            const i01 = 2 * ((y0 + 1) * N + x0);
+            const i11 = 2 * ((y0 + 1) * N + x0 + 1);
+
+            const w00 = (1 - dx) * (1 - dy);
+            const w10 = dx * (1 - dy);
+            const w01 = (1 - dx) * dy;
+            const w11 = dx * dy;
+
+            const re =
+                w00 * U[i00]     + w10 * U[i10] +
+                w01 * U[i01]     + w11 * U[i11];
+
+            const im =
+                w00 * U[i00 + 1] + w10 * U[i10 + 1] +
+                w01 * U[i01 + 1] + w11 * U[i11 + 1];
+
+            const o = 2 * (y2 * N + x2);
+            U2[o]     = ampScale * re;
+            U2[o + 1] = ampScale * im;
+        }
+    }
+
+    return U2;
+}
 
 /* ---------- Drawing ---------- */
 function drawImage(canvas,data,scale=1){
