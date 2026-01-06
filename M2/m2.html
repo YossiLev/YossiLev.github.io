@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Laser Beam M-Square Tool</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  canvas { border: 1px solid #ccc; }
+  .controls { margin-top: 10px; }
+  input[type="number"] { width: 60px; }
+</style>
+</head>
+<body>
+
+<h2>Laser Beam M-Square</h2>
+<div style="display: flex; flex-direction: row; gap: 10px;">
+<div>
+<label>Camera pixel size (microns)<input type="number" id="dxMicrons" value="5.5" step="0.1"></label>
+<label>Distance (cm)<input type="number" id="dzCm" value="50" step="1"></label>
+<label>Wave length (nm)<input type="number" id="lamdaNm" value="1064" step="0.1"></label>
+<div>
+<label>
+  Load directory:
+<input type="file" id="fileDirectoryInput" accept=".csv">
+</label>
+</div>
+
+<label>
+  Load images:
+<input type="file" id="fileDataInput" accept=".png" multiple>
+</label>
+<select id="inputSelect">
+  <option value="Intensity">Intensity</option>
+  <option value="DB">DB</option>
+</select>
+<div class="controls">
+  dB level:
+  <input type="number" id="dbInput" value="3" step="0.1">
+  <button id="calcBtn">Calc</button>
+</div>
+
+
+<canvas id="plotM2" width="900" height="400"></canvas>
+<p>File: <input type="text" id="specFileName" size="40" readonly></p>
+<p>M2: <input type="text" id="bwOutput" size="40" readonly></p>
+<canvas id="plotLines" width="900" height="400"></canvas>
+<div id="dataTable"></div>
+</div>
+<div id="tableFiles"></div>
+</div>
+
+<script>
+const canvasM2 = document.getElementById("plotM2");
+const ctxM2 = canvasM2.getContext("2d");
+const M2ScreeenPts = [];
+const canvasLines = document.getElementById("plotLines");
+const ctxLines = canvasLines.getContext("2d");
+
+class imagePairData {
+  constructor(fileLabel, gridsDistance) {
+    this.fileLabel = fileLabel;
+    this.gridsDistance = gridsDistance;
+    this.fileNameNear = "-";
+    this.imageNear = null;
+    this.lineNear = [];
+    this.fileNameFar = "-";
+    this.imageFar = null;
+    this.lineFar = [];
+    this.M2 = 0.0;
+  }
+}
+
+let imagePairs = [];
+let crossings = null;
+let threshold = null;
+const inputSelect = document.getElementById("inputSelect");
+let dataType = "Intensity";
+
+// ---------- CSV parsing ----------
+document.getElementById("fileDirectoryInput").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    parseDirectoryCSV(reader.result);
+    fileDirectoryInput.value = "";
+  };
+  reader.readAsText(file);
+});
+
+function parseDirectoryCSV(text) {
+  imagePairs = [];
+
+  const lines = text.split(/\r?\n/);
+  for (const line of lines) {
+    const cols = line.split(/[,;\t]/);
+    if (cols.length < 2) continue;
+    const distance = parseFloat(cols[1].trim());
+    const fileLabel = cols[0].trim();
+    if (!isNaN(distance) && fileLabel) {
+      imagePairs.push(new imagePairData(fileLabel, distance));
+    }
+  }
+  imagePairs.sort((a, b) => a.gridsDistance - b.gridsDistance);
+
+  displayFiles();
+
+  console.log("Parsed directory CSV:", imagePairs);
+}
+
+// ---------- image file processing ----------
+function matchLabel(t, l, name) {
+    return name.toLowerCase().includes(t) && name.includes(l);
+}
+
+function readImageData(file) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        
+        img.onload = () => {
+            const canvas = new OffscreenCanvas(img.width, img.height);
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            
+            const imageData = ctx.getImageData(0, 0, img.width, img.height);
+            console.log("Original image size:", imageData.width, imageData.height);
+            resolve(imageData);
+        };
+        img.onerror = reject;
+    });
+}
+
+function extractBestImageLine(img) {
+    let line = [];
+    let maxIntens = - 1;
+    let bestY = - 1;
+    for (let y = 0; y < img.height; y++) {
+        for (let x = 0; x < img.width; x++) {
+            const srcIndex = 4 * (y * img.width + x);
+            if (maxIntens < img.data[srcIndex]) {
+                maxIntens = img.data[srcIndex];
+                bestY = y;
+            }
+        }
+    }
+    if (bestY >= 0) {
+        for (let x = 0; x < img.width; x++) {
+            const srcIndex = 4 * (bestY * img.width + x);
+            line.push(img.data[srcIndex]);
+        }
+    }
+    return line;
+}
+
+document.getElementById("fileDataInput").addEventListener("change", () => {
+  const files = Array.from(fileDataInput.files);
+  if (!files.length) return;
+
+  displayFiles();
+  
+  files.forEach(file => {
+
+    // ✅ filename condition
+    const sNearIndex = imagePairs.findIndex(s => matchLabel("near", s.fileLabel, file.name));
+    const sFarIndex = imagePairs.findIndex(s => matchLabel("far", s.fileLabel, file.name));
+    if (sNearIndex < 0 && sFarIndex < 0) {
+      return;   // skip this file
+    }
+
+    readImageData(file).then(img => {
+        if (sNearIndex >= 0) {
+            imagePairs[sNearIndex].fileNameNear = file.name;
+            imagePairs[sNearIndex].imageNear = img;
+            imagePairs[sNearIndex].lineNear = extractBestImageLine(img)
+        } else if (sFarIndex >= 0) {
+            imagePairs[sFarIndex].fileNameFar = file.name;
+            imagePairs[sFarIndex].imageFar = img;
+            imagePairs[sFarIndex].lineFar = extractBestImageLine(img)
+        }
+        displayFiles();
+    });
+
+  });
+
+  // allow re-selecting same files again
+  fileDataInput.value = "";
+});
+
+function parseCSV(text, sIndex) {
+  spectrums[sIndex].freq = [];
+  spectrums[sIndex].Iraw = [];
+  spectrums[sIndex].Ismooth = [];
+  spectrums[sIndex].IrawDb = [];
+  spectrums[sIndex].IsmoothDb = [];
+  crossings = null;
+
+  const lines = text.split(/\r?\n/);
+  let start = false;
+
+  for (const line of lines) {
+    const cols = line.split(/[,;\t]/);
+    if (cols[0].trim().includes("[TRACE DATA]")) {
+      start = true;
+      continue;
+    }
+    if (!start) continue;
+    if (cols.length < 2) continue;
+
+    const f = parseFloat(cols[0]);
+    const i = parseFloat(cols[1]);
+    if (!isNaN(f) && !isNaN(i)) {
+      spectrums[sIndex].freq.push(f);
+      spectrums[sIndex].Iraw.push(Math.pow(10, i / 10)); // Convert dB to linear
+      spectrums[sIndex].IrawDb.push(i);
+    }
+  }
+
+  spectrums[sIndex].Ismooth = gaussianSmooth(spectrums[sIndex].Iraw, 3);
+  spectrums[sIndex].IsmoothDb = gaussianSmooth(spectrums[sIndex].IrawDb, 3);
+}
+
+// ---------- M2 calculation ----------
+document.getElementById("calcBtn").addEventListener("click", () => {
+
+//let listFreq = [], listIraw = [], listIsmooth = [];`
+  if (!spectrums.length) return;
+  spectrums.forEach(s => {
+    s.M2 = calculateM2(s, s.Iraw, s.Ismooth, "Intensity");
+    s.M2Db = calculateM2(s, s.IrawDb, s.IsmoothDb, "DB");
+  });
+
+  const dataType = inputSelect.value;
+  const Ismooth = dataType === "Intensity" ? spectrums[0].Ismooth : spectrums[0].IsmoothDb;
+  const IRaw = dataType === "Intensity" ? spectrums[0].Iraw : spectrums[0].IrawDb;  
+  calculateM2(spectrums[0], IRaw, Ismooth, dataType);
+  drawSpectrum(0, dataType); // Draw first spectrum by default
+  drawM2(dataType);
+});
+
+function displayFileData(i, s) {
+  return `<tr onclick="drawLines(${i});" style="cursor: pointer;"><td>${s.fileLabel}</td><td>${s.gridsDistance}</td><td>${s.fileNameNear}</td><td>${s.fileNameFar}</td><td>${s.M2}</td></tr>`
+}
+function displayFiles() {
+  document.getElementById("tableFiles").innerHTML = 
+    `<table><tr><td>Label</td><td>Distance</td><td>Near</td><td>Far</td><td>M-Square</td></tr>${imagePairs.map((s, i) => displayFileData(i, s)).join('')}</table>`;
+}
+const marginPlot = 40;
+// ---------- Plotting ----------
+function findNearestPoint(screenPts, mx, my, radius) {
+  let best = null;
+  let bestP =- 1
+  let bestDist2 = radius * radius;
+
+  for (const p in screenPts) {
+    const dx = screenPts[p].x - mx;
+    const dy = screenPts[p].y - my;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < bestDist2) {
+      bestDist2 = d2;
+      best = screenPts[p];
+      bestP = p;
+    }
+  }
+  return [best, bestP];
+}
+
+function drawMarker(canvas, ctx, p) {
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function drawTooltip(canvas, ctx, p, mx, my) {
+  const text = `D = ${p.ox.toPrecision(6)} B = ${p.oy.toPrecision(4)}`;
+
+  ctx.font = "12px Arial";
+  const pad = 4;
+  const w = ctx.measureText(text).width + 2 * pad;
+  const h = 28;
+
+  const tx = mx + 10;
+  const ty = my - h - 10;
+
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.fillRect(tx, ty, w, h);
+
+  ctx.strokeStyle = "#333";
+  ctx.strokeRect(tx, ty, w, h);
+
+  ctx.fillStyle = "#000";
+  ctx.fillText(text, tx + pad, ty + 14);
+}
+
+canvasM2.addEventListener("mousemove", e => {
+  if (!M2ScreeenPts.length) return;
+  const rect = canvasM2.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  const [hit, i] = findNearestPoint(M2ScreeenPts, mx, my, 25);
+  drawM2(inputSelect.value);
+  if (hit) {
+    drawMarker(canvasM2, ctxM2, hit);
+    drawTooltip(canvasM2, ctxM2, hit, mx, my);
+  }
+});
+canvasM2.addEventListener("click", e => {
+  if (!M2ScreeenPts.length) return;
+  const rect = canvasM2.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  const [hit, i] = findNearestPoint(M2ScreeenPts, mx, my, 25);
+  if (hit) {
+    const dataType = inputSelect.value;
+    const Ismooth = dataType === "Intensity" ? spectrums[i].Ismooth : spectrums[i].IsmoothDb;
+    const IRaw = dataType === "Intensity" ? spectrums[i].Iraw : spectrums[i].IrawDb;
+    calculateM2(spectrums[i], IRaw, Ismooth, dataType);
+
+    drawLines(i); // Draw first spectrum by default
+  } 
+});
+
+function scalesForPlots(canvas, margin, xData, yData) {
+  const xmin = Math.min(...xData);
+  const xmax = Math.max(...xData);
+  const ymin = Math.min(...yData);
+  const ymax = Math.max(...yData);
+
+  const X = x => (x - xmin) / (xmax - xmin) * (canvas.width - 2 * margin) + margin;
+  const Y = y => (canvas.height - 2 * margin) * (1 - (y - ymin) / (ymax - ymin)) + margin;
+
+  return [X, Y];
+}
+function drawM2(dataType) {
+  const bw = dataType === "Intensity" ? imagePairs.map(s => s.M2) : spectrums.map(s => s.M2);
+  ctxM2.clearRect(0, 0, canvasM2.width, canvasM2.height);
+  plotGrid(canvasM2, ctxM2, imagePairs.map(s => s.gridsDistance), bw, "lightgray");
+  plotCurve(canvasM2, ctxM2, imagePairs.map(s => s.gridsDistance), bw, "red", null, null, M2ScreeenPts);
+}
+function drawLines(i) {
+  ctxLines.clearRect(0, 0, canvasLines.width, canvasLines.height);
+  const pair = imagePairs[i];
+  if (!pair.lineNear.length || !pair.lineFar.length) return;
+
+  const xVec = pair.lineNear.map((v, i) => i);
+
+  const [X, Y] = scalesForPlots(canvasLines, marginPlot, xVec, pair.lineNear);
+
+  plotCurve(canvasLines, ctxLines, xVec, pair.lineNear, "red", X, Y);
+  plotCurve(canvasLines, ctxLines, xVec, pair.lineFar, "blue", X, Y);
+}
+
+
+function plotCurve(canvas, ctx, x, y, color, X = null, Y = null, screenPts = null) {
+  if (X === null || Y === null) {
+    [X, Y] = scalesForPlots(canvas, marginPlot, x, y);
+  }
+  if (screenPts) screenPts.length = 0;
+
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  for (let i = 0; i < x.length; i++) {
+    const px = X(x[i]);
+    const py = Y(y[i]);
+    if (screenPts) screenPts.push({x: px, y: py, i, ox:x[i], oy:y[i]});
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+}
+function plotGrid(canvas, ctx, x, y, color) {
+  const nGrid = 10;
+  const mxx = Math.max(...x);
+  const mnx = Math.min(...x);
+  const mxy = Math.max(...y);
+  const mny = Math.min(...y);
+  const xGridStep = (mxx - mnx) / nGrid;
+  const yGridStep = (mxy - mny) / nGrid;
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  for (let i = 0; i <= nGrid; i++) {
+    const gx = mnx + i * xGridStep;
+    const px = (gx - mnx) / (mxx - mnx) * (canvas.width - 2 * marginPlot) + marginPlot;
+    ctx.moveTo(px, marginPlot);
+    ctx.lineTo(px, canvas.height - marginPlot);
+  }
+  for (let i = 0; i <= nGrid; i++) {
+    const gy = mny + i * yGridStep;
+    const py = (canvas.height - 2 * marginPlot) * (1 - (gy - mny) / (mxy - mny)) + marginPlot;
+    ctx.moveTo(marginPlot, py);
+    ctx.lineTo(canvas.width - marginPlot, py);
+  }
+  ctx.stroke();
+  for (let i = 0; i <= nGrid; i++) {
+    const gx = mnx + i * xGridStep;
+    const px = (gx - mnx) / (mxx - mnx) * (canvas.width - 2 * marginPlot) + marginPlot;
+    ctx.fillText(gx.toFixed(2), px - 10, canvas.height - marginPlot + 15);
+  }
+  for (let i = 0; i <= nGrid; i++) {
+    const gy = mny + i * yGridStep;
+    const py = (canvas.height - 2 * marginPlot) * (1 - (gy - mny) / (mxy - mny)) + marginPlot;
+    ctx.fillText(gy.toFixed(3), marginPlot - 35, py + 5); 
+  }
+}
+
+function drawCircle(canvas, ctx, x, y) {
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.arc(x, y, 4, 0, 2 * Math.PI);
+  ctx.fill();
+}
+</script>
+
+</body>
+</html>
