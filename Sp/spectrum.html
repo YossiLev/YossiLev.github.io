@@ -13,6 +13,8 @@
 <body>
 
 <h2>Laser Spectrum Bandwidth</h2>
+<div style="display: flex; flex-direction: row; gap: 10px;">
+<div>
 <div>
 <label>
   Load directory:
@@ -39,6 +41,9 @@
 <p>Bandwidth: <input type="text" id="bwOutput" size="40" readonly></p>
 <canvas id="plotSpectrum" width="900" height="400"></canvas>
 <div id="dataTable"></div>
+</div>
+<div id="tableFiles"></div>
+</div>
 
 <script>
 const canvasBandWidth = document.getElementById("plotBandWidth");
@@ -96,6 +101,8 @@ function parseDirectoryCSV(text) {
   }
   spectrums.sort((a, b) => a.gridsDistance - b.gridsDistance);
 
+  displayFiles();
+
   console.log("Parsed directory CSV:", spectrums);
 }
 
@@ -103,6 +110,8 @@ document.getElementById("fileDataInput").addEventListener("change", () => {
   const files = Array.from(fileDataInput.files);
   if (!files.length) return;
 
+  displayFiles();
+  
   files.forEach(file => {
 
     // ✅ filename condition
@@ -115,11 +124,11 @@ document.getElementById("fileDataInput").addEventListener("change", () => {
 
     reader.onload = () => {
       parseCSV(reader.result, sIndex);
+      displayFiles();
     };
 
     reader.readAsText(file);
   });
-
 
   // allow re-selecting same files again
   fileDataInput.value = "";
@@ -258,6 +267,13 @@ function interp(freq, Ismooth, i1, i2) {
   return { f: x1 + t * (x2 - x1), I: threshold };
 }
 
+function displayFileData(i, s) {
+  return `<tr onclick="drawSpectrum(${i}, '${inputSelect.value}');" style="cursor: pointer;"><td>${s.fileName}</td><td>${s.gridsDistance}</td><td>${s.Iraw.length}</td></tr>`
+}
+function displayFiles() {
+  document.getElementById("tableFiles").innerHTML = 
+    `<table><tr><td>Name</td><td>Distance</td><td>Samples</td></tr>${spectrums.map((s, i) => displayFileData(i, s)).join('')}</table>`;
+}
 const marginPlot = 40;
 // ---------- Plotting ----------
 function findNearestPoint(screenPts, mx, my, radius) {
@@ -353,17 +369,18 @@ function drawBandWidth(dataType) {
   plotGrid(canvasBandWidth, ctxBandWidth, spectrums.map(s => s.gridsDistance), bw, "lightgray");
   plotCurve(canvasBandWidth, ctxBandWidth, spectrums.map(s => s.gridsDistance), bw, "red", null, null, bandWidthScreeenPts);
 }
-function drawSpectrum(sIndex, type) {
+function drawSpectrum(i, type) {
   ctxSpectrum.clearRect(0, 0, canvasSpectrum.width, canvasSpectrum.height);
-  if (!spectrums[sIndex].freq.length) return;
+  const spec = spectrums[i];
+  if (!spec.freq.length) return;
 
-  const IRaw = type === "Intensity" ? spectrums[sIndex].Iraw : spectrums[sIndex].IrawDb;
-  const ISmooth = type === "Intensity" ? spectrums[sIndex].Ismooth : spectrums[sIndex].IsmoothDb;
+  const IRaw = type === "Intensity" ? spec.Iraw : spec.IrawDb;
+  const ISmooth = type === "Intensity" ? spec.Ismooth : spec.IsmoothDb;
 
-  const [X, Y] = scalesForPlots(canvasSpectrum, marginPlot, spectrums[sIndex].freq, IRaw);
+  const [X, Y] = scalesForPlots(canvasSpectrum, marginPlot, spec.freq, IRaw);
 
-  plotCurve(canvasSpectrum, ctxSpectrum, spectrums[sIndex].freq, IRaw, "red", X, Y);
-  plotCurve(canvasSpectrum, ctxSpectrum, spectrums[sIndex].freq, ISmooth, "blue", X, Y);
+  plotCurve(canvasSpectrum, ctxSpectrum, spec.freq, IRaw, "red", X, Y);
+  plotCurve(canvasSpectrum, ctxSpectrum, spec.freq, ISmooth, "blue", X, Y);
 
   if (crossings) {
     ctxSpectrum.strokeStyle = "green";
