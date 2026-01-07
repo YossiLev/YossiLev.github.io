@@ -9,8 +9,13 @@
   .controls { margin-top: 10px; }
   input[type="number"] { width: 60px; }
 </style>
+
 </head>
 <body>
+<script src="./UTIF.js"></script>
+<script>
+  console.log(UTIF); // should work
+</script>
 
 <h2>Laser Beam M-Square</h2>
 <div style="display: flex; flex-direction: row; gap: 10px;">
@@ -27,15 +32,9 @@
 
 <label>
   Load images:
-<input type="file" id="fileDataInput" accept=".png" multiple>
+<input type="file" id="fileDataInput" accept=".tif,.png" multiple>
 </label>
-<select id="inputSelect">
-  <option value="Intensity">Intensity</option>
-  <option value="DB">DB</option>
-</select>
 <div class="controls">
-  dB level:
-  <input type="number" id="dbInput" value="3" step="0.1">
   <button id="calcBtn">Calc</button>
 </div>
 
@@ -48,7 +47,10 @@
 </div>
 <div id="tableFiles"></div>
 </div>
-
+<div style="display: flex; flex-direction: row; gap: 10px;">
+<canvas id="imageNear" width="400" height="400"></canvas>
+<canvas id="imageFar" width="400" height="400"></canvas>
+</div>
 <script>
 const canvasM2 = document.getElementById("plotM2");
 const ctxM2 = canvasM2.getContext("2d");
@@ -115,8 +117,12 @@ function matchLabel(t, l, name) {
 }
 
 function readImageData(file) {
+    if (file.name.includes(".tif")) {
+      return readTiffData(file);
+    }
     return new Promise((resolve, reject) => {
         const img = new Image();
+
         img.src = URL.createObjectURL(file);
         
         img.onload = () => {
@@ -130,6 +136,30 @@ function readImageData(file) {
         };
         img.onerror = reject;
     });
+}
+
+async function readTiffData(file) {
+  const buffer = await file.arrayBuffer();
+
+  const ifds = UTIF.decode(buffer);
+  UTIF.decodeImage(buffer, ifds[0]);
+
+  const rgba = UTIF.toRGBA8(ifds[0]); // Uint8Array [R,G,B,A,...]
+  const w = ifds[0].width;
+  const h = ifds[0].height;
+
+  const canvas = new OffscreenCanvas(w, h);
+  const ctx = canvas.getContext("2d");
+  const imageData = ctx.getImageData(0, 0, w, h);
+  for (let i = 0; i < rgba.length; i += 4) {
+    imageData.data[i] = rgba[i];
+    imageData.data[i + 1] = rgba[i + 1];
+    imageData.data[i + 2] = rgba[i + 2];
+    imageData.data[i + 3] = 255;
+  }
+
+
+  return imageData;
 }
 
 function extractBestImageLine(img) {
@@ -188,59 +218,79 @@ document.getElementById("fileDataInput").addEventListener("change", () => {
   fileDataInput.value = "";
 });
 
-function parseCSV(text, sIndex) {
-  spectrums[sIndex].freq = [];
-  spectrums[sIndex].Iraw = [];
-  spectrums[sIndex].Ismooth = [];
-  spectrums[sIndex].IrawDb = [];
-  spectrums[sIndex].IsmoothDb = [];
-  crossings = null;
-
-  const lines = text.split(/\r?\n/);
-  let start = false;
-
-  for (const line of lines) {
-    const cols = line.split(/[,;\t]/);
-    if (cols[0].trim().includes("[TRACE DATA]")) {
-      start = true;
-      continue;
-    }
-    if (!start) continue;
-    if (cols.length < 2) continue;
-
-    const f = parseFloat(cols[0]);
-    const i = parseFloat(cols[1]);
-    if (!isNaN(f) && !isNaN(i)) {
-      spectrums[sIndex].freq.push(f);
-      spectrums[sIndex].Iraw.push(Math.pow(10, i / 10)); // Convert dB to linear
-      spectrums[sIndex].IrawDb.push(i);
-    }
-  }
-
-  spectrums[sIndex].Ismooth = gaussianSmooth(spectrums[sIndex].Iraw, 3);
-  spectrums[sIndex].IsmoothDb = gaussianSmooth(spectrums[sIndex].IrawDb, 3);
-}
 
 // ---------- M2 calculation ----------
+/**
+ * Compute 1D second-moment beam radius (ISO 11146)
+ * @param {Float32Array|Float64Array} I  intensity line
+ * @param {number} dx  pixel size [meters]
+ * @returns {number} beam radius w [meters]
+ */
+function secondMomentRadius(I, dx) {
+    let sumI = 0;
+    let sumX = 0;
+    let sumX2 = 0;
+
+    for (let i = 0; i < I.length; i++) {
+        const x = i * dx;
+        const v = I[i];
+        sumI += v;
+        sumX += v * x;
+        sumX2 += v * x * x;
+    }
+
+    const xbar = sumX / sumI;
+    const variance = sumX2 / sumI - xbar * xbar;
+
+    // ISO definition: w = sqrt(2 * variance)
+    return Math.sqrt(2 * variance);
+}
+
+/**
+ * Compute M² from two beam profiles
+ *
+ * @param {TypedArray} I1  near-field intensity line
+ * @param {TypedArray} I2  far-field intensity line
+ * @param {number} dx      pixel size [meters]
+ * @param {number} dz      propagation distance [meters]
+ * @param {number} lambda  wavelength [meters]
+ * @returns {number} M²
+ */
+function computeMSquared(I1, I2, dx, dz, lambda) {
+    const w1 = secondMomentRadius(I1, dx);
+    const w2 = secondMomentRadius(I2, dx);
+
+    if (w2 <= w1) {
+        return -1.0;
+    }
+
+    const term = Math.sqrt(w1 * w1 * (w2 * w2 - w1 * w1));
+    return Math.PI * term / (lambda * dz);
+}
+
+function calculateM2(pair) {
+
+  const dxMicrons = parseFloat(document.getElementById("dxMicrons").value.trim());
+  const dzCm = parseFloat(document.getElementById("dzCm").value.trim());
+  const lamdaNm = parseFloat(document.getElementById("lamdaNm").value.trim());
+  
+  pair.M2 = computeMSquared(pair.lineNear, pair.lineFar, dxMicrons * 1E-06, dzCm * 0.1, lamdaNm * 1E-09);
+}
+
 document.getElementById("calcBtn").addEventListener("click", () => {
 
-//let listFreq = [], listIraw = [], listIsmooth = [];`
-  if (!spectrums.length) return;
-  spectrums.forEach(s => {
-    s.M2 = calculateM2(s, s.Iraw, s.Ismooth, "Intensity");
-    s.M2Db = calculateM2(s, s.IrawDb, s.IsmoothDb, "DB");
+  if (!imagePairs.length) return;
+  imagePairs.forEach(p => {
+    calculateM2(p);
   });
 
-  const dataType = inputSelect.value;
-  const Ismooth = dataType === "Intensity" ? spectrums[0].Ismooth : spectrums[0].IsmoothDb;
-  const IRaw = dataType === "Intensity" ? spectrums[0].Iraw : spectrums[0].IrawDb;  
-  calculateM2(spectrums[0], IRaw, Ismooth, dataType);
-  drawSpectrum(0, dataType); // Draw first spectrum by default
+  displayFiles();
+  drawSingle(0);
   drawM2(dataType);
 });
 
 function displayFileData(i, s) {
-  return `<tr onclick="drawLines(${i});" style="cursor: pointer;"><td>${s.fileLabel}</td><td>${s.gridsDistance}</td><td>${s.fileNameNear}</td><td>${s.fileNameFar}</td><td>${s.M2}</td></tr>`
+  return `<tr onclick="drawSingle(${i});" style="cursor: pointer;"><td>${s.fileLabel}</td><td>${s.gridsDistance}</td><td>${s.fileNameNear}</td><td>${s.fileNameFar}</td><td>${s.M2}</td></tr>`
 }
 function displayFiles() {
   document.getElementById("tableFiles").innerHTML = 
@@ -315,12 +365,9 @@ canvasM2.addEventListener("click", e => {
 
   const [hit, i] = findNearestPoint(M2ScreeenPts, mx, my, 25);
   if (hit) {
-    const dataType = inputSelect.value;
-    const Ismooth = dataType === "Intensity" ? spectrums[i].Ismooth : spectrums[i].IsmoothDb;
-    const IRaw = dataType === "Intensity" ? spectrums[i].Iraw : spectrums[i].IrawDb;
-    calculateM2(spectrums[i], IRaw, Ismooth, dataType);
+    calculateM2(imagePairs[i]);
 
-    drawLines(i); // Draw first spectrum by default
+    drawSingle(i); // Draw first spectrum by default
   } 
 });
 
@@ -336,11 +383,22 @@ function scalesForPlots(canvas, margin, xData, yData) {
   return [X, Y];
 }
 function drawM2(dataType) {
-  const bw = dataType === "Intensity" ? imagePairs.map(s => s.M2) : spectrums.map(s => s.M2);
   ctxM2.clearRect(0, 0, canvasM2.width, canvasM2.height);
-  plotGrid(canvasM2, ctxM2, imagePairs.map(s => s.gridsDistance), bw, "lightgray");
-  plotCurve(canvasM2, ctxM2, imagePairs.map(s => s.gridsDistance), bw, "red", null, null, M2ScreeenPts);
+  plotGrid(canvasM2, ctxM2, imagePairs.map(s => s.gridsDistance), imagePairs.map(s => s.M2), "lightgray");
+  plotCurve(canvasM2, ctxM2, imagePairs.map(s => s.gridsDistance), imagePairs.map(s => s.M2), "red", null, null, M2ScreeenPts);
 }
+
+function drawSingle(i) {
+  drawLines(i);
+  let canvas = document.getElementById("imageNear");
+  let ctx = canvas.getContext("2d");
+  ctx.putImageData(imagePairs[i].imageNear,0,0);
+  canvas = document.getElementById("imageFar");
+  ctx = canvas.getContext("2d");
+  ctx.putImageData(imagePairs[i].imageFar,0,0);
+
+}
+
 function drawLines(i) {
   ctxLines.clearRect(0, 0, canvasLines.width, canvasLines.height);
   const pair = imagePairs[i];
