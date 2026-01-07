@@ -40,8 +40,8 @@
 
 
 <canvas id="plotM2" width="900" height="400"></canvas>
-<p>File: <input type="text" id="specFileName" size="40" readonly></p>
-<p>M2: <input type="text" id="bwOutput" size="40" readonly></p>
+<p>File: <input type="text" id="m2FileName" size="20" readonly></p>
+<p>M2: <input type="text" id="m2Output" size="20" readonly></p>
 <canvas id="plotLines" width="900" height="400"></canvas>
 <div id="dataTable"></div>
 </div>
@@ -76,7 +76,6 @@ let imagePairs = [];
 let crossings = null;
 let threshold = null;
 const inputSelect = document.getElementById("inputSelect");
-let dataType = "Intensity";
 
 // ---------- CSV parsing ----------
 document.getElementById("fileDirectoryInput").addEventListener("change", e => {
@@ -286,7 +285,7 @@ document.getElementById("calcBtn").addEventListener("click", () => {
 
   displayFiles();
   drawSingle(0);
-  drawM2(dataType);
+  drawM2();
 });
 
 function displayFileData(i, s) {
@@ -351,7 +350,7 @@ canvasM2.addEventListener("mousemove", e => {
   const my = e.clientY - rect.top;
 
   const [hit, i] = findNearestPoint(M2ScreeenPts, mx, my, 25);
-  drawM2(inputSelect.value);
+  drawM2();
   if (hit) {
     drawMarker(canvasM2, ctxM2, hit);
     drawTooltip(canvasM2, ctxM2, hit, mx, my);
@@ -382,7 +381,7 @@ function scalesForPlots(canvas, margin, xData, yData) {
 
   return [X, Y];
 }
-function drawM2(dataType) {
+function drawM2() {
   ctxM2.clearRect(0, 0, canvasM2.width, canvasM2.height);
   plotGrid(canvasM2, ctxM2, imagePairs.map(s => s.gridsDistance), imagePairs.map(s => s.M2), "lightgray");
   plotCurve(canvasM2, ctxM2, imagePairs.map(s => s.gridsDistance), imagePairs.map(s => s.M2), "red", null, null, M2ScreeenPts);
@@ -396,6 +395,9 @@ function drawSingle(i) {
   canvas = document.getElementById("imageFar");
   ctx = canvas.getContext("2d");
   ctx.putImageData(imagePairs[i].imageFar,0,0);
+
+  document.getElementById("m2FileName").value = imagePairs[i].fileLabel;
+  document.getElementById("m2Output").value = imagePairs[i].M2.toFixed(3);
 
 }
 
