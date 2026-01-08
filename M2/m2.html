@@ -265,7 +265,7 @@ function computeMSquared(I1, I2, dx, dz, lambda) {
     const stats2 = secondMomentRadius(I2, dx);
 
     const w1 = stats1[0];
-    const w2 = stats1[0];
+    const w2 = stats2[0];
     if (w2 <= w1) {
         return [- 1.0, stats1, stats2];
     }
