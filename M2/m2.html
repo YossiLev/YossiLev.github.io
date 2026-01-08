@@ -166,12 +166,15 @@ function extractBestImageLine(img) {
     let maxIntens = - 1;
     let bestY = - 1;
     for (let y = 0; y < img.height; y++) {
+        let lineIntens = 0;
         for (let x = 0; x < img.width; x++) {
+            let w = (img.width - x) * (img.width - x);
             const srcIndex = 4 * (y * img.width + x);
-            if (maxIntens < img.data[srcIndex]) {
-                maxIntens = img.data[srcIndex];
-                bestY = y;
-            }
+            lineIntens += img.data[srcIndex] * w;
+        }
+        if (maxIntens < lineIntens) {
+            maxIntens = lineIntens;
+            bestY = y;
         }
     }
     if (bestY >= 0) {
