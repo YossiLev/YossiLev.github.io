@@ -20,7 +20,7 @@
 <h2>Laser Beam M-Square</h2>
 <div style="display: flex; flex-direction: row; gap: 10px;">
 <div>
-<label>Camera pixel size (microns)<input type="number" id="dxMicrons" value="5.5" step="0.1"></label>
+<label>Camera pixel size (microns)<input type="number" id="dxMicrons" value="3.45" step="0.1"></label>
 <label>Distance (cm)<input type="number" id="dzCm" value="50" step="1"></label>
 <label>Wave length (nm)<input type="number" id="lamdaNm" value="1064" step="0.1"></label>
 <div>
@@ -64,11 +64,15 @@ class imagePairData {
     this.gridsDistance = gridsDistance;
     this.fileNameNear = "-";
     this.imageNear = null;
+    this.yNear = -1;
     this.lineNear = [];
+    this.lineCleanNear = [];
     this.statNear = [];
     this.fileNameFar = "-";
     this.imageFar = null;
+    this.yFear = -1;
     this.lineFar = [];
+    this.lineCleanFar = [];
     this.statFar = [];
     this.M2 = 0.0;
   }
@@ -184,8 +188,9 @@ function extractBestImageLine(img) {
             const srcIndex = 4 * (bestY * img.width + x);
             line.push(img.data[srcIndex]);
         }
+       
     }
-    return line;
+    return [line, bestY];
 }
 
 document.getElementById("fileDataInput").addEventListener("change", () => {
@@ -207,11 +212,14 @@ document.getElementById("fileDataInput").addEventListener("change", () => {
         if (sNearIndex >= 0) {
             imagePairs[sNearIndex].fileNameNear = file.name;
             imagePairs[sNearIndex].imageNear = img;
-            imagePairs[sNearIndex].lineNear = extractBestImageLine(img)
+            [imagePairs[sNearIndex].lineNear, imagePairs[sNearIndex].yNear] = extractBestImageLine(img)
+            imagePairs[sNearIndex].lineCleanNear = subtractBackground(imagePairs[sNearIndex].lineNear)
+            
         } else if (sFarIndex >= 0) {
             imagePairs[sFarIndex].fileNameFar = file.name;
             imagePairs[sFarIndex].imageFar = img;
-            imagePairs[sFarIndex].lineFar = extractBestImageLine(img)
+            [imagePairs[sFarIndex].lineFar, imagePairs[sFarIndex].yFar] = extractBestImageLine(img);
+            imagePairs[sFarIndex].lineCleanFar = subtractBackground(imagePairs[sFarIndex].lineFar)
         }
         displayFiles();
     });
@@ -266,6 +274,13 @@ function computeMSquared(I1, I2, dx, dz, lambda) {
 
     const w1 = stats1[0];
     const w2 = stats2[0];
+
+    console.log({
+        w1_um: w1 * 1e6,
+        w2_um: w2 * 1e6,
+        dz_mm: dz * 1e3,
+        lambda_nm: lambda * 1e9
+    });
     if (w2 <= w1) {
         return [- 1.0, stats1, stats2];
     }
@@ -280,7 +295,8 @@ function calculateM2(pair) {
   const dzCm = parseFloat(document.getElementById("dzCm").value.trim());
   const lamdaNm = parseFloat(document.getElementById("lamdaNm").value.trim());
   
-  const rc = computeMSquared(pair.lineNear, pair.lineFar, dxMicrons * 1E-06, dzCm * 0.1, lamdaNm * 1E-09);
+  const rc = computeMSquared(pair.lineCleanNear, pair.lineCleanFar, dxMicrons * 1E-06, dzCm * 0.01, lamdaNm * 1E-09);
+  
   pair.M2 = rc[0];
   for (let i = 0; i < 3; i++) {
     pair.statNear[i] = rc[1][i];
@@ -402,11 +418,25 @@ function drawM2() {
 function drawSingle(i) {
   drawLines(i);
   let canvas = document.getElementById("imageNear");
+  canvas.width = imagePairs[i].imageNear.width;
+  canvas.height = imagePairs[i].imageNear.height;
   let ctx = canvas.getContext("2d");
   ctx.putImageData(imagePairs[i].imageNear,0,0);
+  ctx.strokeStyle = "red";
+  ctx.beginPath();
+  ctx.moveTo(0, imagePairs[i].yNear);
+  ctx.lineTo(canvas.width, imagePairs[i].yNear);
+  ctx.stroke();
   canvas = document.getElementById("imageFar");
+  canvas.width = imagePairs[i].imageFar.width;
+  canvas.height = imagePairs[i].imageFar.height;
   ctx = canvas.getContext("2d");
   ctx.putImageData(imagePairs[i].imageFar,0,0);
+  ctx.strokeStyle = "blue";
+  ctx.beginPath();
+  ctx.moveTo(0, imagePairs[i].yFar);
+  ctx.lineTo(canvas.width, imagePairs[i].yFar);
+  ctx.stroke();
 
   document.getElementById("m2FileName").value = imagePairs[i].fileLabel;
   document.getElementById("m2Output").value = imagePairs[i].M2.toFixed(3);
@@ -422,8 +452,10 @@ function drawLines(i) {
 
   const [X, Y] = scalesForPlots(canvasLines, marginPlot, xVec, pair.lineNear);
 
-  plotCurve(canvasLines, ctxLines, xVec, pair.lineNear, "red", X, Y);
-  plotCurve(canvasLines, ctxLines, xVec, pair.lineFar, "blue", X, Y);
+  plotCurve(canvasLines, ctxLines, xVec, pair.lineNear, "#ffaaaa", X, Y);
+  plotCurve(canvasLines, ctxLines, xVec, pair.lineFar, "#aaaaff", X, Y);
+  plotCurve(canvasLines, ctxLines, xVec, pair.lineCleanNear, "red", X, Y);
+  plotCurve(canvasLines, ctxLines, xVec, pair.lineCleanFar, "blue", X, Y);
 
   const dxMicrons = parseFloat(document.getElementById("dxMicrons").value.trim());
   const dx = dxMicrons * 1E-06;
@@ -507,6 +539,56 @@ function drawCircle(canvas, ctx, x, y) {
   ctx.arc(x, y, 4, 0, 2 * Math.PI);
   ctx.fill();
 }
+
+/**
+ * Robust background subtraction for 1D beam profile
+ *
+ * @param {Float32Array|Float64Array} I
+ * @param {number} centralFraction  fraction of profile width to ignore (0.3 is typical)
+ * @returns {{signal: Float32Array, background: number}}
+ */
+function subtractBackground(I, centralFraction = 0.3) {
+    const N = I.length;
+
+    // --- rough centroid (no bg removal yet)
+    let sumI = 0, sumX = 0;
+    for (let i = 0; i < N; i++) {
+        sumI += I[i];
+        sumX += I[i] * i;
+    }
+    const xc = sumX / sumI;
+
+    // --- define exclusion window
+    const halfWidth = Math.floor(N * centralFraction / 2);
+    const iMin = Math.max(0, Math.floor(xc - halfWidth));
+    const iMax = Math.min(N, Math.floor(xc + halfWidth));
+
+    // --- collect background samples
+    const bgSamples = [];
+    for (let i = 0; i < N; i++) {
+        if (i < iMin || i > iMax) {
+            bgSamples.push(I[i]);
+        }
+    }
+
+    // --- robust estimator: median
+    bgSamples.sort((a, b) => a - b);
+    const mid = Math.floor(bgSamples.length / 2);
+    const background =
+        bgSamples.length % 2
+            ? bgSamples[mid]
+            : 0.5 * (bgSamples[mid - 1] + bgSamples[mid]);
+
+    // --- subtract and clamp
+    const out = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+        out[i] = Math.max(I[i] - background, 0);
+    }
+
+    return out;
+    //return { signal: out, background };
+}
+
 </script>
 
 </body>
