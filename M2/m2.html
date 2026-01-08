@@ -65,9 +65,11 @@ class imagePairData {
     this.fileNameNear = "-";
     this.imageNear = null;
     this.lineNear = [];
+    this.statNear = [];
     this.fileNameFar = "-";
     this.imageFar = null;
     this.lineFar = [];
+    this.statFar = [];
     this.M2 = 0.0;
   }
 }
@@ -245,7 +247,7 @@ function secondMomentRadius(I, dx) {
     const variance = sumX2 / sumI - xbar * xbar;
 
     // ISO definition: w = sqrt(2 * variance)
-    return Math.sqrt(2 * variance);
+    return [Math.sqrt(2 * variance), xbar, sumI];
 }
 
 /**
@@ -259,15 +261,17 @@ function secondMomentRadius(I, dx) {
  * @returns {number} M²
  */
 function computeMSquared(I1, I2, dx, dz, lambda) {
-    const w1 = secondMomentRadius(I1, dx);
-    const w2 = secondMomentRadius(I2, dx);
+    const stats1 = secondMomentRadius(I1, dx);
+    const stats2 = secondMomentRadius(I2, dx);
 
+    const w1 = stats1[0];
+    const w2 = stats1[0];
     if (w2 <= w1) {
-        return -1.0;
+        return [- 1.0, stats1, stats2];
     }
 
     const term = Math.sqrt(w1 * w1 * (w2 * w2 - w1 * w1));
-    return Math.PI * term / (lambda * dz);
+    return [Math.PI * term / (lambda * dz), stats1, stats2];
 }
 
 function calculateM2(pair) {
@@ -276,7 +280,12 @@ function calculateM2(pair) {
   const dzCm = parseFloat(document.getElementById("dzCm").value.trim());
   const lamdaNm = parseFloat(document.getElementById("lamdaNm").value.trim());
   
-  pair.M2 = computeMSquared(pair.lineNear, pair.lineFar, dxMicrons * 1E-06, dzCm * 0.1, lamdaNm * 1E-09);
+  const rc = computeMSquared(pair.lineNear, pair.lineFar, dxMicrons * 1E-06, dzCm * 0.1, lamdaNm * 1E-09);
+  pair.M2 = rc[0];
+  for (let i = 0; i < 3; i++) {
+    pair.statNear[i] = rc[1][i];
+    pair.statFar[i] = rc[2][i];
+  }
 }
 
 document.getElementById("calcBtn").addEventListener("click", () => {
@@ -415,6 +424,28 @@ function drawLines(i) {
 
   plotCurve(canvasLines, ctxLines, xVec, pair.lineNear, "red", X, Y);
   plotCurve(canvasLines, ctxLines, xVec, pair.lineFar, "blue", X, Y);
+
+  const dxMicrons = parseFloat(document.getElementById("dxMicrons").value.trim());
+  const dx = dxMicrons * 1E-06;
+
+  if (pair.statNear.length >= 3) {
+      ctxLines.strokeStyle = "red";
+      ctxLines.beginPath();
+      let sx = Math.round((pair.statNear[1] - 0.5 * pair.statNear[0]) / dx);
+      let ex = Math.round((pair.statNear[1] + 0.5 * pair.statNear[0]) / dx);
+      ctxLines.moveTo(X(sx), canvasLines.height / 2);
+      ctxLines.lineTo(X(ex), canvasLines.height / 2);
+      ctxLines.stroke();
+  }
+  if (pair.statFar.length >= 3) {
+      ctxLines.strokeStyle = "blue";
+      ctxLines.beginPath();
+      let sx = Math.round((pair.statFar[1] - 0.5 * pair.statFar[0]) / dx);
+      let ex = Math.round((pair.statFar[1] + 0.5 * pair.statFar[0]) / dx);
+      ctxLines.moveTo(X(sx), canvasLines.height / 2 - 10);
+      ctxLines.lineTo(X(ex), canvasLines.height / 2 - 10);
+      ctxLines.stroke();
+  }
 }
 
 
