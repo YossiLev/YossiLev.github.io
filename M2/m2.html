@@ -21,7 +21,7 @@
 <div style="display: flex; flex-direction: row; gap: 10px;">
 <div>
 <label>Camera pixel size (microns)<input type="number" id="dxMicrons" value="3.45" step="0.1"></label>
-<label>Distance (cm)<input type="number" id="dzCm" value="50" step="1"></label>
+<label>Focal length (cm)<input type="number" id="dzCm" value="5" step="1"></label>
 <label>Wave length (nm)<input type="number" id="lamdaNm" value="1064" step="0.1"></label>
 <div>
 <label>
@@ -285,8 +285,16 @@ function computeMSquared(I1, I2, dx, dz, lambda) {
         return [- 1.0, stats1, stats2];
     }
 
-    const term = Math.sqrt(w1 * w1 * (w2 * w2 - w1 * w1));
-    return [Math.PI * term / (lambda * dz), stats1, stats2];
+    const A = -2;
+    const B = dz;
+    if (w2 < Math.abs(A) * w1) {
+        return [-1, stats1, stats2];
+    }
+    const M2 = Math.PI * w1 / (lambda * dz) * Math.sqrt(w2 * w2 - A * A * w1 * w1);
+
+    //const term = Math.sqrt(w1 * w1 * (w2 * w2 - w1 * w1));
+    //const M2 = Math.PI * term / (lambda * dz)
+    return [M2, stats1, stats2];
 }
 
 function calculateM2(pair) {
@@ -317,11 +325,13 @@ document.getElementById("calcBtn").addEventListener("click", () => {
 });
 
 function displayFileData(i, s) {
-  return `<tr onclick="drawSingle(${i});" style="cursor: pointer;"><td>${s.fileLabel}</td><td>${s.gridsDistance}</td><td>${s.fileNameNear}</td><td>${s.fileNameFar}</td><td>${s.M2}</td></tr>`
+  return `<tr onclick="drawSingle(${i});" style="cursor: pointer;"><td>${s.fileLabel}</td>` + 
+    `<td>${s.gridsDistance}</td><td style="font-size: 10px; font-family: monospace;">${s.fileNameNear}</br>${s.fileNameFar}</td><td>${s.M2}</td>` + 
+    `<td>${(s.statNear[0]* 1000.0).toFixed(3)}</br>${(s.statFar[0]* 1000.0).toFixed(3)}</td></tr>`
 }
 function displayFiles() {
   document.getElementById("tableFiles").innerHTML = 
-    `<table><tr><td>Label</td><td>Distance</td><td>Near</td><td>Far</td><td>M-Square</td></tr>${imagePairs.map((s, i) => displayFileData(i, s)).join('')}</table>`;
+    `<table><tr><td>Label</td><td>Distance</td><td>Files</td><td>M-Square</td><td>Widths (mm)</td></tr>${imagePairs.map((s, i) => displayFileData(i, s)).join('')}</table>`;
 }
 const marginPlot = 40;
 // ---------- Plotting ----------
