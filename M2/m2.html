@@ -20,12 +20,15 @@
 <h2>Laser Beam M-Square</h2>
 <div style="display: flex; flex-direction: row; gap: 10px;">
 <div>
+<div>
   <label>Camera pixel size (microns)<input type="number" id="dxMicrons" value="3.45" step="0.1"></label>
-  <label>Focal length (cm)<input type="number" id="dzCm" value="5" step="1"></label>
+  <label>A <input type="number" id="aFactor" value="-2" step="1"></label>
+  <label>Focal length (cm) (B)<input type="number" id="dzCm" value="5" step="1"></label>
   <label>Wave length (nm)<input type="number" id="lamdaNm" value="1064" step="0.1"></label>
 </div>
 <div>
   <label>Sub factor<input type="number" id="subFactor" value="1" step="1"></label>
+</div>
 <div>
 <label>
   Load directory:
@@ -47,6 +50,8 @@
 <p>M2: <input type="text" id="m2Output" size="20" readonly></p>
 <canvas id="plotLines" width="900" height="400"></canvas>
 <canvas id="plotLogLines" width="900" height="400"></canvas>
+</div>
+
 <div id="dataTable"></div>
 </div>
 <div id="tableFiles"></div>
@@ -274,7 +279,7 @@ function secondMomentRadius(I, dx) {
  * @param {number} lambda  wavelength [meters]
  * @returns {number} M²
  */
-function computeMSquared(I1, I2, dx, dz, lambda) {
+function computeMSquared(I1, I2, dx, dz, lambda, aFactor) {
     const stats1 = secondMomentRadius(I1, dx);
     const stats2 = secondMomentRadius(I2, dx);
 
@@ -291,16 +296,16 @@ function computeMSquared(I1, I2, dx, dz, lambda) {
         return [- 1.0, stats1, stats2];
     }
 
-    const A = -2;
+    const A = aFactor;
     const B = dz;
-    // if (w2 < Math.abs(A) * w1) {
-    //     return [-1, stats1, stats2];
-    // }
+    if (w2 < Math.abs(A) * w1) {
+         return [-1, stats1, stats2];
+     }
     // calculation for 4f vs 1f3f
-    //const M2 = Math.PI * w1 / (lambda * dz) * Math.sqrt(w2 * w2 - A * A * w1 * w1);
+    const M2 = Math.PI * w1 / (lambda * dz) * Math.sqrt(w2 * w2 - A * A * w1 * w1);
 
     // calculation for 4f vs 1f 1f
-    const M2 = Math.sqrt(Math.PI * w1 * w2 / (lambda * dz));
+    //const M2 = Math.sqrt(Math.PI * w1 * w2 / (lambda * dz));
 
     //const term = Math.sqrt(w1 * w1 * (w2 * w2 - w1 * w1));
     //const M2 = Math.PI * term / (lambda * dz)
@@ -313,9 +318,10 @@ function calculateM2(pair) {
   pair.lineCleanFar = subtractBackground(pair.lineFar)
   const dxMicrons = parseFloat(document.getElementById("dxMicrons").value.trim());
   const dzCm = parseFloat(document.getElementById("dzCm").value.trim());
+  const aFactor = parseFloat(document.getElementById("aFactor").value.trim());
   const lamdaNm = parseFloat(document.getElementById("lamdaNm").value.trim());
   
-  const rc = computeMSquared(pair.lineCleanNear, pair.lineCleanFar, dxMicrons * 1E-06, dzCm * 0.01, lamdaNm * 1E-09);
+  const rc = computeMSquared(pair.lineCleanNear, pair.lineCleanFar, dxMicrons * 1E-06, dzCm * 0.01, lamdaNm * 1E-09, aFactor);
   
   pair.M2 = rc[0];
   for (let i = 0; i < 3; i++) {
