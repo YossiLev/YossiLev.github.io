@@ -18,47 +18,59 @@
 </script>
 
 <h2>Laser Beam M-Square</h2>
-<div style="display: flex; flex-direction: row; gap: 10px;">
 <div>
+  <div style="display: flex; flex-direction: row; gap: 10px; align-items: self-start;">
+    <div>
+      <div>
+        <div>
+        <label>Builtin configuration:
+          <select id="configs" name="configs" onchange="selectConfig();">
+            <option value="1">P15 L7.5 P15 &lt;-&gt; P15 L15 P15 (Eden new configuration)</option>
+            <option value="2">Banana</option>
+            <option value="3">Cherry</option>
+          </select>
+        </label>
+        </div>
+        <label>Camera pixel size (microns)<input type="number" id="dxMicrons" value="3.45" step="0.1"></label>
+        <label>A <input type="number" id="aFactor" value="0" step="1"></label>
+        <label>Focal length (cm) (B)<input type="number" id="dzCm" value="15" step="1"></label>
+        <label>Wave length (nm)<input type="number" id="lamdaNm" value="1064" step="0.1"></label>
+      </div>
+      <div>
+        <label>Sub factor<input type="number" id="subFactor" value="1" step="1"></label>
+      </div>
+      <div>
+        <label>
+          Load directory:
+        <input type="file" id="fileDirectoryInput" accept=".csv">
+        </label>
+      </div>
+
+      <label>
+        Load images:
+      <input type="file" id="fileDataInput" accept=".tif,.png" multiple>
+      </label>
+      <div class="controls">
+        <button id="calcBtn">Calc</button>
+      </div>
+      <canvas id="plotM2" width="900" height="400"></canvas>
+      <p>File: <input type="text" id="m2FileName" size="20" readonly></p>
+      <p>M2: <input type="text" id="m2Output" size="20" readonly></p>
+      <div><canvas id="plotLines" width="900" height="400"></canvas></div>
+      <div><canvas id="plotLogLines" width="900" height="400"></canvas></div>
+    </div>
+    
+    <div style="position: sticky; top: 10px">
+      <div id="dataTable"></div>
+      <div id="tableFiles"></div>
+    </div>
+  </div>
+</div>
 <div>
-  <label>Camera pixel size (microns)<input type="number" id="dxMicrons" value="3.45" step="0.1"></label>
-  <label>A <input type="number" id="aFactor" value="-2" step="1"></label>
-  <label>Focal length (cm) (B)<input type="number" id="dzCm" value="5" step="1"></label>
-  <label>Wave length (nm)<input type="number" id="lamdaNm" value="1064" step="0.1"></label>
-</div>
-<div>
-  <label>Sub factor<input type="number" id="subFactor" value="1" step="1"></label>
-</div>
-<div>
-<label>
-  Load directory:
-<input type="file" id="fileDirectoryInput" accept=".csv">
-</label>
-</div>
-
-<label>
-  Load images:
-<input type="file" id="fileDataInput" accept=".tif,.png" multiple>
-</label>
-<div class="controls">
-  <button id="calcBtn">Calc</button>
-</div>
-
-
-<canvas id="plotM2" width="900" height="400"></canvas>
-<p>File: <input type="text" id="m2FileName" size="20" readonly></p>
-<p>M2: <input type="text" id="m2Output" size="20" readonly></p>
-<canvas id="plotLines" width="900" height="400"></canvas>
-<canvas id="plotLogLines" width="900" height="400"></canvas>
-</div>
-
-<div id="dataTable"></div>
-</div>
-<div id="tableFiles"></div>
-</div>
-<div style="display: flex; flex-direction: row; gap: 10px;">
-<canvas id="imageNear" width="400" height="400"></canvas>
-<canvas id="imageFar" width="400" height="400"></canvas>
+  <div style="display: flex; flex-direction: row; gap: 10px;">
+  <canvas id="imageNear" width="400" height="400"></canvas>
+  <canvas id="imageFar" width="400" height="400"></canvas>
+  </div>
 </div>
 <script>
 const canvasM2 = document.getElementById("plotM2");
@@ -78,6 +90,7 @@ class imagePairData {
     this.yNear = -1;
     this.lineNear = [];
     this.lineCleanNear = [];
+    this.nearGaussianMatch = null;
     this.statNear = [];
     this.fileNameFar = "-";
     this.imageFar = null;
@@ -94,6 +107,16 @@ let crossings = null;
 let threshold = null;
 const inputSelect = document.getElementById("inputSelect");
 
+function selectConfig() {
+  switch (document.getElementById("configs").value) {
+    case "1":
+      document.getElementById("dxMicrons").value = "3.45";
+      document.getElementById("dzCm").value = "15";
+      document.getElementById("aFactor").value = "0";
+      document.getElementById("lamdaNm").value = "1064";
+      break;    
+  }
+}
 // ---------- CSV parsing ----------
 document.getElementById("fileDirectoryInput").addEventListener("change", e => {
   const file = e.target.files[0];
@@ -314,8 +337,9 @@ function computeMSquared(I1, I2, dx, dz, lambda, aFactor) {
 
 function calculateM2(pair) {
 
-  pair.lineCleanNear = subtractBackground(pair.lineNear)
-  pair.lineCleanFar = subtractBackground(pair.lineFar)
+  pair.lineCleanNear = subtractBackground(pair.lineNear);
+  pair.lineCleanFar = subtractBackground(pair.lineFar);
+  pair.nearGaussianMatch = matchGaussian(pair.lineNear);
   const dxMicrons = parseFloat(document.getElementById("dxMicrons").value.trim());
   const dzCm = parseFloat(document.getElementById("dzCm").value.trim());
   const aFactor = parseFloat(document.getElementById("aFactor").value.trim());
@@ -492,6 +516,9 @@ function drawLines(i) {
   plotCurve(canvasLines, ctxLines, xVec, pair.lineNear, "#ffaaaa", X, Y);
   plotCurve(canvasLines, ctxLines, xVec, pair.lineFar, "#aaaaff", X, Y);
   plotCurve(canvasLines, ctxLines, xVec, pair.lineCleanNear, "red", X, Y);
+  if (pair.nearGaussianMatch) {
+    plotCurve(canvasLines, ctxLines, xVec, pair.nearGaussianMatch.fit, "green", X, Y);
+  }
   plotCurve(canvasLines, ctxLines, xVec, pair.lineCleanFar, "blue", X, Y);
   plotGrid(canvasLogLines, ctxLogLines, xVec, loglineNear, "lightgray");
   plotCurve(canvasLogLines, ctxLogLines, xVec, loglineNear, "red", logX, logY);
@@ -628,6 +655,84 @@ function subtractBackground(I, centralFraction = 0.3) {
 
     return out;
     //return { signal: out, background };
+}
+function matchGaussian(y, options = {}) {
+    const N = y.length;
+
+    // ---------- parameters
+    const sigmaMin = options.sigmaMin ?? 2;
+    const sigmaMax = options.sigmaMax ?? 80;
+    const sigmaSteps = options.sigmaSteps ?? 60;
+
+    // ---------- background removal
+    const sorted = [...y].sort((a, b) => a - b);
+    const B = sorted[Math.floor(0.1 * N)];
+    const s = y.map(v => Math.max(0, v - B));
+
+    // ---------- peak estimate
+    let peak = 0;
+    for (let i = 1; i < N; i++) {
+        if (s[i] > s[peak]) peak = i;
+    }
+
+    let best = {
+        score: -Infinity,
+        x0: peak,
+        sigma: sigmaMin
+    };
+
+    // ---------- precompute x
+    const x = [...Array(N).keys()];
+
+    // ---------- scan parameters
+    for (let k = 0; k < sigmaSteps; k++) {
+        const sigma =
+            sigmaMin * Math.pow(sigmaMax / sigmaMin, k / (sigmaSteps - 1));
+
+        const inv2s2 = 1 / (2 * sigma * sigma);
+
+        for (let x0 = peak - 40; x0 <= peak + 40; x0++) {
+            if (x0 < 0 || x0 >= N) continue;
+
+            let dot = 0;
+            let normG = 0;
+
+            for (let i = 0; i < N; i++) {
+                const g = Math.exp(-((i - x0) ** 2) * inv2s2);
+                dot += s[i] * g;
+                normG += g * g;
+            }
+
+            const score = dot / Math.sqrt(normG);
+
+            if (score > best.score) {
+                best = { score, x0, sigma };
+            }
+        }
+    }
+
+    // ---------- amplitude (least squares)
+    let num = 0, den = 0;
+    for (let i = 0; i < N; i++) {
+        const g = Math.exp(-((i - best.x0) ** 2) / (2 * best.sigma ** 2));
+        num += s[i] * g;
+        den += g * g;
+    }
+    const A = num / den;
+
+    // ---------- fitted curve
+    const fit = x.map(i =>
+        B + A * Math.exp(-((i - best.x0) ** 2) / (2 * best.sigma ** 2))
+    );
+
+    return {
+        x0: best.x0,
+        sigma: best.sigma,
+        A,
+        B,
+        score: best.score,
+        fit
+    };
 }
 
 </script>
