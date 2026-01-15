@@ -4,63 +4,240 @@
 <meta charset="UTF-8">
 <title>Laser Beam M-Square Tool</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  canvas { border: 1px solid #ccc; }
-  .controls { margin-top: 10px; }
-  input[type="number"] { width: 60px; }
+:root {
+  --bg: #f6f8fa;
+  --panel: #ffffff;
+  --border: #d0d7de;
+  --text: #24292f;
+  --muted: #6e7781;
+  --accent: #0969da;
+  --danger: #cf222e;
+  --ok: #1a7f37;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Headings */
+h2 {
+  margin: 0 0 16px 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* Panels / cards */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* Layout */
+.main-layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.left-column {
+  flex: 1;
+  min-width: 500px;
+}
+
+.right-column {
+  width: 550px;
+  position: sticky;
+  top: 16px;
+}
+
+/* Forms */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.form-grid-long {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 12px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+input,
+select,
+button {
+  margin-top: 4px;
+  padding: 6px 8px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: white;
+}
+
+input[type="number"] {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+button {
+  cursor: pointer;
+  font-weight: 500;
+  background: var(--accent);
+  color: white;
+  border: none;
+}
+
+button:hover {
+  filter: brightness(1.05);
+}
+
+/* Canvas containers */
+.canvas-panel {
+  margin-top: 12px;
+}
+
+.canvas-panel h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 6px 0;
+  color: var(--muted);
+}
+
+canvas {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+th,
+td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+tr:hover {
+  background: #f0f3f6;
+}
+
+th {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+}
+
+/* Status colors */
+.red { color: var(--danger); }
+.green { color: var(--ok); }
+.blue { color: var(--accent); }
+
+/* Image preview row */
+.image-row {
+  display: flex;
+  gap: 16px;
+}
 </style>
+
 
 </head>
 <body>
 <script src="./UTIF.js"></script>
-<script>
-  console.log(UTIF); // should work
-</script>
+<div class="panel">
+  <h2>Laser Beam M²</h2>
+</div>
 
-<h2>Laser Beam M-Square</h2>
-<div>
-  <div style="display: flex; flex-direction: row; gap: 10px; align-items: self-start;">
-    <div>
+  <div class="main-layout">
+    <div class="left-column">
       <div>
-        <div>
-        <label>Builtin configuration:
-          <select id="configs" name="configs" onchange="selectConfig();">
-            <option value="1">P15 L7.5 P15 &lt;-&gt; P15 L15 P15 (Eden new configuration)</option>
-            <option value="2">Banana</option>
-            <option value="3">Cherry</option>
-          </select>
-        </label>
+        <div class="panel">
+          <div class="form-grid-long">
+            <label>Builtin configuration:
+              <select id="configs" name="configs" style="width:400px;" onchange="selectConfig();">
+                <option value="1">P15 L7.5 P15 &lt;-&gt; P15 L15 P15 (Eden new configuration)</option>
+                <option value="2">P10 L5 P10 &lt;-&gt; P10 L10 P10 (Yehuda new configuration)</option>
+              </select>
+            </label>
+            <label>Near field width:
+              <select id="nfWidth" name="nfWidth" style="width:400px;" onchange="selectConfig();">
+                <option value="1">By Gaussian</option>
+                <option value="2">By variance</option>
+              </select>
+            </label>
+          </div>
         </div>
-        <label>Camera pixel size (microns)<input type="number" id="dxMicrons" value="3.45" step="0.1"></label>
-        <label>A <input type="number" id="aFactor" value="0" step="1"></label>
-        <label>Focal length (cm) (B)<input type="number" id="dzCm" value="15" step="1"></label>
-        <label>Wave length (nm)<input type="number" id="lamdaNm" value="1064" step="0.1"></label>
-      </div>
-      <div>
-        <label>Sub factor<input type="number" id="subFactor" value="1" step="1"></label>
-      </div>
-      <div>
-        <label>
-          Load directory:
-        <input type="file" id="fileDirectoryInput" accept=".csv">
-        </label>
+        <div class="panel">
+          <div class="form-grid">
+            <label>Camera pixel size (microns)<input type="number" id="dxMicrons" value="3.45" step="0.1"></label>
+            <label>A <input type="number" id="aFactor" value="0" step="1"></label>
+            <label>Focal length (cm) (B)<input type="number" id="dzCm" value="15" step="1"></label>
+            <label>Wave length (nm)<input type="number" id="lamdaNm" value="1064" step="0.1"></label>
+            <label>Sub factor<input type="number" id="subFactor" value="1" step="1"></label>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="form-grid">
+            <label>
+              Load directory:
+            <input type="file" id="fileDirectoryInput" accept=".csv">
+            </label>
+            <label>
+              Load images:
+            <input type="file" id="fileDataInput" accept=".tif,.png" multiple>
+            </label>
+          </div>
+        </div>
       </div>
 
-      <label>
-        Load images:
-      <input type="file" id="fileDataInput" accept=".tif,.png" multiple>
-      </label>
       <div class="controls">
         <button id="calcBtn">Calc</button>
       </div>
-      <canvas id="plotM2" width="900" height="400"></canvas>
+      <div class="canvas-panel">
+        <h3>M² vs Distance</h3>
+        <canvas id="plotM2" width="900" height="400"></canvas>
+      </div>
       <p>File: <input type="text" id="m2FileName" size="20" readonly></p>
       <p>M2: <input type="text" id="m2Output" size="20" readonly></p>
-      <div><canvas id="plotLines" width="900" height="400"></canvas></div>
-      <div><canvas id="plotLogLines" width="900" height="400"></canvas></div>
+      <div class="canvas-panel">
+        <h3>Intensity vs Distance</h3>
+        <div><canvas id="plotLines" width="900" height="400"></canvas></div>
+      </div>
+      <div class="canvas-panel">
+        <h3>Log intensity vs Distance</h3>
+        <div><canvas id="plotLogLines" width="900" height="400"></canvas></div>
+      </div>
     </div>
     
-    <div style="position: sticky; top: 10px">
+    <div  class="right-column" style="position: sticky; top: 10px">
       <div id="dataTable"></div>
       <div id="tableFiles"></div>
     </div>
@@ -112,6 +289,12 @@ function selectConfig() {
     case "1":
       document.getElementById("dxMicrons").value = "3.45";
       document.getElementById("dzCm").value = "15";
+      document.getElementById("aFactor").value = "0";
+      document.getElementById("lamdaNm").value = "1064";
+      break;    
+    case "2":
+      document.getElementById("dxMicrons").value = "5.2";
+      document.getElementById("dzCm").value = "10";
       document.getElementById("aFactor").value = "0";
       document.getElementById("lamdaNm").value = "1064";
       break;    
@@ -302,21 +485,15 @@ function secondMomentRadius(I, dx) {
  * @param {number} lambda  wavelength [meters]
  * @returns {number} M²
  */
-function computeMSquared(I1, I2, dx, dz, lambda, aFactor) {
+function computeMSquared(nearGaussianMatch, I1, I2, dx, dz, lambda, aFactor) {
     const stats1 = secondMomentRadius(I1, dx);
     const stats2 = secondMomentRadius(I2, dx);
 
     const w1 = stats1[0];
     const w2 = stats2[0];
 
-    console.log({
-        w1_um: w1 * 1e6,
-        w2_um: w2 * 1e6,
-        dz_mm: dz * 1e3,
-        lambda_nm: lambda * 1e9
-    });
     if (w2 <= w1) {
-        return [- 1.0, stats1, stats2];
+        return [- 1, stats1, stats2];
     }
 
     const A = aFactor;
@@ -345,7 +522,7 @@ function calculateM2(pair) {
   const aFactor = parseFloat(document.getElementById("aFactor").value.trim());
   const lamdaNm = parseFloat(document.getElementById("lamdaNm").value.trim());
   
-  const rc = computeMSquared(pair.lineCleanNear, pair.lineCleanFar, dxMicrons * 1E-06, dzCm * 0.01, lamdaNm * 1E-09, aFactor);
+  const rc = computeMSquared(pair.nearGaussianMatch, pair.lineCleanNear, pair.lineCleanFar, dxMicrons * 1E-06, dzCm * 0.01, lamdaNm * 1E-09, aFactor);
   
   pair.M2 = rc[0];
   for (let i = 0; i < 3; i++) {
@@ -367,9 +544,28 @@ document.getElementById("calcBtn").addEventListener("click", () => {
 });
 
 function displayFileData(i, s) {
-  return `<tr onclick="drawSingle(${i});" style="cursor: pointer;"><td>${s.fileLabel}</td>` + 
-    `<td>${s.gridsDistance}</td><td style="font-size: 10px; font-family: monospace;">${s.fileNameNear}</br>${s.fileNameFar}</td><td>${s.M2}</td>` + 
-    `<td>${(s.statNear[0]* 1000.0).toFixed(3)}</br>${(s.statFar[0]* 1000.0).toFixed(3)}</td></tr>`
+  const dxMicrons = parseFloat(document.getElementById("dxMicrons").value.trim());
+  return `
+        <tr onclick="drawSingle(${i});">
+          <td>${s.fileLabel}</td>
+          <td>${s.gridsDistance}</td>
+          <td class="mono">${s.fileNameNear}<br>${s.fileNameFar}</td>
+          <td>${s.M2.toFixed(3)}</td>
+          <td>
+            <span class="red">${(s.statNear[0]*1000).toFixed(3)}</span>
+            <span class="green">
+              ${s.nearGaussianMatch
+                ? (s.nearGaussianMatch.sigma * 2 * Math.sqrt(2) * dxMicrons / 1000).toFixed(3)
+                : ""}
+            </span><br>
+            <span class="blue">${(s.statFar[0]*1000).toFixed(3)}</span>
+          </td>
+        </tr>`;
+  // return `<tr onclick="drawSingle(${i});" style="cursor: pointer;"><td>${s.fileLabel}</td>` + 
+  //   `<td>${s.gridsDistance}</td><td style="font-size: 10px; font-family: monospace;">${s.fileNameNear}</br>${s.fileNameFar}</td><td>${s.M2}</td>` + 
+  //   `<td><span style="color:red;">${(s.statNear[0]* 1000.0).toFixed(3)}</span>` + 
+  //   `<span style="color:green;">&nbsp;${s.nearGaussianMatch ? (s.nearGaussianMatch.sigma * 2 * Math.sqrt(2.0) * dxMicrons / 1000.0).toFixed(3) : ""}</span>` + 
+  //   `</br><span style="color:blue;">${(s.statFar[0]* 1000.0).toFixed(3)}</span></td></tr>`
 }
 function displayFiles() {
   document.getElementById("tableFiles").innerHTML = 
@@ -503,15 +699,19 @@ function logNorm(x) {
 function drawLines(i) {
   ctxLines.clearRect(0, 0, canvasLines.width, canvasLines.height);
   ctxLogLines.clearRect(0, 0, canvasLogLines.width, canvasLogLines.height);
+  const dxMicrons = parseFloat(document.getElementById("dxMicrons").value.trim());
+  const dxMM = dxMicrons * 1E-03;
   const pair = imagePairs[i];
   if (!pair.lineNear.length || !pair.lineFar.length) return;
 
-  const xVec = pair.lineNear.map((v, i) => i);
+  const xVec = pair.lineNear.map((v, i) => i * dxMM);
 
   const loglineNear = logNorm(pair.lineNear);
   const loglineFar = logNorm(pair.lineFar);
   const [X, Y] = scalesForPlots(canvasLines, marginPlot, xVec, pair.lineNear);
   const [logX, logY] = scalesForPlots(canvasLogLines, marginPlot, xVec, loglineNear);
+
+  plotGrid(canvasLines, ctxLines, xVec, pair.lineNear, "lightgray");
 
   plotCurve(canvasLines, ctxLines, xVec, pair.lineNear, "#ffaaaa", X, Y);
   plotCurve(canvasLines, ctxLines, xVec, pair.lineFar, "#aaaaff", X, Y);
@@ -520,18 +720,16 @@ function drawLines(i) {
     plotCurve(canvasLines, ctxLines, xVec, pair.nearGaussianMatch.fit, "green", X, Y);
   }
   plotCurve(canvasLines, ctxLines, xVec, pair.lineCleanFar, "blue", X, Y);
+
   plotGrid(canvasLogLines, ctxLogLines, xVec, loglineNear, "lightgray");
   plotCurve(canvasLogLines, ctxLogLines, xVec, loglineNear, "red", logX, logY);
   plotCurve(canvasLogLines, ctxLogLines, xVec, loglineFar, "blue", logX, logY);
 
-  const dxMicrons = parseFloat(document.getElementById("dxMicrons").value.trim());
-  const dx = dxMicrons * 1E-06;
-
   if (pair.statNear.length >= 3) {
       ctxLines.strokeStyle = "red";
       ctxLines.beginPath();
-      let sx = Math.round((pair.statNear[1] - 0.5 * pair.statNear[0]) / dx);
-      let ex = Math.round((pair.statNear[1] + 0.5 * pair.statNear[0]) / dx);
+      let sx = (pair.statNear[1] - 0.5 * pair.statNear[0]) * 1000;
+      let ex = (pair.statNear[1] + 0.5 * pair.statNear[0]) * 1000;
       ctxLines.moveTo(X(sx), canvasLines.height / 2);
       ctxLines.lineTo(X(ex), canvasLines.height / 2);
       ctxLines.stroke();
@@ -539,10 +737,20 @@ function drawLines(i) {
   if (pair.statFar.length >= 3) {
       ctxLines.strokeStyle = "blue";
       ctxLines.beginPath();
-      let sx = Math.round((pair.statFar[1] - 0.5 * pair.statFar[0]) / dx);
-      let ex = Math.round((pair.statFar[1] + 0.5 * pair.statFar[0]) / dx);
+      let sx = (pair.statFar[1] - 0.5 * pair.statFar[0]) * 1000;
+      let ex = (pair.statFar[1] + 0.5 * pair.statFar[0]) * 1000;
       ctxLines.moveTo(X(sx), canvasLines.height / 2 - 10);
       ctxLines.lineTo(X(ex), canvasLines.height / 2 - 10);
+      ctxLines.stroke();
+  }
+
+  if (pair.nearGaussianMatch) {
+      ctxLines.strokeStyle = "green";
+      ctxLines.beginPath();
+      let sx = (pair.nearGaussianMatch.x0 - pair.nearGaussianMatch.sigma * Math.sqrt(2.0)) * dxMM;
+      let ex = (pair.nearGaussianMatch.x0 + pair.nearGaussianMatch.sigma * Math.sqrt(2.0)) * dxMM;
+      ctxLines.moveTo(X(sx), canvasLines.height / 2 + 10);
+      ctxLines.lineTo(X(ex), canvasLines.height / 2 + 10);
       ctxLines.stroke();
   }
 }
