@@ -275,7 +275,7 @@ class imagePairData {
     this.lineFar = [];
     this.lineCleanFar = [];
     this.statFar = [];
-    this.M2 = 0.0;
+    this.M2 = [0, 0];
   }
 }
 
@@ -475,6 +475,13 @@ function secondMomentRadius(I, dx) {
     return [Math.sqrt(2 * variance), xbar, sumI];
 }
 
+function computeM(w1, w2, A, B, lambda) {
+  if (w2 <= w1 || w2 < Math.abs(A) * w1) {
+      return -1;
+  }
+  const M2 = Math.PI * w1 / (lambda * B) * Math.sqrt(w2 * w2 - A * A * w1 * w1);
+  return M2;
+}
 /**
  * Compute M² from two beam profiles
  *
@@ -491,25 +498,15 @@ function computeMSquared(nearGaussianMatch, I1, I2, dx, dz, lambda, aFactor) {
 
     const w1 = stats1[0];
     const w2 = stats2[0];
-
-    if (w2 <= w1) {
-        return [- 1, stats1, stats2];
-    }
+    const w1G = nearGaussianMatch.sigma * Math.sqrt(2.0) * 2.0 * dx;
 
     const A = aFactor;
     const B = dz;
-    if (w2 < Math.abs(A) * w1) {
-         return [-1, stats1, stats2];
-     }
-    // calculation for 4f vs 1f3f
-    const M2 = Math.PI * w1 / (lambda * dz) * Math.sqrt(w2 * w2 - A * A * w1 * w1);
 
-    // calculation for 4f vs 1f 1f
-    //const M2 = Math.sqrt(Math.PI * w1 * w2 / (lambda * dz));
+    const M2 = computeM(w1, w2, A, B, lambda);
+    const M2G = computeM(w1G, w2, A, B, lambda);
 
-    //const term = Math.sqrt(w1 * w1 * (w2 * w2 - w1 * w1));
-    //const M2 = Math.PI * term / (lambda * dz)
-    return [M2, stats1, stats2];
+    return [[M2, M2G], stats1, stats2];
 }
 
 function calculateM2(pair) {
@@ -550,22 +547,22 @@ function displayFileData(i, s) {
           <td>${s.fileLabel}</td>
           <td>${s.gridsDistance}</td>
           <td class="mono">${s.fileNameNear}<br>${s.fileNameFar}</td>
-          <td>${s.M2.toFixed(3)}</td>
+          <td>
+            <span class="red">${s.M2[0].toFixed(3)}</span>
+            <br>
+            <span class="green">${s.M2[1].toFixed(3)}</span>
+          </td>
           <td>
             <span class="red">${(s.statNear[0]*1000).toFixed(3)}</span>
+            <span class="blue">${(s.statFar[0]*1000).toFixed(3)}</span>
+            <br>
             <span class="green">
               ${s.nearGaussianMatch
                 ? (s.nearGaussianMatch.sigma * 2 * Math.sqrt(2) * dxMicrons / 1000).toFixed(3)
                 : ""}
-            </span><br>
-            <span class="blue">${(s.statFar[0]*1000).toFixed(3)}</span>
+            </span>
           </td>
         </tr>`;
-  // return `<tr onclick="drawSingle(${i});" style="cursor: pointer;"><td>${s.fileLabel}</td>` + 
-  //   `<td>${s.gridsDistance}</td><td style="font-size: 10px; font-family: monospace;">${s.fileNameNear}</br>${s.fileNameFar}</td><td>${s.M2}</td>` + 
-  //   `<td><span style="color:red;">${(s.statNear[0]* 1000.0).toFixed(3)}</span>` + 
-  //   `<span style="color:green;">&nbsp;${s.nearGaussianMatch ? (s.nearGaussianMatch.sigma * 2 * Math.sqrt(2.0) * dxMicrons / 1000.0).toFixed(3) : ""}</span>` + 
-  //   `</br><span style="color:blue;">${(s.statFar[0]* 1000.0).toFixed(3)}</span></td></tr>`
 }
 function displayFiles() {
   document.getElementById("tableFiles").innerHTML = 
@@ -638,7 +635,10 @@ canvasM2.addEventListener("click", e => {
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
 
-  const [hit, i] = findNearestPoint(M2ScreeenPts, mx, my, 25);
+  let [hit, i] = findNearestPoint(M2ScreeenPts, mx, my, 25);
+  if (i > imagePairs.length) {
+    i = i % imagePairs.length;
+  }
   if (hit) {
     calculateM2(imagePairs[i]);
 
@@ -658,9 +658,17 @@ function scalesForPlots(canvas, margin, xData, yData) {
   return [X, Y];
 }
 function drawM2() {
+  const gd = imagePairs.map(s => s.gridsDistance);
+  const m2 = imagePairs.map(s => s.M2[0]);
+  const m2G = imagePairs.map(s => s.M2[1]);
+  const [X, Y] = scalesForPlots(canvasM2, marginPlot, gd, [...m2, ...m2G]);
+
   ctxM2.clearRect(0, 0, canvasM2.width, canvasM2.height);
-  plotGrid(canvasM2, ctxM2, imagePairs.map(s => s.gridsDistance), imagePairs.map(s => s.M2), "lightgray");
-  plotCurve(canvasM2, ctxM2, imagePairs.map(s => s.gridsDistance), imagePairs.map(s => s.M2), "red", null, null, M2ScreeenPts);
+  plotGrid(canvasM2, ctxM2, gd, [...m2, ...m2G], "lightgray");
+  plotCurve(canvasM2, ctxM2, gd, m2, "red", X, Y, M2ScreeenPts);
+  const M2GScreeenPts = []
+  plotCurve(canvasM2, ctxM2, gd, m2G, "green", X, Y, M2GScreeenPts);
+  M2ScreeenPts.push(...M2GScreeenPts);
 }
 
 function drawSingle(i) {
@@ -687,7 +695,7 @@ function drawSingle(i) {
   ctx.stroke();
 
   document.getElementById("m2FileName").value = imagePairs[i].fileLabel;
-  document.getElementById("m2Output").value = imagePairs[i].M2.toFixed(3);
+  document.getElementById("m2Output").value = imagePairs[i].M2[0].toFixed(3);
 
 }
 
