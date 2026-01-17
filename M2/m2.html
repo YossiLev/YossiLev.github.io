@@ -566,7 +566,7 @@ function displayFileData(i, s) {
 }
 function displayFiles() {
   document.getElementById("tableFiles").innerHTML = 
-    `<table><tr><td>Label</td><td>Distance</td><td>Files</td><td>M-Square</td><td>Widths (mm)</td></tr>${imagePairs.map((s, i) => displayFileData(i, s)).join('')}</table>`;
+    `<table><tr><td>Label</td><td>Distance</td><td>Files</td><td>M²</td><td>Widths (mm)</td></tr>${imagePairs.map((s, i) => displayFileData(i, s)).join('')}</table>`;
 }
 const marginPlot = 40;
 // ---------- Plotting ----------
@@ -598,6 +598,7 @@ function drawMarker(canvas, ctx, p) {
 function drawTooltip(canvas, ctx, p, mx, my) {
   const text = `D = ${p.ox.toPrecision(6)} B = ${p.oy.toPrecision(4)}`;
 
+  const oldFont = ctx.font;
   ctx.font = "12px Arial";
   const pad = 4;
   const w = ctx.measureText(text).width + 2 * pad;
@@ -614,6 +615,7 @@ function drawTooltip(canvas, ctx, p, mx, my) {
 
   ctx.fillStyle = "#000";
   ctx.fillText(text, tx + pad, ty + 14);
+  ctx.font = oldFont;
 }
 
 canvasM2.addEventListener("mousemove", e => {
@@ -661,6 +663,7 @@ function drawM2() {
   const gd = imagePairs.map(s => s.gridsDistance);
   const m2 = imagePairs.map(s => s.M2[0]);
   const m2G = imagePairs.map(s => s.M2[1]);
+  const power = imagePairs.map(s => s.nearGaussianMatch.power * 100.0);
   const [X, Y] = scalesForPlots(canvasM2, marginPlot, gd, [...m2, ...m2G]);
 
   ctxM2.clearRect(0, 0, canvasM2.width, canvasM2.height);
@@ -669,6 +672,7 @@ function drawM2() {
   const M2GScreeenPts = []
   plotCurve(canvasM2, ctxM2, gd, m2G, "green", X, Y, M2GScreeenPts);
   M2ScreeenPts.push(...M2GScreeenPts);
+  plotHistogram(canvasM2, ctxM2, gd, power, "#00ff0080", X, Y);
 }
 
 function drawSingle(i) {
@@ -781,6 +785,22 @@ function plotCurve(canvas, ctx, x, y, color, X = null, Y = null, screenPts = nul
   }
   ctx.stroke();
 }
+
+function plotHistogram(canvas, ctx, x, y, color, X, Y) {
+  const oldFont = ctx.font;
+  ctx.font = "8px Arial";
+  for (let i = 0; i < x.length; i++) {
+    const px = X(x[i]);
+    const py = y[i];
+    ctx.fillStyle = color;
+    ctx.fillRect(px - 6, canvas.height - marginPlot - py, 12, py);
+    ctx.fillStyle = "black";
+    ctx.fillText(Math.round(py).toString(), px - 5, canvas.height - marginPlot - py + 12);
+  }
+  ctx.font = oldFont;
+
+}
+
 function plotGrid(canvas, ctx, x, y, color) {
   const nGrid = 10;
   const mxx = Math.max(...x);
@@ -790,6 +810,7 @@ function plotGrid(canvas, ctx, x, y, color) {
   const xGridStep = (mxx - mnx) / nGrid;
   const yGridStep = (mxy - mny) / nGrid;
   ctx.strokeStyle = color;
+  ctx.fillStyle = "black";
   ctx.beginPath();
   for (let i = 0; i <= nGrid; i++) {
     const gx = mnx + i * xGridStep;
@@ -872,6 +893,31 @@ function subtractBackground(I, centralFraction = 0.3) {
     return out;
     //return { signal: out, background };
 }
+
+function gaussianCouplingEfficiency(y, gaussian) {
+    const { x0, sigma, B } = gaussian;
+    const N = y.length;
+
+    let num = 0;
+    let denomSignal = 0;
+    let denomGauss = 0;
+
+    const w = Math.sqrt(2) * sigma;
+
+    for (let i = 0; i < N; i++) {
+        const I = Math.max(0, y[i] - B);
+        const E = Math.sqrt(I);
+        const G = Math.exp(-((i - x0) ** 2) / (w * w));
+
+        num += E * G;
+        denomSignal += I;
+        denomGauss += G * G;
+    }
+
+    const eta = (num * num) / (denomSignal * denomGauss);
+    return Math.min(Math.max(eta, 0), 1);
+}
+
 function matchGaussian(y, options = {}) {
     const N = y.length;
 
@@ -887,9 +933,12 @@ function matchGaussian(y, options = {}) {
 
     // ---------- peak estimate
     let peak = 0;
+    let normS = 0.0
     for (let i = 1; i < N; i++) {
+        normS += s[i] * s[i];
         if (s[i] > s[peak]) peak = i;
     }
+    normS = Math.sqrt(normS)
 
     let best = {
         score: -Infinity,
@@ -941,12 +990,14 @@ function matchGaussian(y, options = {}) {
         B + A * Math.exp(-((i - best.x0) ** 2) / (2 * best.sigma ** 2))
     );
 
+    const power = gaussianCouplingEfficiency(y, {x0: best.x0, sigma: best.sigma, B});
     return {
         x0: best.x0,
         sigma: best.sigma,
         A,
         B,
-        score: best.score,
+        score: best.score / normS,
+        power,
         fit
     };
 }
