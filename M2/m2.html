@@ -276,6 +276,7 @@ class imagePairData {
     this.lineCleanFar = [];
     this.statFar = [];
     this.M2 = [0, 0];
+    this.addedData = [];
   }
 }
 
@@ -324,6 +325,9 @@ function parseDirectoryCSV(text) {
     const fileLabel = cols[0].trim();
     if (!isNaN(distance) && fileLabel) {
       imagePairs.push(new imagePairData(fileLabel, distance));
+      for (let col = 2; col < cols.length; col++) {
+        imagePairs.addedData.push(parseFloat(cols[col].trim()));
+      }
     }
   }
   imagePairs.sort((a, b) => a.gridsDistance - b.gridsDistance);
