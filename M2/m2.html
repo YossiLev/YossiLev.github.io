@@ -166,6 +166,82 @@ th {
   display: flex;
   gap: 16px;
 }
+
+/* Group of switches laid out horizontally */
+.switch-group {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;          /* wraps on small screens */
+}
+
+/* Each switch+label unit */
+.switch-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Switch body */
+.switch {
+  position: relative;
+  width: 42px;
+  height: 22px;
+}
+
+/* Hide native checkbox */
+.switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Track */
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #cfd7df;
+  border-radius: 999px;
+  transition: background 0.25s ease;
+  cursor: pointer;
+}
+
+/* Knob */
+.slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 2px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  transition: transform 0.25s ease;
+}
+
+/* Checked */
+.switch input:checked + .slider {
+  background: #0969da;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+/* Keyboard focus */
+.switch input:focus-visible + .slider {
+  outline: 2px solid #0969da;
+  outline-offset: 2px;
+}
+
+/* Label text */
+.switch-text {
+  font-size: 13px;
+  color: #57606a;
+  user-select: none;
+}
+
 </style>
 
 
@@ -223,6 +299,30 @@ th {
       </div>
       <div class="canvas-panel">
         <h3>M² vs Distance</h3>
+        <div class="switch-group">
+          <div class="switch-row">
+            <label class="switch">
+              <input type="checkbox" id="bgToggleHistogram" checked>
+              <span class="slider"></span>
+            </label>
+            <span class="switch-text">Historgram</span>
+          </div>
+          <div class="switch-row">
+            <label class="switch">
+              <input type="checkbox" id="bgTogglePower">
+              <span class="slider"></span>
+            </label>
+            <span class="switch-text">Power</span>
+          </div>
+          <div class="switch-row">
+            <label class="switch">
+              <input type="checkbox" id="bgToggleBandWidth">
+              <span class="slider"></span>
+            </label>
+            <span class="switch-text">Bandwidth</span>
+          </div>
+
+        </div>
         <canvas id="plotM2" width="900" height="400"></canvas>
       </div>
       <p>File: <input type="text" id="m2FileName" size="20" readonly></p>
@@ -283,6 +383,17 @@ class imagePairData {
 let imagePairs = [];
 let crossings = null;
 let threshold = null;
+
+const bgToggleHistogram = document.getElementById("bgToggleHistogram");
+const bgTogglePower = document.getElementById("bgTogglePower");
+
+bgToggleHistogram.addEventListener("change", () => {
+  drawM2();
+});
+bgTogglePower.addEventListener("change", () => {
+  drawM2();
+});
+
 const inputSelect = document.getElementById("inputSelect");
 
 function selectConfig() {
@@ -324,10 +435,12 @@ function parseDirectoryCSV(text) {
     const distance = parseFloat(cols[1].trim());
     const fileLabel = cols[0].trim();
     if (!isNaN(distance) && fileLabel) {
-      imagePairs.push(new imagePairData(fileLabel, distance));
+      let pair = new imagePairData(fileLabel, distance);
       for (let col = 2; col < cols.length; col++) {
-        imagePairs.addedData.push(parseFloat(cols[col].trim()));
+        pair.addedData.push(parseFloat(cols[col].trim()));
       }
+      imagePairs.push(pair);
+
     }
   }
   imagePairs.sort((a, b) => a.gridsDistance - b.gridsDistance);
@@ -572,7 +685,7 @@ function displayFiles() {
   document.getElementById("tableFiles").innerHTML = 
     `<table><tr><td>Label</td><td>Distance</td><td>Files</td><td>M²</td><td>Widths (mm)</td></tr>${imagePairs.map((s, i) => displayFileData(i, s)).join('')}</table>`;
 }
-const marginPlot = 40;
+const marginPlot = 60;
 // ---------- Plotting ----------
 function findNearestPoint(screenPts, mx, my, radius) {
   let best = null;
@@ -667,7 +780,7 @@ function drawM2() {
   const gd = imagePairs.map(s => s.gridsDistance);
   const m2 = imagePairs.map(s => s.M2[0]);
   const m2G = imagePairs.map(s => s.M2[1]);
-  const power = imagePairs.map(s => s.nearGaussianMatch.power * 100.0);
+  const powerSingleMode = imagePairs.map(s => s.nearGaussianMatch.power * 100.0);
   const [X, Y] = scalesForPlots(canvasM2, marginPlot, gd, [...m2, ...m2G]);
 
   ctxM2.clearRect(0, 0, canvasM2.width, canvasM2.height);
@@ -676,7 +789,17 @@ function drawM2() {
   const M2GScreeenPts = []
   plotCurve(canvasM2, ctxM2, gd, m2G, "green", X, Y, M2GScreeenPts);
   M2ScreeenPts.push(...M2GScreeenPts);
-  plotHistogram(canvasM2, ctxM2, gd, power, "#00ff0080", X, Y);
+  if (bgToggleHistogram.checked) {
+    plotHistogram(canvasM2, ctxM2, gd, powerSingleMode, "#00ff0080", X, Y);
+  }
+ if (bgTogglePower.checked) {
+  if (imagePairs.filter(p => p.addedData.length < 1).length == 0) {
+    const power = imagePairs.map(p => p.addedData[0]);
+    plotCurve(canvasM2, ctxM2, gd, power, "purple", null, null, M2GScreeenPts);
+    M2ScreeenPts.push(...M2GScreeenPts);
+
+  }
+ }
 }
 
 function drawSingle(i) {
@@ -911,7 +1034,7 @@ function gaussianCouplingEfficiency(y, gaussian) {
     for (let i = 0; i < N; i++) {
         const I = Math.max(0, y[i] - B);
         const E = Math.sqrt(I);
-        const G = Math.exp(-((i - x0) ** 2) / (w * w));
+        const G = Math.sqrt(Math.exp(-((i - x0) ** 2) / (w * w)));
 
         num += E * G;
         denomSignal += I;
