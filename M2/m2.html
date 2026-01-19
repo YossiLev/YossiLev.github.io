@@ -615,7 +615,7 @@ function computeMSquared(nearGaussianMatch, I1, I2, dx, dz, lambda, aFactor) {
 
     const w1 = stats1[0];
     const w2 = stats2[0];
-    const w1G = nearGaussianMatch.sigma * Math.sqrt(2.0) * 2.0 * dx;
+    const w1G = nearGaussianMatch.sigma * 2.0 * dx;
 
     const A = aFactor;
     const B = dz;
@@ -675,7 +675,7 @@ function displayFileData(i, s) {
             <br>
             <span class="green">
               ${s.nearGaussianMatch
-                ? (s.nearGaussianMatch.sigma * 2 * Math.sqrt(2) * dxMicrons / 1000).toFixed(3)
+                ? (s.nearGaussianMatch.sigma * 2 * dxMicrons / 1000).toFixed(3)
                 : ""}
             </span>
           </td>
@@ -886,8 +886,8 @@ function drawLines(i) {
   if (pair.nearGaussianMatch) {
       ctxLines.strokeStyle = "green";
       ctxLines.beginPath();
-      let sx = (pair.nearGaussianMatch.x0 - pair.nearGaussianMatch.sigma * Math.sqrt(2.0)) * dxMM;
-      let ex = (pair.nearGaussianMatch.x0 + pair.nearGaussianMatch.sigma * Math.sqrt(2.0)) * dxMM;
+      let sx = (pair.nearGaussianMatch.x0 - pair.nearGaussianMatch.sigma) * dxMM;
+      let ex = (pair.nearGaussianMatch.x0 + pair.nearGaussianMatch.sigma) * dxMM;
       ctxLines.moveTo(X(sx), canvasLines.height / 2 + 10);
       ctxLines.lineTo(X(ex), canvasLines.height / 2 + 10);
       ctxLines.stroke();
@@ -1029,12 +1029,10 @@ function gaussianCouplingEfficiency(y, gaussian) {
     let denomSignal = 0;
     let denomGauss = 0;
 
-    const w = Math.sqrt(2) * sigma;
-
     for (let i = 0; i < N; i++) {
         const I = Math.max(0, y[i] - B);
         const E = Math.sqrt(I);
-        const G = Math.sqrt(Math.exp(-((i - x0) ** 2) / (w * w)));
+        const G = Math.sqrt(Math.exp(-((i - x0) ** 2) / (2.0 * sigma * sigma)));
 
         num += E * G;
         denomSignal += I;
