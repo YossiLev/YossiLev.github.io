@@ -195,21 +195,96 @@ function fluxAt(z,k,amps){
 const sim={
   lambda:1, phase:0, running:false, layers:[]
 };
+const startWall = {position: 0.0, n1: - 1, n2: 1};
+const walls=[]; /* wall = {position, n1, n2} */
+const startRay = {sWall: 0, direction: 1, amplitude: 1.0, intensity: 1.0, phase: 0, sTime: 0};
+const rays=[]; /* ray = {sWall, direction (1 left to right, -1 right to left), amplitude, phase, sTime, d1, d2} */
 
 const presets={
   "Free space":()=>[],
   "Partial reflection":()=>[{z:3,d:0.5,n:1.5,k:0}],
-  "Fabry–Pérot":()=>[
-    {z:3,d:0.2,n:2,k:0},
-    {z:4,d:0.2,n:2,k:0}
-  ],
-  "Anti-reflection λ/4":()=>[
-    {z:3,d:0.25,n:Math.sqrt(1.5),k:0}
-  ],
-  "Absorbing layer":()=>[
-    {z:3,d:0.8,n:1.5,k:0.4}
-  ]
+  "Fabry–Pérot":()=>[{z:3,d:0.2,n:2,k:0}, {z:4,d:0.2,n:2,k:0}],
+  "Anti-reflection λ/4":()=>[{z:3,d:0.25,n:Math.sqrt(1.5),k:0}],
+  "Absorbing layer":()=>[{z:3,d:0.8,n:1.5,k:0.4}]
 };
+
+function buildWalls() {
+  walls.length=0;
+  walls.push(startWall);
+  let nPrev=1;
+  sim.layers.forEach(L=>{
+    walls.push({position:L.z, n1:nPrev, n2:L.n});
+    nPrev=L.n;
+    walls.push({position:L.z+L.d, n1:L.n, n2:1});
+    nPrev=1;
+  });
+  walls.push({position: 10.0, n1: 1, n2: 1});
+}
+
+function buildRays() {
+  rays.length=0;
+  rays.push(startRay);
+  let nextRayIndex = 0;
+  while (nextRayIndex < rays.length) {
+    const ray = rays[nextRayIndex];
+    const nextWallIndex = ray.sWall + ray.direction;
+    const lastN = ray.direction === 1 ? walls[ray.sWall].n2 : walls[ray.sWall].n1;
+    if (nextWallIndex < 1 || nextWallIndex >= walls.length - 1) {
+      nextRayIndex++;
+      continue;
+    }
+    const wall = walls[nextWallIndex];
+    const n1 = ray.direction === 1 ? wall.n1 : wall.n2;
+    const n2 = ray.direction === 1 ? wall.n2 : wall.n1;
+    const r = (n2 - n1) / (n2 + n1);
+    const t = (2 * n1) / (n2 + n1);
+    const reflectedAmplitude = ray.amplitude * r;
+    const reflectedIntensity = reflectedAmplitude * reflectedAmplitude * n1;
+    const transmittedAmplitude = ray.amplitude * t;
+    const transmittedIntensity = transmittedAmplitude * transmittedAmplitude * n2;
+    const phase = ray.phase + Math.abs(wall.position - walls[ray.sWall].position) / sim.lambda * 2.0 * Math.PI * lastN;
+    const stime = ray.sTime + Math.abs(wall.position - walls[ray.sWall].position) * lastN;
+    if (reflectedIntensity > 0.000001) {
+      const addPhase = n2 > n1 ? Math.PI : 0;
+      const multAmpliture = n2 > n1 ? -1 : 1;
+      rays.push({
+        sWall: nextWallIndex,
+        direction: -ray.direction,
+        amplitude: reflectedAmplitude * multAmpliture,
+        intensity: reflectedIntensity,
+        phase: phase + addPhase,
+        sTime: ray.sTime
+      });
+    }
+    if (transmittedIntensity > 0.000001) {
+      rays.push({
+        sWall: nextWallIndex,
+        direction: ray.direction,
+        amplitude: transmittedAmplitude,
+        intensity: transmittedIntensity,
+        phase: phase,
+        sTime: ray.sTime
+      });
+    }
+    nextRayIndex++;
+  }
+}
+
+function buildTotalRays() {
+  for (const wall of walls) {
+    wall.amplitudeForwards = c(0, 0);
+    wall.amplitudeBackwards = c(0, 0);
+  }
+  for (let ray of rays) {
+    const wall = walls[ray.sWall];
+    if (ray.direction === 1) {
+      wall.amplitudeForwards = add(wall.amplitudeForwards, mul(c(ray.amplitude), expi(ray.phase)));
+    } else {
+      wall.amplitudeBackwards = add(wall.amplitudeBackwards, mul(c(ray.amplitude), expi(ray.phase)));
+    }
+  }
+}
+
 
 const presetSelect=document.getElementById("presetSelect");
 Object.keys(presets).forEach(p=>{
@@ -271,7 +346,82 @@ function draw(){
   const k=2*Math.PI/sim.lambda;
   const amps=solveStack(k,sim.layers);
 
+
+  function drawWaves() {
+    for (let iWall = 0; iWall < walls.length - 1; iWall++) {
+      const wall=walls[iWall];
+      if (abs2(wall.amplitudeForwards) > 0.00000000001) {
+        let start = 1;
+        ctx.strokeStyle="green";
+        ctx.beginPath();
+        const iFrom =Math.floor(wall.position*canvas.width / zMax);
+        const iTo = Math.floor(walls[iWall + 1].position * canvas.width / zMax);
+        for(let i=iFrom; i < iTo; i++){
+          const z = i * zMax / canvas.width;
+          const E=mul(wall.amplitudeForwards, expi(k * wall.n2 *z + sim.phase));
+          const x = i;
+          const y=200.0 + E.re * 20.0;
+          if (start) {
+            ctx.moveTo(x, y);
+            start = 0;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        ctx.stroke();
+      }
+      if (abs2(wall.amplitudeBackwards) > 0.00000000001) {
+        let start = 1;
+        ctx.strokeStyle="red";
+        ctx.beginPath();
+        const iTo =Math.floor(wall.position*canvas.width / zMax);
+        const iFrom = Math.floor(walls[iWall - 1].position * canvas.width / zMax);
+        for(let i=iFrom; i < iTo; i++){
+          const z = (iTo - i) * zMax / canvas.width;
+          const E=mul(wall.amplitudeBackwards, expi(k * wall.n1 *z + sim.phase));
+          const x = i;
+          const y=300.0 + E.re * 20.0;
+          if (start) {
+            ctx.moveTo(x, y);
+            start = 0;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        ctx.stroke();
+      }
+      // combined wave
+      {
+        const wall1=walls[iWall];
+        const wall2=walls[iWall + 1];
+        let start = 1;
+        ctx.strokeStyle="purple";
+        ctx.beginPath();
+        const iFrom =Math.floor(wall1.position*canvas.width / zMax);
+        const iTo = Math.floor(wall2.position * canvas.width / zMax);
+        for(let i=iFrom; i < iTo; i++){
+          const z1 = i * zMax / canvas.width;
+          const z2 = (iTo - i) * zMax / canvas.width;
+          const E1=mul(wall1.amplitudeForwards, expi(k * wall1.n2 *z1 + sim.phase));
+          const E2=mul(wall2.amplitudeBackwards, expi(k * wall2.n1 *z2 + sim.phase));
+          const E=add(E1,E2);
+          const x = i;
+          const y=400.0 + E.re * 20.0;
+          if (start) {
+            ctx.moveTo(x, y);
+            start = 0;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        ctx.stroke();
+      }
+
+    }
+  }
+  
   function drawWave(y0){
+
     ctx.beginPath();
     for(let i=0;i<canvas.width;i++){
       const z=zMax*i/canvas.width;
@@ -283,30 +433,85 @@ function draw(){
     ctx.stroke();
   }
 
-  ctx.strokeStyle="#000"; drawWave(0);
+  function drawArrow(ctx, x1, x2, y1) {
+    const headlen = 5; 
+    const angle = Math.atan2(0, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y1);
+    ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y1 - headlen * Math.sin(angle - Math.PI / 6));
+    ctx.moveTo(x2, y1);
+    ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y1 - headlen * Math.sin(angle + Math.PI / 6));
+    ctx.stroke();
+  }
+
+  function drawRays(){
+    ctx.strokeStyle="orange";
+    rays.forEach((ray, iRay)=>{
+      const startWall=walls[ray.sWall];
+      const endWall=walls[ray.sWall+ray.direction];
+      const n = ray.direction===1?startWall.n2:startWall.n1;
+      //const n2=ray.direction===1?endWall.n1:endWall.n2;
+      const x1=(startWall.position/zMax)*canvas.width;
+      const x2=(endWall.position/zMax)*canvas.width;
+      const y1=50 + 12*iRay;
+      const y2=y1;
+      drawArrow(ctx, x1, x2, y1);
+      ctx.fillStyle="black";
+      ctx.fillText(`I=${ray.intensity.toFixed(4)} P=${ray.phase.toFixed(3)}`, (x1+x2)/2, y1 - 5);
+    });
+  }
+
+  function drawTotalRays(){
+    ctx.strokeStyle="green";
+    walls.forEach((wall, iWall)=>{
+      const x=wall.position/zMax*canvas.width;
+      const y=500 + 12*iWall;
+      const Af=wall.amplitudeForwards;
+      const Ab=wall.amplitudeBackwards;
+      const If=abs2(Af) * wall.n2;
+      const Ib=abs2(Ab) * wall.n1;
+      if (If > 0.0000000001) {
+        drawArrow(ctx, x, x + 20, y);
+        ctx.fillStyle="black";
+        ctx.fillText(`I=${If.toFixed(3)}`, x + 25, y - 5);
+      }
+      if (Ib > 0.0000000001) {
+        drawArrow(ctx, x, x - 20, y + 15);
+        ctx.fillStyle="black";
+        ctx.fillText(`I=${Ib.toFixed(3)}`, x - 25, y + 20);
+      }
+    });
+  }
+
+  ctx.strokeStyle="#000"; //drawWave(0);
 
   sim.layers.forEach((L,i)=>{
     ctx.fillStyle="rgba(180,180,180,0.3)";
-    ctx.fillRect(canvas.width*L.z/zMax,(i+1)*H,
+    ctx.fillRect(canvas.width*L.z/zMax,10,
                  canvas.width*L.d/zMax,H);
-    ctx.strokeStyle="#2563eb";
-    drawWave((i+1)*H);
+    // ctx.strokeStyle="#2563eb";
+    // drawWave((i+1)*H);
   });
 
-  ctx.strokeStyle="#16a34a"; drawWave((strips-1)*H);
+  // ctx.strokeStyle="#16a34a"; drawWave((strips-1)*H);
 
-  /* ENERGY FLUX ARROWS */
-  ctx.strokeStyle="red";
-  for(let i=0;i<canvas.width;i+=40){
-    const z=zMax*i/canvas.width;
-    const f=fluxAt(z,k,amps);
-    const len=Math.min(20,10*f);
-    ctx.beginPath();
-    ctx.moveTo(i,canvas.height-10);
-    ctx.lineTo(i+len,canvas.height-10);
-    ctx.lineTo(i+len,canvas.height-20);
-    ctx.stroke();
-  }
+  // /* ENERGY FLUX ARROWS */
+  // ctx.strokeStyle="red";
+  // for(let i=0;i<canvas.width;i+=40){
+  //   const z=zMax*i/canvas.width;
+  //   const f=fluxAt(z,k,amps);
+  //   const len=Math.min(20,10*f);
+  //   ctx.beginPath();
+  //   ctx.moveTo(i,canvas.height-10);
+  //   ctx.lineTo(i+len,canvas.height-10);
+  //   ctx.lineTo(i+len,canvas.height-20);
+  //   ctx.stroke();
+  // }
+
+  drawRays();
+  drawTotalRays();
+  drawWaves();
 }
 
 /* =====================================================
@@ -324,6 +529,14 @@ loop();
 runBtn.onclick=()=>{
   sim.running=!sim.running;
   runBtn.textContent=sim.running?"Pause":"Run";
+  if (sim.running) {
+    buildWalls();
+    buildRays();
+    buildTotalRays();
+    console.log("Walls:", walls);
+    console.log("Rays:", rays);
+
+  }
 };
 lambdaInput.onchange=e=>sim.lambda=parseFloat(e.target.value);
 helpBtn.onclick=()=>helpOverlay.style.display="block";
