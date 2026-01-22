@@ -23,7 +23,7 @@ body{
 #topbar button{background:var(--accent); color:white; cursor:pointer;}
 #container{display:flex; height:calc(100vh - 52px);}
 #controls{
-  width:330px; background:var(--panel);
+  min-width:180px; width:180px; background:var(--panel);
   border-right:1px solid var(--border);
   padding:12px; overflow:auto;
 }
@@ -34,13 +34,13 @@ body{
 }
 .layerHeader{display:flex; justify-content:space-between; font-weight:600;}
 .layerGrid{
-  display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:13px;
+  display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:13px; padding:10px;
 }
 .layerGrid input{width:100%; padding:4px;}
 canvas{flex:1; background:white;}
 
 #helpOverlay{
-  position:fixed; inset:0; background:rgba(0,0,0,0.6);
+  position:fixed; inset:0; background:rgba(0,0,0,0.4);
   display:none; z-index:10;
 }
 .helpFrame{
@@ -71,9 +71,9 @@ canvas{flex:1; background:white;}
 </div>
 
 <div id="helpOverlay" onclick="this.style.display='none'">
-  <div class="helpFrame" style="top:20%; left:10%;">Incident / reflected wave</div>
-  <div class="helpFrame" style="top:45%; left:40%;">Internal standing waves</div>
-  <div class="helpFrame" style="top:70%; left:15%;">Energy flux arrows</div>
+  <div class="helpFrame" style="top:200px; left:10%; color: green;">Forward waves</div>
+  <div class="helpFrame" style="top:300px; left:10%; color: red;">Backward waves</div>
+  <div class="helpFrame" style="top:400px; left:10%; color: purple">Combined forward and backward waves</div>
 </div>
 
 <script>
@@ -100,94 +100,94 @@ function abs2(z){return z.re*z.re+z.im*z.im;}
 /* =====================================================
    TRANSFER MATRIX
    ===================================================== */
-function interfaceM(n1,n2){
-  const r = div(sub(n2,n1), add(n2,n1));
-  const t = div(c(2*n1.re,2*n1.im), add(n2,n1));
-  return [
-    [div(c(1),t), div(r,t)],
-    [div(r,t), div(c(1),t)]
-  ];
-}
+// function interfaceM(n1,n2){
+//   const r = div(sub(n2,n1), add(n2,n1));
+//   const t = div(c(2*n1.re,2*n1.im), add(n2,n1));
+//   return [
+//     [div(c(1),t), div(r,t)],
+//     [div(r,t), div(c(1),t)]
+//   ];
+// }
 
-function propagationM(k,n,d){
-  const phi = mul(c(0,k*d), n); // i*k*n*d
-  return [
-    [expc(phi), c(0)],
-    [c(0), expc(c(-phi.re,-phi.im))]
-  ];
-}
+// function propagationM(k,n,d){
+//   const phi = mul(c(0,k*d), n); // i*k*n*d
+//   return [
+//     [expc(phi), c(0)],
+//     [c(0), expc(c(-phi.re,-phi.im))]
+//   ];
+// }
 
-function matMul(A,B){
-  return [
-    [
-      add(mul(A[0][0],B[0][0]),mul(A[0][1],B[1][0])),
-      add(mul(A[0][0],B[0][1]),mul(A[0][1],B[1][1]))
-    ],
-    [
-      add(mul(A[1][0],B[0][0]),mul(A[1][1],B[1][0])),
-      add(mul(A[1][0],B[0][1]),mul(A[1][1],B[1][1]))
-    ]
-  ];
-}
+// function matMul(A,B){
+//   return [
+//     [
+//       add(mul(A[0][0],B[0][0]),mul(A[0][1],B[1][0])),
+//       add(mul(A[0][0],B[0][1]),mul(A[0][1],B[1][1]))
+//     ],
+//     [
+//       add(mul(A[1][0],B[0][0]),mul(A[1][1],B[1][0])),
+//       add(mul(A[1][0],B[0][1]),mul(A[1][1],B[1][1]))
+//     ]
+//   ];
+// }
 
-function solveStack(k,layers){
-  let M=[[c(1),c(0)],[c(0),c(1)]];
-  let nPrev=c(1);
+// function solveStack(k,layers){
+//   let M=[[c(1),c(0)],[c(0),c(1)]];
+//   let nPrev=c(1);
 
-  for(const L of layers){
-    const n=c(L.n,L.k);
-    M=matMul(interfaceM(nPrev,n),M);
-    M=matMul(propagationM(k,n,L.d),M);
-    nPrev=n;
-  }
-  M=matMul(interfaceM(nPrev,c(1)),M);
+//   for(const L of layers){
+//     const n=c(L.n,L.k);
+//     M=matMul(interfaceM(nPrev,n),M);
+//     M=matMul(propagationM(k,n,L.d),M);
+//     nPrev=n;
+//   }
+//   M=matMul(interfaceM(nPrev,c(1)),M);
 
-  const Aplus=c(1);
-  const Aminus=div(mul(c(-1),M[1][0]),M[1][1]);
-  return {Aplus,Aminus};
-}
+//   const Aplus=c(1);
+//   const Aminus=div(mul(c(-1),M[1][0]),M[1][1]);
+//   return {Aplus,Aminus};
+// }
 
 /* =====================================================
    FIELD EVALUATION
    ===================================================== */
-function fieldAt(z,k,amps){
-  let z0=0;
-  let Ap=amps.Aplus, Am=amps.Aminus;
+// function fieldAt(z,k,amps){
+//   let z0=0;
+//   let Ap=amps.Aplus, Am=amps.Aminus;
 
-  for(const L of sim.layers){
-    if(z<L.z){
-      return add(mul(Ap,expi(k*z)),mul(Am,expi(-k*z)));
-    }
-    const dz=L.z-z0;
-    Ap=mul(Ap,expi(k*dz));
-    Am=mul(Am,expi(-k*dz));
+//   for(const L of sim.layers){
+//     if(z<L.z){
+//       return add(mul(Ap,expi(k*z)),mul(Am,expi(-k*z)));
+//     }
+//     const dz=L.z-z0;
+//     Ap=mul(Ap,expi(k*dz));
+//     Am=mul(Am,expi(-k*dz));
 
-    if(z<=L.z+L.d){
-      const n=c(L.n,L.k);
-      const zz=z-L.z;
-      return add(
-        mul(Ap,expc(mul(c(0,k*zz),n))),
-        mul(Am,expc(mul(c(0,-k*zz),n)))
-      );
-    }
-    const n=c(L.n,L.k);
-    Ap=mul(Ap,expc(mul(c(0,k*L.d),n)));
-    Am=mul(Am,expc(mul(c(0,-k*L.d),n)));
-    z0=L.z+L.d;
-  }
-  return add(
-    mul(Ap,expi(k*(z-z0))),
-    mul(Am,expi(-k*(z-z0)))
-  );
-}
+//     if(z<=L.z+L.d){
+//       const n=c(L.n,L.k);
+//       const zz=z-L.z;
+//       return add(
+//         mul(Ap,expc(mul(c(0,k*zz),n))),
+//         mul(Am,expc(mul(c(0,-k*zz),n)))
+//       );
+//     }
+//     const n=c(L.n,L.k);
+//     Ap=mul(Ap,expc(mul(c(0,k*L.d),n)));
+//     Am=mul(Am,expc(mul(c(0,-k*L.d),n)));
+//     z0=L.z+L.d;
+//   }
+//   return add(
+//     mul(Ap,expi(k*(z-z0))),
+//     mul(Am,expi(-k*(z-z0)))
+//   );
+// }
 
 /* =====================================================
    ENERGY FLUX (Poynting proxy)
    ===================================================== */
-function fluxAt(z,k,amps){
-  const E=fieldAt(z,k,amps);
-  return abs2(E);
-}
+// function fluxAt(z,k,amps){
+//   const E=fieldAt(z,k,amps);
+//   return abs2(E);
+// }
 
 /* =====================================================
    SIM STATE + PRESETS
@@ -236,7 +236,7 @@ function buildRays() {
     const wall = walls[nextWallIndex];
     const n1 = ray.direction === 1 ? wall.n1 : wall.n2;
     const n2 = ray.direction === 1 ? wall.n2 : wall.n1;
-    const r = (n2 - n1) / (n2 + n1);
+    const r = (n1 - n2) / (n2 + n1);
     const t = (2 * n1) / (n2 + n1);
     const reflectedAmplitude = ray.amplitude * r;
     const reflectedIntensity = reflectedAmplitude * reflectedAmplitude * n1;
@@ -344,10 +344,11 @@ function draw(){
   const H=canvas.height/strips;
   const zMax=10;
   const k=2*Math.PI/sim.lambda;
-  const amps=solveStack(k,sim.layers);
-
+  //const amps=solveStack(k,sim.layers);
 
   function drawWaves() {
+    ctx.lineWidth=3;
+
     for (let iWall = 0; iWall < walls.length - 1; iWall++) {
       const wall=walls[iWall];
       if (abs2(wall.amplitudeForwards) > 0.00000000001) {
@@ -418,20 +419,22 @@ function draw(){
       }
 
     }
+    ctx.lineWidth=1;
+
   }
   
-  function drawWave(y0){
+//   function drawWave(y0){
 
-    ctx.beginPath();
-    for(let i=0;i<canvas.width;i++){
-      const z=zMax*i/canvas.width;
-      const E=fieldAt(z,k,amps);
-      const y=y0+H/2-0.4*H*
-        (E.re*Math.cos(sim.phase)-E.im*Math.sin(sim.phase));
-      i?ctx.lineTo(i,y):ctx.moveTo(i,y);
-    }
-    ctx.stroke();
-  }
+//     ctx.beginPath();
+//     for(let i=0;i<canvas.width;i++){
+//       const z=zMax*i/canvas.width;
+//       const E=fieldAt(z,k,amps);
+//       const y=y0+H/2-0.4*H*
+//         (E.re*Math.cos(sim.phase)-E.im*Math.sin(sim.phase));
+//       i?ctx.lineTo(i,y):ctx.moveTo(i,y);
+//     }
+//     ctx.stroke();
+//   }
 
   function drawArrow(ctx, x1, x2, y1) {
     const headlen = 5; 
@@ -446,7 +449,6 @@ function draw(){
   }
 
   function drawRays(){
-    ctx.strokeStyle="orange";
     rays.forEach((ray, iRay)=>{
       const startWall=walls[ray.sWall];
       const endWall=walls[ray.sWall+ray.direction];
@@ -456,9 +458,10 @@ function draw(){
       const x2=(endWall.position/zMax)*canvas.width;
       const y1=50 + 12*iRay;
       const y2=y1;
+      ctx.strokeStyle=ray.direction === 1 ? "green" : "red";
       drawArrow(ctx, x1, x2, y1);
       ctx.fillStyle="black";
-      ctx.fillText(`I=${ray.intensity.toFixed(4)} P=${ray.phase.toFixed(3)}`, (x1+x2)/2, y1 - 5);
+      ctx.fillText(`I=${ray.intensity.toFixed(4)} A=${ray.amplitude.toFixed(4)} P=${(ray.phase/ (2 * Math.PI)).toFixed(3)}`, (x1+x2)/2, y1 - 1);
     });
   }
 
@@ -466,20 +469,20 @@ function draw(){
     ctx.strokeStyle="green";
     walls.forEach((wall, iWall)=>{
       const x=wall.position/zMax*canvas.width;
-      const y=500 + 12*iWall;
+      const y=500 + 30*iWall;
       const Af=wall.amplitudeForwards;
       const Ab=wall.amplitudeBackwards;
       const If=abs2(Af) * wall.n2;
       const Ib=abs2(Ab) * wall.n1;
       if (If > 0.0000000001) {
-        drawArrow(ctx, x, x + 20, y);
+        drawArrow(ctx, x, x + 20, y + 15);
         ctx.fillStyle="black";
-        ctx.fillText(`I=${If.toFixed(3)}`, x + 25, y - 5);
+        ctx.fillText(`I=${If.toFixed(5)}`, x + 25, y + 15 - 3);
       }
       if (Ib > 0.0000000001) {
-        drawArrow(ctx, x, x - 20, y + 15);
+        drawArrow(ctx, x, x - 20, y);
         ctx.fillStyle="black";
-        ctx.fillText(`I=${Ib.toFixed(3)}`, x - 25, y + 20);
+        ctx.fillText(`I=${Ib.toFixed(5)}`, x - 25, y - 3);
       }
     });
   }
@@ -489,7 +492,7 @@ function draw(){
   sim.layers.forEach((L,i)=>{
     ctx.fillStyle="rgba(180,180,180,0.3)";
     ctx.fillRect(canvas.width*L.z/zMax,10,
-                 canvas.width*L.d/zMax,H);
+                 canvas.width*L.d/zMax,800);
     // ctx.strokeStyle="#2563eb";
     // drawWave((i+1)*H);
   });
