@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Professional Gaussian Beam Solver</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --success: #28a745;
+            --warning: #e67e22;
+            --danger: #dc3545;
+            --dark: #1e1e1e;
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 1000px; margin: 20px auto; padding: 20px; background: var(--bg); color: #333; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        
+        .element-row { display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e1e4e8; }
+        .btn-calc { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-size: 1.1em; cursor: pointer; font-weight: bold; transition: opacity 0.2s; margin-bottom: 10px; }
+        .btn-calc:hover { opacity: 0.9; }
+
+        .btn-secondary { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; }
+
+        .direction-box { text-align: center; padding: 15px; background: #e9ecef; border-radius: 8px; margin-bottom: 20px; border: 2px dashed #adb5bd; }
+
+        /* Results Styling */
+        #results { background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid #e1e4e8; min-height: 50px; }
+        .result-section { padding: 20px; border-bottom: 1px solid #f0f0f0; }
+        .result-section:last-child { border-bottom: none; }
+        .result-header { font-size: 0.75em; text-transform: uppercase; color: #888; font-weight: 800; letter-spacing: 1px; margin-bottom: 12px; display: block; }
+        .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+        .result-item { background: #fcfcfc; padding: 12px; border: 1px solid #f0f0f0; border-radius: 8px; }
+        .result-label { font-size: 0.8em; color: #666; display: block; margin-bottom: 4px; }
+        .result-value { font-family: 'Consolas', monospace; font-size: 1.15em; color: var(--primary); font-weight: bold; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; font-weight: bold; margin-bottom: 10px; color: white; }
+
+        /* Matrix Styling */
+        .matrix-wrapper { display: inline-flex; align-items: center; font-family: 'Consolas', monospace; position: relative; padding: 0 15px; margin-top: 5px; }
+        .matrix-wrapper::before, .matrix-wrapper::after { content: ""; position: absolute; top: 0; bottom: 0; width: 10px; border: 2px solid #333; }
+        .matrix-wrapper::before { left: 0; border-right: none; }
+        .matrix-wrapper::after { right: 0; border-left: none; }
+        .matrix-content { display: grid; grid-template-columns: auto auto; gap: 10px 30px; padding: 10px 5px; text-align: right; }
+        .matrix-cell { font-size: 1.1em; color: #333; white-space: nowrap; }
+
+        .toolbar { display: flex; gap: 10px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <h1>Bi-Directional Gaussian Solver</h1>
+
+    <div class="direction-box">
+        <label>Propagation Mode:</label>
+        <select id="mode" style="width: auto; font-weight: bold; font-size: 1.1em; color: var(--primary);">
+            <option value="forward">FORWARD: Input → Find Output</option>
+            <option value="backward">BACKWARD: Output → Find Input</option>
+        </select>
+    </div>
+
+    <div class="card">
+        <div class="toolbar">
+            <button class="btn-outline" onclick="saveSystem()">💾 Save System</button>
+            <button class="btn-outline" onclick="document.getElementById('fileInput').click()">📂 Load System</button>
+            <input type="file" id="fileInput" style="display:none" onchange="loadSystem(event)" accept=".json">
+        </div>
+        <h2>1. Known State (Reference Side)</h2>
+        <div class="grid">
+            <div><label>Wavelength [nm]</label><input type="number" id="wl" value="633"></div>
+            <div><label>Beam Radius (w) [mm]</label><input type="text" id="w_ref" placeholder="e.g. 1.2"></div>
+            <div><label>Curvature (R) [cm]</label><input type="text" id="r_ref" value="Infinity"></div>
+            <div><label>Rayleigh Range (zR) [mm]</label><input type="text" id="zr_ref" placeholder=""></div>
+        </div>
+    </div>
+	
+    <div class="card" style="background: #e3f2fd; border: 1px solid #90caf9;">
+        <h2 style="color: #1565c0; border-bottom-color: #90caf9;">Quick Converter: Waist ↔ Rayleigh</h2>
+        <div class="grid">
+            <div><label>Converter λ [nm]</label><input type="number" id="quick_wl" placeholder="Uses main λ" oninput="syncAndConvert()"></div>
+            <div><label>Waist (w0) [mm]</label><input type="number" id="quick_w" oninput="convertWaistToZR()"></div>
+            <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: #1565c0; padding-top: 15px;">⇄</div>
+            <div><label>Rayleigh Range (zR) [mm]</label><input type="number" id="quick_zr" oninput="convertZRToWaist()"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>2. Optical System (Order: Input to Output)</h2>
+        <div id="elements-container"></div>
+        <div style="display: flex; gap: 10px;">
+            <select id="el-type" style="flex-grow: 1;">
+                <option value="space">Free Space (mm)</option>
+                <option value="lens">Thin Lens (f in mm)</option>
+                <option value="mirror">Curved Mirror (R in mm)</option>
+                <option value="interface">Interface (R_mm, n1, n2)</option>
+            </select>
+            <button class="btn-secondary" onclick="addElement()">+ Add Element</button>
+        </div>
+    </div>
+
+    <button class="btn-calc" onclick="solve()">Calculate Propagation</button>
+
+    <div class="card" style="padding:0;">
+        <div id="results" style="padding:20px;">
+            <span style="color:#888;">Configure your system and click Calculate...</span>
+        </div>
+    </div>
+
+    <script>
+        function addElement(data = null) {
+            const type = data ? data.type : document.getElementById('el-type').value;
+            const container = document.getElementById('elements-container');
+            const id = Date.now() + Math.random();
+            const div = document.createElement('div');
+            div.className = 'element-row';
+            div.id = `el-${id}`;
+            div.dataset.type = type;
+
+            let inputs = '';
+            if (type === 'interface') {
+                inputs = `R: <input style="width:60px" class="val" value="${data ? data.v : 50}"> 
+                          n1: <input style="width:45px" class="n1" value="${data ? data.n1 : 1}"> 
+                          n2: <input style="width:45px" class="n2" value="${data ? data.n2 : 1.5}">`;
+            } else {
+                inputs = `Value: <input style="width:100px" class="val" value="${data ? data.v : 100}">`;
+            }
+
+            div.innerHTML = `<b style="width:85px">${type.toUpperCase()}</b> ${inputs} 
+                             <button onclick="this.parentElement.remove()" style="margin-left:auto; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold;">✕</button>`;
+            container.appendChild(div);
+        }
+
+        function solve() {
+            const mode = document.getElementById('mode').value;
+            const L = parseFloat(document.getElementById('wl').value) * 1e-6;
+            let w = parseVal(document.getElementById('w_ref').value);
+            let R = parseVal(document.getElementById('r_ref').value) * 10;
+            let zR = parseVal(document.getElementById('zr_ref').value);
+
+            if (!isNaN(w)) zR = (Math.PI * w * w) / L;
+            else if (!isNaN(zR)) w = Math.sqrt((zR * L) / Math.PI);
+            else { alert("Provide Radius (w) or Rayleigh Range (zR)"); return; }
+
+            let q_inv_re = (R === Infinity || isNaN(R)) ? 0 : 1/R;
+            let q_inv_im = -1/zR;
+            let q_ref = complexInv(q_inv_re, q_inv_im);
+
+            let A=1, B=0, C=0, D=1;
+            document.querySelectorAll('.element-row').forEach(row => {
+                let eA=1, eB=0, eC=0, eD=1;
+                const v = parseFloat(row.querySelector('.val')?.value || 0);
+                const type = row.dataset.type;
+                if (type === 'space') { eB = v; }
+                else if (type === 'lens') { eC = -1/v; }
+                else if (type === 'mirror') { eC = -2/v; }
+                else if (type === 'interface') {
+                    const n1 = parseFloat(row.querySelector('.n1').value);
+                    const n2 = parseFloat(row.querySelector('.n2').value);
+                    eC = (n1-n2)/(v*n2); eD = n1/n2;
+                }
+                let nA = eA*A + eB*C; let nB = eA*B + eB*D;
+                let nC = eC*A + eD*C; let nD = eC*B + eD*D;
+                A=nA; B=nB; C=nC; D=nD;
+            });
+
+            let fA, fB, fC, fD;
+            if (mode === 'forward') { fA=A; fB=B; fC=C; fD=D; }
+            else { let det = (A*D)-(B*C); fA=D/det; fB=-B/det; fC=-C/det; fD=A/det; }
+
+            let num = { re: fA*q_ref.re + fB, im: fA*q_ref.im };
+            let den = { re: fC*q_ref.re + fD, im: fC*q_ref.im };
+            let q_res = complexDiv(num, den);
+            let res_inv = complexInv(q_res.re, q_res.im);
+            
+            let Rf = (Math.abs(res_inv.re) < 1e-12) ? Infinity : 1/res_inv.re;
+            let zRf = q_res.im;
+            let wf = Math.sqrt(-L/ (Math.PI * res_inv.im));
+            let d_waist = q_res.re;
+
+            const modeColor = mode === 'forward' ? 'var(--success)' : 'var(--danger)';
+            
+            document.getElementById('results').innerHTML = `
+                <div class="result-section" style="background: #f8f9fa;">
+                    <span class="badge" style="background:${modeColor}">${mode.toUpperCase()} PROPAGATION</span>
+                    <div style="font-size: 0.9em; color: #666;">${mode === 'forward' ? 'Output state result' : 'Initial state reconstruction'}</div>
+                </div>
+                <div class="result-section">
+                    <span class="result-header">Beam Properties</span>
+                    <div class="result-grid">
+                        <div class="result-item"><span class="result-label">Radius (w)</span><span class="result-value">${wf.toFixed(5)} mm</span></div>
+                        <div class="result-item"><span class="result-label">Curvature (R)</span><span class="result-value">${isFinite(Rf) ? (Rf*0.1).toFixed(5) + ' cm' : 'Infinity'}</span></div>
+                        <div class="result-item"><span class="result-label">Rayleigh (zR)</span><span class="result-value">${zRf.toFixed(5)} mm</span></div>
+                    </div>
+                </div>
+                <div class="result-section">
+                    <span class="result-header">Waist Analysis</span>
+                    <div class="result-grid">
+                        <div class="result-item" style="border-left:4px solid var(--warning)"><span class="result-label">Dist. to Waist</span><span class="result-value" style="color:var(--warning)">${d_waist.toFixed(5)} mm</span></div>
+                        <div class="result-item" style="border-left:4px solid var(--warning)"><span class="result-label">Waist Size (w0)</span><span class="result-value" style="color:var(--warning)">${(Math.sqrt((Math.abs(zRf) * L) / Math.PI)).toFixed(5)} mm</span></div>
+                    </div>
+                </div>
+                <div class="result-section">
+                    <span class="result-header">Complex q Parameters</span>
+                    <div class="result-grid">
+                        <div class="result-item"><span class="result-label">Reference q</span><span class="result-value" style="font-size:0.9em; color:#444;">${q_ref.re.toFixed(5)} + ${q_ref.im.toFixed(5)}i</span></div>
+                        <div class="result-item"><span class="result-label">Resulting q</span><span class="result-value" style="font-size:0.9em; color:#444;">${q_res.re.toFixed(5)} + ${q_res.im.toFixed(5)}i</span></div>
+                    </div>
+                </div>
+                <div class="result-section">
+                    <span class="result-header">Transfer Matrix (ABCD)</span>
+                    <div class="matrix-wrapper">
+                        <div class="matrix-content">
+                            <div class="matrix-cell">${fA.toFixed(5)}</div><div class="matrix-cell">${fB.toFixed(5)}</div>
+                            <div class="matrix-cell">${fC.toFixed(5)}</div><div class="matrix-cell">${fD.toFixed(5)}</div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // Save/Load Logic
+        function saveSystem() {
+            const elements = Array.from(document.querySelectorAll('.element-row')).map(row => ({
+                type: row.dataset.type,
+                v: row.querySelector('.val')?.value,
+                n1: row.querySelector('.n1')?.value,
+                n2: row.querySelector('.n2')?.value
+            }));
+            const data = {
+                wl: document.getElementById('wl').value,
+                w_ref: document.getElementById('w_ref').value,
+                r_ref: document.getElementById('r_ref').value,
+                zr_ref: document.getElementById('zr_ref').value,
+                elements: elements
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'optical_system.json'; a.click();
+        }
+
+        function loadSystem(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = JSON.parse(e.target.result);
+                document.getElementById('wl').value = data.wl;
+                document.getElementById('w_ref').value = data.w_ref;
+                document.getElementById('r_ref').value = data.r_ref;
+                document.getElementById('zr_ref').value = data.zr_ref;
+                document.getElementById('elements-container').innerHTML = '';
+                data.elements.forEach(el => addElement(el));
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        function parseVal(s) { if (!s || s.toLowerCase().includes('inf')) return Infinity; return parseFloat(s); }
+        function complexInv(re, im) { let d = re*re + im*im; return { re: re/d, im: -im/d }; }
+        function complexDiv(n, d) { let den = d.re*d.re + d.im*d.im; return { re: (n.re*d.re + n.im*d.im)/den, im: (n.im*d.re - n.re*d.im)/den }; }
+        function getEffectiveWL() { return (document.getElementById('quick_wl').value || document.getElementById('wl').value) * 1e-6; }
+        function convertWaistToZR() { 
+            const L = getEffectiveWL(), w = parseFloat(document.getElementById('quick_w').value);
+            if (w > 0) document.getElementById('quick_zr').value = ((Math.PI * w * w) / L).toFixed(5);
+        }
+        function convertZRToWaist() { 
+            const L = getEffectiveWL(), zr = parseFloat(document.getElementById('quick_zr').value);
+            if (zr > 0) document.getElementById('quick_w').value = Math.sqrt((zr * L) / Math.PI).toFixed(5);
+        }
+        function syncAndConvert() { 
+            if (document.getElementById('quick_w').value) convertWaistToZR(); 
+            else if (document.getElementById('quick_zr').value) convertZRToWaist(); 
+        }
+    </script>
+</body>
+</html>
