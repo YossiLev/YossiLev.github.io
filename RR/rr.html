@@ -356,16 +356,20 @@ function draw(){
     for (let iWall = 0; iWall < walls.length - 1; iWall++) {
       const wall=walls[iWall];
       if (abs2(wall.amplitudeForwards) > 0.00000000001) {
-        let start = 1;
-        ctx.strokeStyle="green";
-        ctx.beginPath();
+        const Ev = [];
         const iFrom =Math.floor(wall.position*canvas.width / zMax);
         const iTo = Math.floor(walls[iWall + 1].position * canvas.width / zMax);
         for(let i=iFrom; i < iTo; i++){
           const z = i * zMax / canvas.width;
           const E=mul(wall.amplitudeForwards, expc(c(-wall.n2.im * z, k * wall.n2.re *z + sim.phase)));
+          Ev.push(E);
+        }
+        ctx.strokeStyle="green";
+        let start = 1;
+        ctx.beginPath();
+        for(let i=iFrom; i < iTo; i++){
           const x = i;
-          const y=200.0 + E.re * 20.0;
+          const y=200.0 + Ev[i-iFrom].re * 20.0;
           if (start) {
             ctx.moveTo(x, y);
             start = 0;
