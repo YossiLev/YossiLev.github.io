@@ -11,97 +11,44 @@
     </style>
 </head>
 <body>
-    <h2>ISO 11146 Beam Profiler (D4σ)</h2>
-    
-    <!-- Hidden stream image -->
-    <img id="stream" src="http://192.168.4.1" crossorigin="anonymous" style="display:none">
-    
+    <h2>Laser Beam Profiler</h2>
+    <button id="startBtn" style="padding:10px 20px; font-size:16px;">Connect to Camera</button>
+    <br><br>
+    <img id="stream" crossorigin="anonymous" style="display:none">
     <canvas id="canvas"></canvas>
     
     <div class="stats">
-        <div>Centroid X: <span id="cx" class="val">0</span></div>
-        <div>Centroid Y: <span id="cy" class="val">0</span></div>
         <div>Width Dx: <span id="dx" class="val">0</span> px</div>
         <div>Width Dy: <span id="dy" class="val">0</span> px</div>
     </div>
 
     <script>
+        const startBtn = document.getElementById('startBtn');
         const img = document.getElementById('stream');
         const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const ctx = canvas.getContext('2d', {willReadFrequently: true});
+
+        startBtn.onclick = () => {
+            // Add a timestamp to the URL to prevent the browser from using a cached (broken) connection
+            img.src = "http://192.168.4.1" + new Date().getTime();
+            startBtn.innerText = "Reconnecting...";
+        };
 
         function analyze() {
             if (img.complete && img.naturalWidth > 0) {
-                if (canvas.width !== img.naturalWidth) {
-                    canvas.width = img.naturalWidth;
-                    canvas.height = img.naturalHeight;
-                }
-
-                ctx.drawImage(img, 0, 0);
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-                const width = canvas.width;
-                const height = canvas.height;
-
-                let totalIntensity = 0;
-                let sumX = 0, sumY = 0;
-
-                // 1. First Pass: Find Centroid (Center of Mass)
-                for (let y = 0; y < height; y++) {
-                    for (let x = 0; x < width; x++) {
-                        const i = (y * width + x) * 4;
-                        // Using Green channel as proxy for intensity (or average)
-                        const intensity = data[i + 1]; 
-                        
-                        if (intensity > 10) { // Simple noise floor threshold
-                            totalIntensity += intensity;
-                            sumX += x * intensity;
-                            sumY += y * intensity;
-                        }
-                    }
-                }
-
-                const cx = sumX / totalIntensity;
-                const cy = sumY / totalIntensity;
-
-                // 2. Second Pass: Variance (Second Moment)
-                let varX = 0, varY = 0;
-                for (let y = 0; y < height; y++) {
-                    for (let x = 0; x < width; x++) {
-                        const i = (y * width + x) * 4;
-                        const intensity = data[i + 1];
-
-                        if (intensity > 10) {
-                            varX += intensity * Math.pow(x - cx, 2);
-                            varY += intensity * Math.pow(y - cy, 2);
-                        }
-                    }
-                }
-
-                // 3. D4σ Calculation: 4 * Standard Deviation
-                const sigmaX = Math.sqrt(varX / totalIntensity);
-                const sigmaY = Math.sqrt(varY / totalIntensity);
-                const D4sigmaX = 4 * sigmaX;
-                const D4sigmaY = 4 * sigmaY;
-
-                // Update UI
-                document.getElementById('cx').innerText = cx.toFixed(1);
-                document.getElementById('cy').innerText = cy.toFixed(1);
-                document.getElementById('dx').innerText = D4sigmaX.toFixed(2);
-                document.getElementById('dy').innerText = D4sigmaY.toFixed(2);
-
-                // Overlay visualization
-                ctx.strokeStyle = '#00ff00';
-                ctx.beginPath();
-                ctx.arc(cx, cy, 5, 0, 2 * Math.PI); // Draw centroid
-                ctx.stroke();
-                ctx.ellipse(cx, cy, D4sigmaX/2, D4sigmaY/2, 0, 0, 2 * Math.PI); // Draw D4s ellipse
-                ctx.stroke();
+                startBtn.style.display = "none"; // Hide button once stream is live
+                // ... (Keep the rest of the D4sigma math from the previous message here) ...
             }
             requestAnimationFrame(analyze);
         }
 
         img.onload = analyze;
+        
+        // Error handling if the ESP32 is not reachable
+        img.onerror = () => {
+            alert("Could not connect to ESP32. Ensure you are on the 'ESP32-CAM-Stream' WiFi.");
+        };
     </script>
 </body>
+
 </html>
