@@ -30,7 +30,7 @@
 
         startBtn.onclick = () => {
             // Add a timestamp to the URL to prevent the browser from using a cached (broken) connection
-            img.src = "http://192.168.4.1" + new Date().getTime();
+            img.src = "http://192.168.4.1/" + new Date().getTime();
             startBtn.innerText = "Reconnecting...";
         };
 
