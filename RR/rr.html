@@ -157,7 +157,8 @@ canvas{flex:1; background:white;}
   <div id="controls">
     <h3>Layers</h3>
     <div id="layers"></div>
-    <button onclick="addLayer()">Add layer</button>
+    <button onclick="addLayer(0)">Add layer</button>
+    <button onclick="addLayer(1)">Repeat</button>
   </div>
   <canvas id="canvas"></canvas>
 </div>
@@ -224,7 +225,7 @@ function buildWalls() {
 }
 
 function buildRays() {
-  const accuracy = document.getElementById("bgHighAccuracy").checked ? 1e-12 : 1e-6;
+  let accuracy = document.getElementById("bgHighAccuracy").checked ? 1e-12 : 1e-6;
   const k=2*Math.PI/sim.lambda;
 
   rays.length=0;
@@ -325,11 +326,21 @@ function renderLayers(){
     div.appendChild(d);
   });
 }
-function addLayer(){
-  sim.layers.push({type: "slab", z: 4, d: 0.4, n: 1.4, k: 0});
+function addLayer(repeat){
+  if (repeat && sim.layers.length > 0) {
+    const ls = sim.layers[sim.layers.length - 1];
+    sim.layers.push({type: "slab", z: ls.z + 2.0 * ls.d, d: ls.d, n: ls.n, k: ls.k});
+  } else {
+    sim.layers.push({type: "slab", z: 4, d: 0.4, n: 1.4, k: 0});
+  }
   renderLayers();
+  buildAll();
 }
-function removeLayer(i){sim.layers.splice(i,1);renderLayers();}
+function removeLayer(i){
+  sim.layers.splice(i,1);
+  renderLayers();
+  buildAll();
+}
 renderLayers();
 
 /* =====================================================
@@ -360,7 +371,7 @@ function draw(){
         const iFrom =Math.floor(wall.position*canvas.width / zMax);
         const iTo = Math.floor(walls[iWall + 1].position * canvas.width / zMax);
         for(let i=iFrom; i < iTo; i++){
-          const z = i * zMax / canvas.width;
+          const z = (i - iFrom) * zMax / canvas.width;
           const E=mul(wall.amplitudeForwards, expc(c(-wall.n2.im * z, k * wall.n2.re *z + sim.phase)));
           Ev.push(E);
         }
@@ -409,7 +420,7 @@ function draw(){
         const iFrom =Math.floor(wall1.position*canvas.width / zMax);
         const iTo = Math.floor(wall2.position * canvas.width / zMax);
         for(let i=iFrom; i < iTo; i++){
-          const z1 = i * zMax / canvas.width;
+          const z1 = (i - iFrom) * zMax / canvas.width;
           const z2 = (iTo - i) * zMax / canvas.width;
           const E1=mul(wall1.amplitudeForwards, expc(c(-wall1.n2.im * z1, k * wall1.n2.re *z1 + sim.phase)));
           const E2=mul(wall2.amplitudeBackwards, expc(c(-wall2.n1.im * z2, k * wall2.n1.re *z2 + sim.phase)));
