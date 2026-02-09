@@ -231,7 +231,7 @@ function buildRays() {
   rays.length=0;
   rays.push(startRay);
   let nextRayIndex = 0;
-  while (nextRayIndex < rays.length) {
+  while (nextRayIndex < rays.length && rays.length < 1000000) {
     const ray = rays[nextRayIndex];
     const nextWallIndex = ray.sWall + ray.direction;
     const lastN = ray.direction === 1 ? walls[ray.sWall].n2 : walls[ray.sWall].n1;
@@ -457,7 +457,7 @@ function draw(){
   function drawRays(){
     if (!document.getElementById("bgShowRays").checked) return;
     ctx.font="10px sans-serif";
-    rays.filter((ray, iRay)=>iRay < 100).forEach((ray, iRay)=>{
+    rays.filter((ray, iRay)=>iRay < 300).forEach((ray, iRay)=>{
       const startWall=walls[ray.sWall];
       const endWall=walls[ray.sWall+ray.direction];
       const n = ray.direction===1?startWall.n2:startWall.n1;
