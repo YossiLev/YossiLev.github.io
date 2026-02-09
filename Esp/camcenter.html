@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Laser Beam Profiler - D4σ Analysis</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #e0e0e0; text-align: center; }
+        canvas { border: 1px solid #444; background: #000; max-width: 100%; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px auto; max-width: 400px; background: #1e1e1e; padding: 15px; border-radius: 8px; }
+        .val { color: #00ff00; font-family: monospace; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Laser Beam Profiler</h2>
+    <button id="startBtn" style="padding:10px 20px; font-size:16px;">Connect to Camera</button>
+    <br><br>
+    <img id="stream" crossorigin="anonymous" style="display:none">
+    <canvas id="canvas"></canvas>
+    
+    <div class="stats">
+        <div>Width Dx: <span id="dx" class="val">0</span> px</div>
+        <div>Width Dy: <span id="dy" class="val">0</span> px</div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const img = document.getElementById('stream');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', {willReadFrequently: true});
+
+        startBtn.onclick = () => {
+            // Add a timestamp to the URL to prevent the browser from using a cached (broken) connection
+            img.src = "http://192.168.4.1/?t=" + new Date().getTime();
+            startBtn.innerText = "Reconnecting...";
+        };
+
+        function analyze() {
+            if (img.complete && img.naturalWidth > 0) {
+                startBtn.style.display = "none"; // Hide button once stream is live
+                // ... (Keep the rest of the D4sigma math from the previous message here) ...
+            }
+            requestAnimationFrame(analyze);
+        }
+
+        img.onload = analyze;
+        
+        // Error handling if the ESP32 is not reachable
+        img.onerror = () => {
+            alert("Could not connect to ESP32. Ensure you are on the 'ESP32-CAM-Stream' WiFi.");
+        };
+    </script>
+</body>
+
+</html>
