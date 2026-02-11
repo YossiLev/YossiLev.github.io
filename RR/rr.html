@@ -146,6 +146,15 @@ canvas{flex:1; background:white;}
         </label>
         <span class="switch-text">Show rays</span>
     </div>
+    <div class="switch-row">
+        <label class="switch">
+            <input type="checkbox" id="bgShowRayAccum" >
+            <span class="slider"></span>
+        </label>
+        <span class="switch-text">Show accumulation</span>
+    </div>
+    <input type="number" id="spaceIndexInput" value="1" step="1" min="1" max="20">
+
   </div>
   Preset:
   <select id="presetSelect"></select>
@@ -454,6 +463,19 @@ function draw(){
     ctx.stroke();
   }
 
+  function drawAmplitudeAccumulation(ctx, amplitudes, location) {
+    let amp = c(0.0);
+    const x0 = 600; y0 = -200 + location * 400;
+    ctx.fillStyle = "#c5c8ce42";
+    ctx.fillRect(x0 - 100, y0 - 100, 200, 200);
+    ctx.beginPath();
+    ctx.moveTo(x0 + amp.re, y0 + amp.im);
+    for (let i = 0; i < Math.min(500, amplitudes.length); i++) {
+      amp = add(amp, amplitudes[i]);
+      ctx.lineTo(x0 + amp.re * 100.0, y0 + amp.im * 100.0);
+    }
+    ctx.stroke();
+  }
   function drawRays(){
     if (!document.getElementById("bgShowRays").checked) return;
     ctx.font="10px sans-serif";
@@ -471,6 +493,14 @@ function draw(){
       ctx.fillStyle="black";
       ctx.fillText(`I=${ray.intensity.toFixed(4)} A=${abs(ray.amplitude).toFixed(4)} P=${(phase(ray.amplitude).toFixed(4)/ (2 * Math.PI)).toFixed(3)}`, (x1+x2)/2, y1 - 1);
     });
+    if (!document.getElementById("bgShowRayAccum").checked) return;
+    const spaceIndex = parseInt(document.getElementById("spaceIndexInput").value);
+    if (spaceIndex < 1 || spaceIndex > walls.length) return;
+
+    ctx.strokeStyle="green";
+    drawAmplitudeAccumulation(ctx, rays.filter(r => r.sWall == spaceIndex - 1 && r.direction == 1).map(r => r. amplitude), 1);
+    ctx.strokeStyle="red";
+    drawAmplitudeAccumulation(ctx, rays.filter(r => r.sWall == spaceIndex && r.direction == - 1).map(r => r. amplitude), 2);
   }
 
   function drawTotalRays(){
