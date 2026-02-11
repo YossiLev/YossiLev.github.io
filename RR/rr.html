@@ -468,6 +468,11 @@ function draw(){
     const x0 = 600; y0 = -200 + location * 400;
     ctx.fillStyle = "#c5c8ce42";
     ctx.fillRect(x0 - 100, y0 - 100, 200, 200);
+    oldStyle = ctx.strokeStyle;
+    ctx.strokeStyle = "#444444";
+    ctx.beginPath(); ctx.moveTo(x0 + 50, y0); ctx.lineTo(x0 - 50, y0); ctx.moveTo(x0, y0 + 50); ctx.lineTo(x0, y0 - 50); ctx.stroke();
+    ctx.strokeStyle = oldStyle;
+    
     ctx.beginPath();
     ctx.moveTo(x0 + amp.re, y0 + amp.im);
     for (let i = 0; i < Math.min(500, amplitudes.length); i++) {
