@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$','$$'], ['\\[','\\]']]
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+<style>
+    body { font-family: sans-serif; max-width: 900px; margin: auto; padding: 20px; background: #f9f9f9;  }
+    #content { background: white; border: 2px solid #ddd; padding: 20px; border-radius: 8px; }
+
+.yousay {
+    margin-left: 250px; 
+    margin-right: 0px; 
+    background-color: #c8f8bd; 
+    padding: 15px; 
+    border-radius: 10px; 
+    word-wrap: break-word;
+    color: black;
+}
+
+#nav {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+#nav a {
+  text-decoration: none;
+  color: #0366d6;
+  font-weight: 600;
+}
+
+#nav button {
+  font-size: 14px;
+  padding: 4px 10px;
+}
+
+@media print {
+  #nav { display: none; }
+  body { margin: 2mm; font-size: 11pt; }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  .MathJax {
+    page-break-inside: avoid;
+  }
+  #content { background: rgb(244, 6, 6); border: none; padding: none; border-radius: none; }
+}
+
+</style>
+</head>
+
+<body>
+<div id="nav">
+  <a id="prev" href="#">⟵ Prev</a>
+  <span id="page"></span>
+  <a id="next" href="#">Next ⟶</a>
+  <button onclick="window.print()">📄 PDF</button>
+</div>    
+<div id="content"></div>
+
+<script>
+
+function highlightYou() {
+    const paragraphs = document.querySelectorAll('p');
+
+    const searchHTML = "<strong>You:</strong>";
+
+    paragraphs.forEach(p => {
+    if (p.innerHTML.includes(searchHTML)) {
+        
+        const neighbor = p.nextElementSibling;
+        
+        if (neighbor) {
+            neighbor.classList.add('yousay');
+            console.log("Class added to:", neighbor);
+        }
+        p.remove();
+    }
+    });
+}
+function protectMath(md) {
+  const math = [];
+  md = md.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, m => {
+    math.push(m);
+    return `@@MATH${math.length-1}@@`;
+  });
+  return {md, math};
+}
+function restoreMath(html, math) {
+  return html.replace(/@@MATH(\d+)@@/g, (_,i) => math[i]);
+}
+
+const c = parseInt(new URLSearchParams(location.search).get("c") || "1");
+
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
+const page = document.getElementById("page");
+
+prev.href = `?c=${c-1}`;
+next.href = `?c=${c+1}`;
+page.textContent = `Chat ${c}`;
+
+fetch(`md/${c}.md`)
+  .then(r => r.text())
+  .then(raw => {
+    const {md, math} = protectMath(raw);
+    const html = marked.parse(md);
+    const final = restoreMath(html, math);
+
+    const el = document.getElementById("content");
+    el.innerHTML = final;
+    highlightYou();
+    MathJax.typesetPromise([el]);
+  });
+</script>
+
+</body>
+</html>
