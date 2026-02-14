@@ -168,6 +168,7 @@ canvas{flex:1; background:white;}
     <div id="layers"></div>
     <button onclick="addLayer(0)">Add layer</button>
     <button onclick="addLayer(1)">Repeat</button>
+    <button onclick="addLayer(2)">R2</button>
   </div>
   <canvas id="canvas"></canvas>
 </div>
@@ -183,6 +184,7 @@ canvas{flex:1; background:white;}
    COMPLEX ARITHMETIC
    ===================================================== */
 function c(re,im=0){return{re,im};}
+function cop(a) {return c(a.re, a.im);}
 function add(a,b){return c(a.re+b.re,a.im+b.im);}
 function sub(a,b){return c(a.re-b.re,a.im-b.im);}
 function mul(a,b){return c(a.re*b.re-a.im*b.im,a.re*b.im+a.im*b.re);}
@@ -192,6 +194,28 @@ function expc(z){const e=Math.exp(z.re);return c(e*Math.cos(z.im),e*Math.sin(z.i
 function abs2(z){return z.re*z.re+z.im*z.im;}
 function abs(z){return Math.sqrt(abs2(z));}
 function phase(z){return Math.atan2(z.im,z.re);}
+const unitCmat = () => [[c(1.0), c(0.0)], [c(0.0), c(1.0)]];
+const printCMat = (m, name="") => {
+  if (name.length > 0) {
+    console.log(`------ ${name}`);
+  }
+  console.log(`[${m[0][0].re.toFixed(6)}+${m[0][0].im.toFixed(6)}i , ${m[0][1].re.toFixed(6)}+${m[0][1].im.toFixed(6)}i]`);
+  console.log(`[${m[1][0].re.toFixed(6)}+${m[1][0].im.toFixed(6)}i , ${m[1][1].re.toFixed(6)}+${m[1][1].im.toFixed(6)}i]`);
+}
+const multCmat = (m1, m2) => [
+  [add(mul(m1[0][0], m2[0][0]), mul(m1[0][1], m2[1][0])), add(mul(m1[0][0], m2[0][1]), mul(m1[0][1], m2[1][1]))],
+  [add(mul(m1[1][0], m2[0][0]), mul(m1[1][1], m2[1][0])), add(mul(m1[1][0], m2[0][1]), mul(m1[1][1], m2[1][1]))]];
+const multCmatVec = (m, v) => [add(mul(m[0][0], v[0]), mul(m[0][1], v[1])), add(mul(m[1][0], v[0]), mul(m[1][1], v[1]))];
+const swapCmat = (m) => [[cop(m[1][0]), cop(m[1][1])], [cop(m[0][0]), cop(m[0][1])]];
+const shCmat = (m) => [
+  [sub(c(0.0), div(m[0][0], m[0][1])), div(c(1.0), m[0][1])],
+  [sub(m[1][0], div(mul(m[1][1], m[0][0]), m[0][1])), div(m[1][1], m[0][1])]];
+const shakeCmat = (m) => swapCmat(shCmat(m));
+const unshakeCmat = (m) => shCmat(swapCmat(m));
+const rCoeff = (n1, n2) => div(sub(n1, n2), add(n2, n1));
+const tCoeff = (n1, n2) => div(mul(c(2), n1), add(n2, n1));
+const wallMat = (n1, n2) => [[rCoeff(n1, n2), tCoeff(n2, n1)], [tCoeff(n1, n2), rCoeff(n2, n1)]];
+const progMat = (n, L) => [[expc(mul(n, c(0.0, L))), c(0.0)], [c(0.0), expc(mul(n, c(0.0, -L)))]];
 
 /* =====================================================
    SIM STATE + PRESETS
@@ -201,6 +225,8 @@ const startWall = {type: "start", position: 0.0, n1: c(- 1), n2: c(1)};
 const walls=[]; /* wall = {type, position, n1, n2} */
 const startRay = {sWall: 0, direction: 1, amplitude: c(1.0), intensity: 1.0, sTime: 0};
 const rays=[]; /* ray = {sWall, direction (1 left to right, -1 right to left), amplitude, intensity, sTime} */
+let totalSystemMat = unitCmat();
+let totalSolutionMat = unitCmat();
 
 const presets={
   "Free space":()=>[],
@@ -231,6 +257,40 @@ function buildWalls() {
     nPrev=c(1);
   });
   walls.push({position: 10.0, n1: c(1), n2: c(1)});
+
+  // calculate transfer mat of the whole sysytem
+  const k=2*Math.PI/sim.lambda;
+
+  walls.forEach((w, i, a) => {
+    if (i == 0) {
+      totalSystemMat = unitCmat();
+      // printCMat(totalSystemMat, "Unit mat");
+    } else if (i < a.length - 1) {
+      const stageMat = multCmat(shakeCmat(wallMat(w.n1, w.n2)), progMat(w.n1, (w.position - walls[i - 1].position) * k));
+      totalSystemMat = multCmat(stageMat, totalSystemMat);
+      // printCMat(progMat(w.n1, (w.position - walls[i - 1].position) * k), `progMat ${i}`);
+      // printCMat(shakeCmat(wallMat(w.n1, w.n2)), `shake wall ${i}`);
+      // printCMat(stageMat, `stageMat ${i}`);
+      // printCMat(totalSystemMat, `totalSystemMat ${i}`);
+    }
+  });
+  // solution is held in solMat[0][0] the returning ray at z=0, 
+  // and -solMat[1][0] the anvancin ray at the exit of the last real wall
+  totalSolutionMat = unshakeCmat(totalSystemMat);
+  
+  // printCMat(totalSystemMat, "total System Mat");
+  // printCMat(totalSolutionMat, "unshake System Mat");
+
+  let amp = [c(1.0), cop(totalSolutionMat[0][0])];
+  walls[0].af = c(1.0);
+  walls[0].ab = c(0.0);
+  walls.filter((w, i) => i > 0).forEach((w, iz, a) => {
+    let i = iz + 1;
+    amp = multCmatVec(progMat(w.n1, (w.position - walls[i - 1].position) * k), amp);
+    w.ab = amp[1];
+    amp = multCmatVec(shakeCmat(wallMat(w.n1, w.n2)), amp);
+    w.af = amp[0];
+  });
 }
 
 function buildRays() {
@@ -251,8 +311,8 @@ function buildRays() {
     const wall = walls[nextWallIndex];
     const n1 = ray.direction === 1 ? wall.n1 : wall.n2;
     const n2 = ray.direction === 1 ? wall.n2 : wall.n1;
-    const r = div(sub(n1, n2), add(n2, n1));
-    const t = div(mul(c(2), n1), add(n2, n1));
+    const r = rCoeff(n1, n2);
+    const t = tCoeff(n1, n2);
     const z = Math.abs(wall.position - walls[ray.sWall].position);
     const endAmplitude = mul(ray.amplitude, expc(c(-z * k * lastN.im, z * k * lastN.re)));
     const reflectedAmplitude = mul(endAmplitude, r);
@@ -336,9 +396,12 @@ function renderLayers(){
   });
 }
 function addLayer(repeat){
-  if (repeat && sim.layers.length > 0) {
-    const ls = sim.layers[sim.layers.length - 1];
-    sim.layers.push({type: "slab", z: ls.z + 2.0 * ls.d, d: ls.d, n: ls.n, k: ls.k});
+  if (repeat > 0 && sim.layers.length >= repeat) {
+    for (let ir = 0; ir < repeat; ir++) {
+      const lr = sim.layers[sim.layers.length - (repeat - 1) - 1];
+      const ls = sim.layers[sim.layers.length - 1];
+      sim.layers.push({type: "slab", z: ls.z + 2.0 * lr.d, d: lr.d, n: lr.n, k: lr.k});
+    }
   } else {
     sim.layers.push({type: "slab", z: 4, d: 0.4, n: 1.4, k: 0});
   }
@@ -375,13 +438,13 @@ function draw(){
 
     for (let iWall = 0; iWall < walls.length - 1; iWall++) {
       const wall=walls[iWall];
-      if (abs2(wall.amplitudeForwards) > 0.00000000001) {
+      if (abs2(wall.af) > 0.00000000001) {
         const Ev = [];
         const iFrom =Math.floor(wall.position*canvas.width / zMax);
         const iTo = Math.floor(walls[iWall + 1].position * canvas.width / zMax);
         for(let i=iFrom; i < iTo; i++){
           const z = (i - iFrom) * zMax / canvas.width;
-          const E=mul(wall.amplitudeForwards, expc(c(-wall.n2.im * z, k * wall.n2.re *z + sim.phase)));
+          const E=mul(wall.af, expc(c(-wall.n2.im * z, k * wall.n2.re *z + sim.phase)));
           Ev.push(E);
         }
         ctx.strokeStyle="green";
@@ -399,7 +462,7 @@ function draw(){
         }
         ctx.stroke();
       }
-      if (abs2(wall.amplitudeBackwards) > 0.00000000001) {
+      if (abs2(wall.ab) > 0.00000000001) {
         let start = 1;
         ctx.strokeStyle="red";
         ctx.beginPath();
@@ -407,7 +470,7 @@ function draw(){
         const iFrom = Math.floor(walls[iWall - 1].position * canvas.width / zMax);
         for(let i=iFrom; i < iTo; i++){
           const z = (iTo - i) * zMax / canvas.width;
-          const E=mul(wall.amplitudeBackwards, expc(c(-wall.n1.im * z, k * wall.n1.re *z + sim.phase)));
+          const E=mul(wall.ab, expc(c(-wall.n1.im * z, k * wall.n1.re *z + sim.phase)));
           const x = i;
           const y=300.0 + E.re * 20.0;
           if (start) {
@@ -431,8 +494,8 @@ function draw(){
         for(let i=iFrom; i < iTo; i++){
           const z1 = (i - iFrom) * zMax / canvas.width;
           const z2 = (iTo - i) * zMax / canvas.width;
-          const E1=mul(wall1.amplitudeForwards, expc(c(-wall1.n2.im * z1, k * wall1.n2.re *z1 + sim.phase)));
-          const E2=mul(wall2.amplitudeBackwards, expc(c(-wall2.n1.im * z2, k * wall2.n1.re *z2 + sim.phase)));
+          const E1=mul(wall1.af, expc(c(-wall1.n2.im * z1, k * wall1.n2.re *z1 + sim.phase)));
+          const E2=mul(wall2.ab, expc(c(-wall2.n1.im * z2, k * wall2.n1.re *z2 + sim.phase)));
           const E=add(E1,E2);
           const x = i;
           const y=400.0 + E.re * 20.0;
@@ -508,14 +571,14 @@ function draw(){
     drawAmplitudeAccumulation(ctx, rays.filter(r => r.sWall == spaceIndex && r.direction == - 1).map(r => r. amplitude), 2);
   }
 
-  function drawTotalRays(){
+  function drawTotalRays(mode){
     walls.forEach((wall, iWall)=>{
-      const x=wall.position/zMax*canvas.width;
-      const y=500 + 30*iWall;
-      const Af=wall.amplitudeForwards;
-      const Ab=wall.amplitudeBackwards;
-      const If=abs2(Af) * wall.n2.re;
-      const Ib=abs2(Ab) * wall.n1.re;
+      const x =wall.position/zMax*canvas.width;
+      const y = (mode == 1 ? 500 : 700) + 30 * iWall;
+      const Af = mode == 1 ? wall.amplitudeForwards : wall.af;
+      const Ab = mode == 1 ? wall.amplitudeBackwards : wall.ab;
+      const If =abs2(Af) * wall.n2.re;
+      const Ib =abs2(Ab) * wall.n1.re;
       if (If > 0.0000000001) {
         ctx.strokeStyle="green";
         drawArrow(ctx, x, x + 20, y + 15);
@@ -539,8 +602,9 @@ function draw(){
                  canvas.width*L.d/zMax,800);
   });
 
-  drawRays();
-  drawTotalRays();
+  //drawRays();
+  //drawTotalRays(1);
+  drawTotalRays(2);
   drawWaves();
 }
 
@@ -558,8 +622,8 @@ loop();
 
 function buildAll() {
   buildWalls();
-  buildRays();
-  buildTotalRays();
+  //buildRays();
+  //buildTotalRays();
   console.log("Walls:", walls);
   console.log("Rays:", rays);
 
