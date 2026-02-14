@@ -1,0 +1,46 @@
+/* Base table styling */
+table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    border-radius: 8px 8px 0 0;
+    overflow: hidden; /* Ensures rounded corners show up */
+}
+
+/* Header styling */
+table thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+    font-weight: bold;
+}
+
+/* Padding and spacing */
+table th,
+able td {
+    padding: 12px 15px;
+}
+
+/* Border bottom for rows */
+table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+/* Zebra striping (optional but recommended) */
+table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+/* Last row border */
+table tbody tr:last-of-type {
+    border-bottom: 2px solid #009879;
+}
+
+/* Hover effect for better UX */
+table tbody tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+}

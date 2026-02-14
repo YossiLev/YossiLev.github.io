@@ -2,7 +2,6 @@
 <html>
 <head>
 <meta charset="UTF-8">
-
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
@@ -67,6 +66,7 @@ window.MathJax = {
 }
 
 </style>
+<link rel="stylesheet" href="table.css">
 </head>
 
 <body>
@@ -98,6 +98,27 @@ function highlightYou() {
     }
     });
 }
+function extractImages(md) {
+  const images = [];
+  //![](data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==)
+
+
+  md = md.replace(/!\[\]\((data:image\/gif;base64,[^)]+)\)/g, (_, data) => {
+    console.log(data);
+    images.push(data);
+    return `@@IMG${images.length-1}@@`;
+  });
+  return {md, images};
+}
+
+function restoreImages(html, images) {
+  return html.replace(/@@IMG(\d+)@@/g, (_,i) => {
+    console.log(`return ${i} ${images[i]}`)
+    return `<img src="${images[i]}" width="100" style="vertical-align: middle;">`;
+  }
+  );
+}
+
 function protectMath(md) {
   const math = [];
   md = md.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, m => {
@@ -123,9 +144,21 @@ page.textContent = `Chat ${c}`;
 fetch(`md/${c}.md`)
   .then(r => r.text())
   .then(raw => {
-    const {md, math} = protectMath(raw);
-    const html = marked.parse(md);
-    const final = restoreMath(html, math);
+
+    // 1. extract base64 images
+    const imgRes = extractImages(raw);
+
+    // 2. protect math
+    const mathRes = protectMath(imgRes.md);
+
+    // 3. markdown → html
+    const html = marked.parse(mathRes.md);
+
+    // 4. restore images
+    const withImages = restoreImages(html, imgRes.images);
+
+    // 5. restore math
+    const final = restoreMath(withImages, mathRes.math);
 
     const el = document.getElementById("content");
     el.innerHTML = final;
