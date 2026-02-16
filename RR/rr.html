@@ -131,31 +131,6 @@ canvas{flex:1; background:white;}
 <div id="topbar">
   λ₀:
   <input type="number" id="lambdaInput" value="1" step="0.1">
-  <div class="switch-group">
-    <div class="switch-row">
-        <label class="switch">
-            <input type="checkbox" id="bgHighAccuracy" >
-            <span class="slider"></span>
-        </label>
-        <span class="switch-text">High accuracy</span>
-    </div>
-    <div class="switch-row">
-        <label class="switch">
-            <input type="checkbox" id="bgShowRays" >
-            <span class="slider"></span>
-        </label>
-        <span class="switch-text">Show rays</span>
-    </div>
-    <div class="switch-row">
-        <label class="switch">
-            <input type="checkbox" id="bgShowRayAccum" >
-            <span class="slider"></span>
-        </label>
-        <span class="switch-text">Show accumulation</span>
-    </div>
-    <input type="number" id="spaceIndexInput" value="1" step="1" min="1" max="20">
-
-  </div>
   Preset:
   <select id="presetSelect"></select>
   <button id="runBtn">Run</button>
@@ -227,8 +202,8 @@ const progMat = (n, L) => [[expc(mul(n, c(0.0, L))), c(0.0)], [c(0.0), expc(mul(
 const sim={ lambda:1, phase:0, running:false, layers:[]/* layer = {z, d, n, k} */ }; 
 const startWall = {type: "start", position: 0.0, n1: c(- 1), n2: c(1)};
 const walls=[]; /* wall = {type, position, n1, n2} */
-const startRay = {sWall: 0, direction: 1, amplitude: c(1.0), intensity: 1.0, sTime: 0};
-const rays=[]; /* ray = {sWall, direction (1 left to right, -1 right to left), amplitude, intensity, sTime} */
+//const startRay = {sWall: 0, direction: 1, amplitude: c(1.0), intensity: 1.0, sTime: 0};
+//const rays=[]; /* ray = {sWall, direction (1 left to right, -1 right to left), amplitude, intensity, sTime} */
 let totalSystemMat = unitCmat();
 let totalSolutionMat = unitCmat();
 
@@ -297,69 +272,69 @@ function buildWalls() {
   });
 }
 
-function buildRays() {
-  let accuracy = document.getElementById("bgHighAccuracy").checked ? 1e-12 : 1e-6;
-  const k=2*Math.PI/sim.lambda;
+// function buildRays() {
+//   let accuracy = document.getElementById("bgHighAccuracy").checked ? 1e-12 : 1e-6;
+//   const k=2*Math.PI/sim.lambda;
 
-  rays.length=0;
-  rays.push(startRay);
-  let nextRayIndex = 0;
-  while (nextRayIndex < rays.length && rays.length < 1000000) {
-    const ray = rays[nextRayIndex];
-    const nextWallIndex = ray.sWall + ray.direction;
-    const lastN = ray.direction === 1 ? walls[ray.sWall].n2 : walls[ray.sWall].n1;
-    if (nextWallIndex < 1 || nextWallIndex >= walls.length - 1) {
-      nextRayIndex++;
-      continue;
-    }
-    const wall = walls[nextWallIndex];
-    const n1 = ray.direction === 1 ? wall.n1 : wall.n2;
-    const n2 = ray.direction === 1 ? wall.n2 : wall.n1;
-    const r = rCoeff(n1, n2);
-    const t = tCoeff(n1, n2);
-    const z = Math.abs(wall.position - walls[ray.sWall].position);
-    const endAmplitude = mul(ray.amplitude, expc(c(-z * k * lastN.im, z * k * lastN.re)));
-    const reflectedAmplitude = mul(endAmplitude, r);
-    const reflectedIntensity = abs2(reflectedAmplitude) * n1.re;
-    const transmittedAmplitude = mul(endAmplitude, t);
-    const transmittedIntensity = abs2(transmittedAmplitude) * n2.re;
-    const stime = ray.sTime + Math.abs(wall.position - walls[ray.sWall].position);
-    if (reflectedIntensity > accuracy) {
-      rays.push({
-        sWall: nextWallIndex,
-        direction: -ray.direction,
-        amplitude: reflectedAmplitude,
-        intensity: reflectedIntensity,
-        sTime: ray.sTime
-      });
-    }
-    if (transmittedIntensity > accuracy) {
-      rays.push({
-        sWall: nextWallIndex,
-        direction: ray.direction,
-        amplitude: transmittedAmplitude,
-        intensity: transmittedIntensity,
-        sTime: ray.sTime
-      });
-    }
-    nextRayIndex++;
-  }
-}
+//   rays.length=0;
+//   rays.push(startRay);
+//   let nextRayIndex = 0;
+//   while (nextRayIndex < rays.length && rays.length < 1000000) {
+//     const ray = rays[nextRayIndex];
+//     const nextWallIndex = ray.sWall + ray.direction;
+//     const lastN = ray.direction === 1 ? walls[ray.sWall].n2 : walls[ray.sWall].n1;
+//     if (nextWallIndex < 1 || nextWallIndex >= walls.length - 1) {
+//       nextRayIndex++;
+//       continue;
+//     }
+//     const wall = walls[nextWallIndex];
+//     const n1 = ray.direction === 1 ? wall.n1 : wall.n2;
+//     const n2 = ray.direction === 1 ? wall.n2 : wall.n1;
+//     const r = rCoeff(n1, n2);
+//     const t = tCoeff(n1, n2);
+//     const z = Math.abs(wall.position - walls[ray.sWall].position);
+//     const endAmplitude = mul(ray.amplitude, expc(c(-z * k * lastN.im, z * k * lastN.re)));
+//     const reflectedAmplitude = mul(endAmplitude, r);
+//     const reflectedIntensity = abs2(reflectedAmplitude) * n1.re;
+//     const transmittedAmplitude = mul(endAmplitude, t);
+//     const transmittedIntensity = abs2(transmittedAmplitude) * n2.re;
+//     const stime = ray.sTime + Math.abs(wall.position - walls[ray.sWall].position);
+//     if (reflectedIntensity > accuracy) {
+//       rays.push({
+//         sWall: nextWallIndex,
+//         direction: -ray.direction,
+//         amplitude: reflectedAmplitude,
+//         intensity: reflectedIntensity,
+//         sTime: ray.sTime
+//       });
+//     }
+//     if (transmittedIntensity > accuracy) {
+//       rays.push({
+//         sWall: nextWallIndex,
+//         direction: ray.direction,
+//         amplitude: transmittedAmplitude,
+//         intensity: transmittedIntensity,
+//         sTime: ray.sTime
+//       });
+//     }
+//     nextRayIndex++;
+//   }
+// }
 
-function buildTotalRays() {
-  for (const wall of walls) {
-    wall.amplitudeForwards = c(0, 0);
-    wall.amplitudeBackwards = c(0, 0);
-  }
-  for (let ray of rays) {
-    const wall = walls[ray.sWall];
-    if (ray.direction === 1) {
-      wall.amplitudeForwards = add(wall.amplitudeForwards, ray.amplitude)
-    } else {
-      wall.amplitudeBackwards = add(wall.amplitudeBackwards, ray.amplitude);
-    }
-  }
-}
+// function buildTotalRays() {
+//   for (const wall of walls) {
+//     wall.amplitudeForwards = c(0, 0);
+//     wall.amplitudeBackwards = c(0, 0);
+//   }
+//   for (let ray of rays) {
+//     const wall = walls[ray.sWall];
+//     if (ray.direction === 1) {
+//       wall.amplitudeForwards = add(wall.amplitudeForwards, ray.amplitude)
+//     } else {
+//       wall.amplitudeBackwards = add(wall.amplitudeBackwards, ray.amplitude);
+//     }
+//   }
+// }
 
 const presetSelect=document.getElementById("presetSelect");
 Object.keys(presets).forEach(p=>{
@@ -413,13 +388,17 @@ function addLayer(repeat){
   }
   renderLayers();
   buildAll();
+  draw();
 }
 function removeLayer(i){
   sim.layers.splice(i,1);
   renderLayers();
   buildAll();
+  draw();
 }
 renderLayers();
+buildAll();
+draw();
 
 /* =====================================================
    CANVAS DRAW
@@ -548,32 +527,32 @@ function draw(){
     }
     ctx.stroke();
   }
-  function drawRays(){
-    if (!document.getElementById("bgShowRays").checked) return;
-    ctx.font="10px sans-serif";
-    rays.filter((ray, iRay)=>iRay < 300).forEach((ray, iRay)=>{
-      const startWall=walls[ray.sWall];
-      const endWall=walls[ray.sWall+ray.direction];
-      const n = ray.direction===1?startWall.n2:startWall.n1;
-      //const n2=ray.direction===1?endWall.n1:endWall.n2;
-      const x1=(startWall.position/zMax)*canvas.width;
-      const x2=(endWall.position/zMax)*canvas.width;
-      const y1=50 + 12*iRay;
-      const y2=y1;
-      ctx.strokeStyle=ray.direction === 1 ? "green" : "red";
-      drawArrow(ctx, x1, x2, y1);
-      ctx.fillStyle="black";
-      ctx.fillText(`I=${ray.intensity.toFixed(4)} A=${abs(ray.amplitude).toFixed(4)} P=${(phase(ray.amplitude).toFixed(4)/ (2 * Math.PI)).toFixed(3)}`, (x1+x2)/2, y1 - 1);
-    });
-    if (!document.getElementById("bgShowRayAccum").checked) return;
-    const spaceIndex = parseInt(document.getElementById("spaceIndexInput").value);
-    if (spaceIndex < 1 || spaceIndex > walls.length) return;
+  // function drawRays(){
+  //   if (!document.getElementById("bgShowRays").checked) return;
+  //   ctx.font="10px sans-serif";
+  //   rays.filter((ray, iRay)=>iRay < 300).forEach((ray, iRay)=>{
+  //     const startWall=walls[ray.sWall];
+  //     const endWall=walls[ray.sWall+ray.direction];
+  //     const n = ray.direction===1?startWall.n2:startWall.n1;
+  //     //const n2=ray.direction===1?endWall.n1:endWall.n2;
+  //     const x1=(startWall.position/zMax)*canvas.width;
+  //     const x2=(endWall.position/zMax)*canvas.width;
+  //     const y1=50 + 12*iRay;
+  //     const y2=y1;
+  //     ctx.strokeStyle=ray.direction === 1 ? "green" : "red";
+  //     drawArrow(ctx, x1, x2, y1);
+  //     ctx.fillStyle="black";
+  //     ctx.fillText(`I=${ray.intensity.toFixed(4)} A=${abs(ray.amplitude).toFixed(4)} P=${(phase(ray.amplitude).toFixed(4)/ (2 * Math.PI)).toFixed(3)}`, (x1+x2)/2, y1 - 1);
+  //   });
+  //   if (!document.getElementById("bgShowRayAccum").checked) return;
+  //   const spaceIndex = parseInt(document.getElementById("spaceIndexInput").value);
+  //   if (spaceIndex < 1 || spaceIndex > walls.length) return;
 
-    ctx.strokeStyle="green";
-    drawAmplitudeAccumulation(ctx, rays.filter(r => r.sWall == spaceIndex - 1 && r.direction == 1).map(r => r. amplitude), 1);
-    ctx.strokeStyle="red";
-    drawAmplitudeAccumulation(ctx, rays.filter(r => r.sWall == spaceIndex && r.direction == - 1).map(r => r. amplitude), 2);
-  }
+  //   ctx.strokeStyle="green";
+  //   drawAmplitudeAccumulation(ctx, rays.filter(r => r.sWall == spaceIndex - 1 && r.direction == 1).map(r => r. amplitude), 1);
+  //   ctx.strokeStyle="red";
+  //   drawAmplitudeAccumulation(ctx, rays.filter(r => r.sWall == spaceIndex && r.direction == - 1).map(r => r. amplitude), 2);
+  // }
 
   function drawTotalRays(mode){
     walls.forEach((wall, iWall)=>{
@@ -627,7 +606,7 @@ loop();
 function buildAll() {
   buildWalls();
   console.log("Walls:", walls);
-  console.log("Rays:", rays);
+  //console.log("Rays:", rays);
 
 }
 runBtn.onclick=()=>{
@@ -639,6 +618,7 @@ runBtn.onclick=()=>{
 };
 resetBtn.onclick=()=>{
   sim.running=false;
+  runBtn.textContent="Run";
   sim.phase = 0;
   buildAll();
   draw();
@@ -659,9 +639,10 @@ function digitSpinner(e) {
     input.value = s + (dir > 0 ? "1" : "9");
     input.setSelectionRange(input.value.length - 1, input.value.length - 1);
     input.dispatchEvent(new Event("change", { bubbles: true }));
-    if (sim.running) {
-        buildAll();
-    }
+
+    buildAll();
+    draw();
+
     return;
   }
 
@@ -683,9 +664,8 @@ function digitSpinner(e) {
   input.setSelectionRange(pos, pos);
 
   input.dispatchEvent(new Event("change", { bubbles: true }));
-  if (sim.running) {
-    buildAll();
-  }
+  buildAll();
+  draw();
 }
 
 function isDigit(c) {
