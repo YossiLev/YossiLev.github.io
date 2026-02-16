@@ -692,7 +692,11 @@ function isDigit(c) {
   return c >= "0" && c <= "9";
 }
 
-lambdaInput.onchange=e=>sim.lambda=parseFloat(e.target.value);
+lambdaInput.onchange=e=> {
+  sim.lambda=parseFloat(e.target.value);
+  buildAll();
+  draw();
+}
 helpBtn.onclick=()=>helpOverlay.style.display="block";
 </script>
 
