@@ -159,6 +159,7 @@ canvas{flex:1; background:white;}
   Preset:
   <select id="presetSelect"></select>
   <button id="runBtn">Run</button>
+  <button id="resetBtn">Reset</button>
   <button id="helpBtn">Help</button>
 </div>
 
@@ -174,12 +175,15 @@ canvas{flex:1; background:white;}
 </div>
 
 <div id="helpOverlay" onclick="this.style.display='none'">
-  <div class="helpFrame" style="top:200px; left:10%; color: green;">Forward waves</div>
-  <div class="helpFrame" style="top:300px; left:10%; color: red;">Backward waves</div>
-  <div class="helpFrame" style="top:400px; left:10%; color: purple">Combined forward and backward waves</div>
+  <div class="helpFrame" style="top:100px; left:10%; color: green;">Forward waves</div>
+  <div class="helpFrame" style="top:200px; left:10%; color: red;">Backward waves</div>
+  <div class="helpFrame" style="top:300px; left:10%; color: purple">Combined forward and backward waves</div>
 </div>
 
 <script>
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
 /* =====================================================
    COMPLEX ARITHMETIC
    ===================================================== */
@@ -365,6 +369,8 @@ Object.keys(presets).forEach(p=>{
 presetSelect.onchange=()=>{
   sim.layers=presets[presetSelect.value]();
   renderLayers();
+  buildAll();
+  draw();
 };
 presetSelect.value="Partial reflection";
 presetSelect.onchange();
@@ -418,8 +424,6 @@ renderLayers();
 /* =====================================================
    CANVAS DRAW
    ===================================================== */
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
 function resize(){
   canvas.width=canvas.clientWidth;
   canvas.height=canvas.clientHeight;
@@ -452,7 +456,7 @@ function draw(){
         ctx.beginPath();
         for(let i=iFrom; i < iTo; i++){
           const x = i;
-          const y=200.0 + Ev[i-iFrom].re * 20.0;
+          const y=100.0 - Ev[i-iFrom].re * 20.0;
           if (start) {
             ctx.moveTo(x, y);
             start = 0;
@@ -472,7 +476,7 @@ function draw(){
           const z = (iTo - i) * zMax / canvas.width;
           const E=mul(wall.ab, expc(c(-wall.n1.im * z, k * wall.n1.re *z + sim.phase)));
           const x = i;
-          const y=300.0 + E.re * 20.0;
+          const y=200.0 - E.re * 20.0;
           if (start) {
             ctx.moveTo(x, y);
             start = 0;
@@ -498,7 +502,7 @@ function draw(){
           const E2=mul(wall2.ab, expc(c(-wall2.n1.im * z2, k * wall2.n1.re *z2 + sim.phase)));
           const E=add(E1,E2);
           const x = i;
-          const y=400.0 + E.re * 20.0;
+          const y=300.0 - E.re * 20.0;
           if (start) {
             ctx.moveTo(x, y);
             start = 0;
@@ -574,7 +578,7 @@ function draw(){
   function drawTotalRays(mode){
     walls.forEach((wall, iWall)=>{
       const x =wall.position/zMax*canvas.width;
-      const y = (mode == 1 ? 500 : 700) + 30 * iWall;
+      const y = (mode == 1 ? 700 : 400) + 30 * iWall;
       const Af = mode == 1 ? wall.amplitudeForwards : wall.af;
       const Ab = mode == 1 ? wall.amplitudeBackwards : wall.ab;
       const If =abs2(Af) * wall.n2.re;
@@ -622,8 +626,6 @@ loop();
 
 function buildAll() {
   buildWalls();
-  //buildRays();
-  //buildTotalRays();
   console.log("Walls:", walls);
   console.log("Rays:", rays);
 
@@ -635,6 +637,13 @@ runBtn.onclick=()=>{
     buildAll();
   }
 };
+resetBtn.onclick=()=>{
+  sim.running=false;
+  sim.phase = 0;
+  buildAll();
+  draw();
+};
+
 
 function digitSpinner(e) {
   if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
