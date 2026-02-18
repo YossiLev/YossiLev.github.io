@@ -8,6 +8,11 @@
 	<link rel="stylesheet" href="../css/menus.css">
 	<script src="../js/main.js"></script>
 	<script type="text/javascript" src="../js/Complex.js"></script>
+<style>
+	.tab { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .tcell { border: 1px solid #eee; padding: 5px; text-align: center; font-family: 'Courier New', Courier, monospace; }
+
+</style>	
 <script>
 let dim = 4
 let globalMat = 0;
@@ -64,8 +69,8 @@ function multTables(t1, t2) {
 		let row = [];
 		for (let c = 0; c < dim; c++) {
 			let val = []
-			for (let i = 0; i < dim; i++) {
-				val.push(multComplex(t1[r][i], t2[i][c]))
+			for (let j = 0; j < dim; j++) {
+				val.push(multComplex(t1[r][j], t2[j][c]))
 			}
 			
 			row.push(sumComplexdim(val))
@@ -289,6 +294,36 @@ function buildMatMultiTable(matMode, operation) {
 	document.getElementById('tabMulti').innerHTML = s;
 }
 
+function buildMatMultiTable2(idbut) {
+	const mel = document.getElementById(idbut);
+	const typeop = mel.classList.contains("mdop") ? "mdop": "op";
+	[...(document.getElementsByClassName(typeop))].forEach(el => {el.classList.remove("but-on");});
+	mel.classList.add("but-on");
+	const els = [...document.getElementsByClassName('but-on')];
+	const matMode = els[0].id == "DIRAC" ? 10 : 20;
+	const operation = els[1].id;
+
+	let s = `<table class="multiTabFrame"><tr><td>${operation} (${els[0].id})</td>`;
+	for (let j = 0; j < 4; j++) {
+		s += '<td>' + buildSingleTableShow('kc', buildMat(matMode + j), '0') + '</td>';
+	}
+	s += '</tr><tr>';
+	
+	for (let i = 0; i < 4; i++) {
+	 	s += '<td>' + buildSingleTableShow('kl', buildMat(matMode + i), '0') + '</td>';
+	 	for (let j = 0; j < 4; j++) {
+	 		s += '<td>' + buildSingleTableShow('kl', buildMatOperation(matMode + j, matMode + i, operation), '0') + '</td>';
+	 	}
+	 	s += '</tr>';
+	}
+	
+	s += '</table>';
+	
+	document.getElementById('tabMulti').innerHTML = s;
+}
+
+
+
 function openMenu(event, menuElement) {
 	closeContext();
 	//menuElement.style.left = `${event.clientX}px`;
@@ -409,7 +444,7 @@ function buildSingleNumShow(t, r, c, v, mode) {
 		if (Math.abs(v.i) !== 1) {
 			val += toNumberString(Math.abs(v.i));
 		}
-		val += 'i'
+		val += '<i>i</i>'
 	}
 	return '<div class="tscell' + mode + '"><div id="s' + id + '" >' + val + '</div></div>'
 }
@@ -436,25 +471,28 @@ input[type=number] {
 .tcell {
 	display:table-cell;
 }
+    .tcell { border: 1px solid #eee; padding: 5px; text-align: center; font-family: 'Courier New', Courier, monospace; }
+
 .tscell {
 	display:table-cell;
 	width:144px;
 	height:144px;
 	font-size:48px;
 	font-weight: bold;
-	font-family: Arial serif;
+	font-family: 'Courier New', Courier, monospace;
 	border: 3px solid black;
 	text-align: center;
 	vertical-align: middle;
+	padding: 5px; 
 }
 .tscell0 {
 	display:table-cell;
 	width:36px;
 	height:36px;
-	font-size:12px;
+	font-size:16px;
 	font-weight: bold;
-	font-family: Arial serif;
-	border: 1px solid black;
+	font-family: 'Courier New', Courier, monospace;
+	border: 1px solid #b6b4b4;
 	text-align: center;
 	vertical-align: middle;
 }
@@ -469,7 +507,7 @@ input[type=number] {
 	border:none;
 }
 .inNum {
-	padding:10px;
+	padding:10px 3px;
 }
 .mini-but {
 	display: inline-block;
@@ -478,6 +516,21 @@ input[type=number] {
 	padding:2px;
 	border:1px solid black;
 	border-radius:4px;
+}
+.mini-but {
+	margin:1px;
+
+    background-color: #1a73e8;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.but-on {
+	background: yellow;
+	color: black;
 }
 table.multiTabFrame td {
 	margin: 16px;
@@ -515,20 +568,30 @@ body {
 	<div onclick="comMat(globalMatm, globalMatmm, globalMat)" class="menuBut">Commutator</div>
 	<div onclick="antiComMat(globalMatm, globalMatmm, globalMat)" class="menuBut">Anti Comm</div>
 </div>
-	<div class='trow'>
-		<div id='tab1' class='tcell'></div>
-		<div id='tab2' class='tcell' style='padding-left:60px;'></div>
-		<div id='tab3' class='tcell' style='padding-left:60px;'></div>
+	<div style="display:flex; gap: 60px; padding:10px;">
+		<div id='tab1'></div>
+		<div id='tab2'></div>
+		<div id='tab3'></div>
 	</div>
 
 	<div id='tab4' style='padding-left:60px;'></div>
-	<div class="mini-but" onclick="buildMatMultiTable(10, 'AntiCom');">DIRAC AntiCommute</div>
+	<div style="display: flex">
+		<div style="display:flex; flex-direction: column;">
+	<!-- <div class="mini-but" onclick="buildMatMultiTable(10, 'AntiCom');">DIRAC AntiCommute</div>
 	<div class="mini-but" onclick="buildMatMultiTable(10, 'Com');">DIRAC Commute</div>
 	<div class="mini-but" onclick="buildMatMultiTable(10, 'Mult');">DIRAC Multiply</div>
 	<div class="mini-but" onclick="buildMatMultiTable(20, 'AntiCom');">Weyl AntiCommute</div>
 	<div class="mini-but" onclick="buildMatMultiTable(20, 'Com');">Weyl Commute</div>
-	<div class="mini-but" onclick="buildMatMultiTable(20, 'Mult');">Weyl Multiply</div>
+	<div class="mini-but" onclick="buildMatMultiTable(20, 'Mult');">Weyl Multiply</div> -->
+	<div id="DIRAC" class="mdop mini-but but-on" onclick="buildMatMultiTable2('DIRAC');">DIRAC</div>
+	<div id="WEYL" class="mdop mini-but" onclick="buildMatMultiTable2('WEYL');">WEYL</div>
+	<div id="AntiCom" class="op mini-but but-on" onclick="buildMatMultiTable2('AntiCom');">AntiCommute</div>
+	<div id="Com" class="op mini-but" onclick="buildMatMultiTable2('Com');">Commute</div>
+	<div id="Mult" class="op mini-but" onclick="buildMatMultiTable2('Mult');">Multiply</div>
+		</div><div>
 	<div id='tabMulti' style='padding-left:60px;'></div>
+		</div>
+	</div>
 
 </body>
 </html>

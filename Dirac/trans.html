@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dirac-Weyl Spinor Lab v3</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.0/math.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; background: #020617; color: #f1f5f9; padding: 20px; line-height: 1.5; }
+        .container { max-width: 1200px; margin: auto; }
+        .grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .slider-box { margin-bottom: 16px; border-bottom: 1px solid #334155; padding-bottom: 12px; }
+        label { font-size: 0.75rem; font-weight: 600; color: #94a3b8; display: flex; justify-content: space-between; }
+        input[type=range] { width: 100%; margin: 8px 0; accent-color: #38bdf8; cursor: pointer; }
+        .matrix-view { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+        table { width: 100%; border-collapse: collapse; font-family: 'Fira Code', monospace; font-size: 11px; table-layout: fixed; }
+        td { border: 1px solid #334155; padding: 6px 2px; text-align: center; color: #38bdf8; overflow: hidden; }
+        .spinor-display { display: flex; align-items: center; justify-content: space-around; background: #0f172a; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #334155; }
+        .spinor-col { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+        input[type=number] { width: 60px; background: #0f172a; border: 1px solid #475569; color: #fff; padding: 4px; border-radius: 4px; text-align: center; }
+        .out-val { color: #4ade80; font-weight: bold; font-family: monospace; height: 24px; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+        .stat-card { background: #0f172a; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #334155; }
+        .stat-label { font-size: 0.7rem; color: #64748b; display: block; }
+        .stat-num { font-size: 1rem; font-weight: bold; color: #38bdf8; }
+        h2, h3 { margin: 0 0 16px 0; font-weight: 500; }
+        .badge { background: #38bdf8; color: #020617; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; letter-spacing: -0.025em;">Spinor Ideal Transformation Lab</h2>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Parameters</h3>
+            <div class="slider-box">
+                <label>Rotation Z (θz) <span id="rz_v">0°</span></label>
+                <input type="range" id="rz" min="0" max="720" value="0">
+            </div>
+            <div class="slider-box">
+                <label>Boost Z (βz) <span id="bz_v">0.00</span></label>
+                <input type="range" id="bz" min="-99" max="99" value="0">
+            </div>
+            <p style="font-size: 0.7rem; color: #64748b;">Rotate 360° to see the spinor flip sign! Boost to see chiral ideals scale.</p>
+            <button onclick="location.reload()" style="width:100%; padding:8px; background:#ef4444; color:white; border:none; border-radius:6px; cursor:pointer;">Reset</button>
+        </div>
+
+        <div class="card">
+            <div class="spinor-display">
+                <div class="spinor-col">
+                    <span class="badge">INPUT ψ</span>
+                    <input type="number" id="s1" value="1" step="0.1">
+                    <input type="number" id="s2" value="0" step="0.1">
+                    <input type="number" id="s3" value="0" step="0.1">
+                    <input type="number" id="s4" value="0" step="0.1">
+                </div>
+                <div style="font-size: 2rem; color: #334155;">×</div>
+                <div class="spinor-col">
+                    <span class="badge">TRANSFORM [S]</span>
+                    <div style="font-size: 0.8rem; color: #94a3b8;">Applying...</div>
+                </div>
+                <div style="font-size: 2rem; color: #334155;">=</div>
+                <div class="spinor-col">
+                    <span class="badge" style="background: #4ade80;">OUTPUT ψ'</span>
+                    <div id="o1" class="out-val">1.00</div>
+                    <div id="o2" class="out-val">0.00</div>
+                    <div id="o3" class="out-val">0.00</div>
+                    <div id="o4" class="out-val">0.00</div>
+                </div>
+            </div>
+
+            <div class="matrix-view">
+                <div>
+                    <h3 style="font-size: 0.9rem;">Weyl Basis (Chiral)</h3>
+                    <div id="weyl_mat"></div>
+                </div>
+                <div>
+                    <h3 style="font-size: 0.9rem;">Dirac Basis (Standard)</h3>
+                    <div id="dirac_mat"></div>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card"><span class="stat-label">DETERMINANT</span><span id="det" class="stat-num">1.00</span></div>
+                <div class="stat-card"><span class="stat-label">TRACE (Tr S)</span><span id="tr" class="stat-num">4.00</span></div>
+                <div class="stat-card"><span class="stat-label">L/R RATIO</span><span id="ratio" class="stat-num">1.00</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const { complex, multiply, add, subtract, exp, matrix, det, trace, format } = math;
+
+function update() {
+    // 1. Inputs
+    const rz = document.getElementById('rz').value * Math.PI / 180;
+    const bz = document.getElementById('bz').value / 100;
+    document.getElementById('rz_v').innerText = document.getElementById('rz').value + '°';
+    document.getElementById('bz_v').innerText = bz.toFixed(2);
+
+    // 2. Generators (simplified for Z-axis focus for clarity)
+    // Rotation Z: exp(-i/2 * theta * sigma3)
+    const cosR = Math.cos(rz / 2);
+    const sinR = Math.sin(rz / 2);
+    const RotL = [[complex(cosR, -sinR), 0], [0, complex(cosR, sinR)]];
+    const RotR = RotL;
+
+    // Boost Z: L = exp(-zeta/2 * sigma3), R = exp(zeta/2 * sigma3)
+    const zeta = Math.atanh(bz);
+    const bFactorL = Math.exp(-zeta / 2);
+    const bFactorR = Math.exp(zeta / 2);
+    
+    // 3. Construct Weyl Matrix S_W (Block Diagonal)
+    // Left sector (Top-Left 2x2)
+    const WL = [
+        [multiply(RotL[0][0], bFactorL), 0],
+        [0, multiply(RotL[1][1], bFactorL)]
+    ];
+    // Right sector (Bottom-Right 2x2)
+    const WR = [
+        [multiply(RotR[0][0], bFactorR), 0],
+        [0, multiply(RotR[1][1], bFactorR)]
+    ];
+
+    const SW = [
+        [WL[0][0], 0, 0, 0],
+        [0, WL[1][1], 0, 0],
+        [0, 0, WR[0][0], 0],
+        [0, 0, 0, WR[1][1]]
+    ];
+
+    // 4. Transform to Dirac Basis (Change of basis)
+    const SD = [
+        [add(WL[0][0], WR[0][0]).div(2), 0, subtract(WL[0][0], WR[0][0]).div(2), 0],
+        [0, add(WL[1][1], WR[1][1]).div(2), 0, subtract(WL[1][1], WR[1][1]).div(2)],
+        [subtract(WL[0][0], WR[0][0]).div(2), 0, add(WL[0][0], WR[0][0]).div(2), 0],
+        [0, subtract(WL[1][1], WR[1][1]).div(2), 0, add(WL[1][1], WR[1][1]).div(2)]
+    ];
+
+    // 5. Apply to Input Spinor
+    const psi_in = [
+        parseFloat(document.getElementById('s1').value),
+        parseFloat(document.getElementById('s2').value),
+        parseFloat(document.getElementById('s3').value),
+        parseFloat(document.getElementById('s4').value)
+    ];
+
+    for(let i=0; i<4; i++) {
+        let res = complex(0,0);
+        for(let j=0; j<4; j++) {
+            res = add(res, multiply(SW[i][j], psi_in[j]));
+        }
+        document.getElementById('o'+(i+1)).innerText = format(res, {precision: 3}).replace(/\s/g, '');
+    }
+
+    // 6. Metrics
+    const mSW = matrix(SW);
+    document.getElementById('det').innerText = format(det(mSW), {precision: 3});
+    document.getElementById('tr').innerText = format(trace(mSW), {precision: 3});
+    document.getElementById('ratio').innerText = (bFactorR / bFactorL).toFixed(2);
+
+    renderTable(SW, 'weyl_mat');
+    renderTable(SD, 'dirac_mat');
+}
+
+function renderTable(m, id) {
+    let h = "<table>";
+    for(let i=0; i<4; i++) {
+        h += "<tr>";
+        for(let j=0; j<4; j++) {
+            let v = m[i][j] || 0;
+            h += `<td>${v === 0 ? '0' : format(v, {precision: 2}).replace(/\s/g, '')}</td>`;
+        }
+        h += "</tr>";
+    }
+    document.getElementById(id).innerHTML = h + "</table>";
+}
+
+document.querySelectorAll('input').forEach(el => el.addEventListener('input', update));
+window.onload = update;
+</script>
+</body>
+</html>
