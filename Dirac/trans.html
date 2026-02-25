@@ -2,6 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$']]
+            },
+            chtml: {
+                // This tells MathJax to match the surrounding font
+                displayAlign: 'center',
+                adaptiveCSS: true
+            }
+        };
+    </script>    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>    
     <title>Dirac-Weyl Spinor Lab v3</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.0/math.js"></script>
     <style>
@@ -25,6 +44,10 @@
         .stat-num { font-size: 1rem; font-weight: bold; color: #38bdf8; }
         h2, h3 { margin: 0 0 16px 0; font-weight: 500; }
         .badge { background: #38bdf8; color: #020617; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        /* Target the internal MathJax elements specifically */
+        mjx-container[jax="CHTML"] {
+            font-family: 'Inter', system-ui, sans-serif !important;
+        }
     </style>
 </head>
 <body>
@@ -88,6 +111,34 @@
                 <div class="stat-card"><span class="stat-label">L/R RATIO</span><span id="ratio" class="stat-num">1.00</span></div>
             </div>
         </div>
+    </div>
+    <div class="card" style="margin-top: 24px;font-family: 'Inter', system-ui, sans-serif !important;">
+        <h2>Spinor vs Vector Transformations</h2>
+        
+        $${ \begin{array}{llll}
+            \hline
+            \mathbf{Object} & \mathbf{Type} & \mathbf{Exponential \ Form} & \mathbf{Expansion \ Form} \\
+            \hline
+            \text{Spinor} & \text{Rotation} & \psi' = e^{\frac{\theta}{2}\gamma^1\gamma^2}\psi & \psi' = \left(\cos\frac{\theta}{2} + \gamma^1\gamma^2\sin\frac{\theta}{2}\right)\psi \\
+            \\
+            \text{Vector} & \text{Rotation} & V' = e^{\frac{\theta}{2}\gamma^1\gamma^2} V e^{-\frac{\theta}{2}\gamma^1\gamma^2} & V' = (V^x \cos\theta - V^y \sin\theta)\gamma^1 + \dots \\
+            \\
+            \text{Spinor} & \text{Boost}    & \psi' = e^{\frac{\phi}{2}\gamma^0\gamma^3}\psi & \psi' = \left(\cosh\frac{\phi}{2} + \gamma^0\gamma^3\sinh\frac{\phi}{2}\right)\psi \\
+            \\
+            \text{Vector} & \text{Boost}    & V' = e^{\frac{\phi}{2}\gamma^0\gamma^3} V e^{-\frac{\phi}{2}\gamma^0\gamma^3} & V'^t = V^t \cosh\phi + V^z \sinh\phi \\
+            \hline
+            \end{array} }$$
+        <p style="font-size: 0.9rem; color: #64748b;">This table contrasts how spinors and vectors transform under rotations and boosts. Spinors transform via a single exponential, while vectors require the adjoint action, leading to more complex transformations. The expansion forms show how the parameters (θ for rotation, φ for boost) affect the transformations differently for spinors and vectors.</p>
+
+        $$
+            \begin{aligned}
+            \text{Adjoint Action: } & e^{A} V e^{-A} = V + [A, V] + \frac{1}{2!}[A, [A, V]] + \dots \\
+            \text{For Rotation: } & A = \frac{\theta}{2} \gamma^1\gamma^2 \\
+            \text{Commutator: } & [A, \gamma^1] = \frac{\theta}{2}(\gamma^1\gamma^2\gamma^1 - \gamma^1\gamma^1\gamma^2) = -\theta\gamma^2 \\
+            \text{Result: } & V' = V \cos\theta + [(\gamma^1\gamma^2) \cdot V] \sin\theta
+            \end{aligned}
+        $$
+
     </div>
 </div>
 
@@ -182,5 +233,6 @@ function renderTable(m, id) {
 document.querySelectorAll('input').forEach(el => el.addEventListener('input', update));
 window.onload = update;
 </script>
+
 </body>
 </html>
