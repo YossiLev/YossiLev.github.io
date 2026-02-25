@@ -7,6 +7,7 @@
 	<link rel="stylesheet" href="../css/main.css">
 	<link rel="stylesheet" href="../css/menus.css">
 	<script src="https://unpkg.com/mathjs@13.0.2/lib/browser/math.js"></script>
+	<script src="./expression.js"></script>
 	<script src="./cl.js"></script>
 	<script src="../js/main.js"></script>
 	<script type="text/javascript" src="../js/Complex.js"></script>
@@ -88,6 +89,13 @@ function commuteGVars() {
 	MathJax.typesetPromise([latexResult]);
 	document.getElementById('resultMat').innerHTML = `<div class="cl-matrix">${res.visualizeMat()}</div>`
 }	
+
+function getExpression() {
+	const expr = document.getElementById('varExpression').value;
+	const exp = EXP.build(expr);
+	document.getElementById('latexResultExpression').innerHTML = `\\(${exp.toLatex()}\\)`;
+	MathJax.typesetPromise([document.getElementById('latexResultExpression')]);
+}
 
 function buildLayout(d) {
 	dim = d
@@ -621,7 +629,10 @@ body {
 	<div class="mini-but" style="height:20px; position:relative;" onclick="commuteGVars();">$$[x,y]$$</div>
 	<input type="text" id="gvarResult" placeholder="result of operation" value="" style="display:block;width:400px; margin-left:10px;">
 	<div id="latexResult" style="padding:10px; font-size:32px;"></div>
-	<div id="resultMat" ></div>
+
+	<input type="text" id="varExpression" placeholder="5 * 3 exp(12) + 1" value="">
+	<div class="mini-but" style="height:20px; position:relative;" onclick="getExpression();">Expression</div>
+	<div id="latexResultExpression" ></div>
 
 </div>
 <div id="contextMenuSet" class="contextMenu" onclick="closeContext();">
