@@ -29,12 +29,23 @@ let globalMatmm = 0;
 
 document.addEventListener('DOMContentLoaded', () => { buildLayout(4) });
 
+tryFunc = (f) => {
+	try {
+		f();
+	} catch (e) {
+		//console.error(e);
+		document.getElementById('gvarResult').value = "Error: " + e.message;
+		latexResult.innerHTML = "";
+		document.getElementById('resultMat').innerHTML = "";
+	}
+}
+
 function multGVars() {
 	const gvar1 = CL.build(document.getElementById('gvar1').value);
 	const gvar2 = CL.build(document.getElementById('gvar2').value);
 	
 	const res = gvar1.mult(gvar2);
-	document.getElementById('gvarResult').value = res.toString();
+	document.getElementById('gvarResult').value = res.toString(4);
 	
 	const latexResult = document.getElementById('latexResult');
 	latexResult.innerHTML = `\(${gvar1.toLatexP()} x ${gvar2.toLatexP()} = ${res.toLatex()}\)`;
@@ -46,7 +57,7 @@ function addGVars() {
 	const gvar2 = CL.build(document.getElementById('gvar2').value);
 	
 	const res = gvar1.add(gvar2);
-	document.getElementById('gvarResult').value = res.toString();
+	document.getElementById('gvarResult').value = res.toString(4);
 	latexResult.innerHTML = `\(${gvar1.toLatex()} + ${gvar2.toLatex()} = ${res.toLatex()}\)`;
 	MathJax.typesetPromise([latexResult]);
 	document.getElementById('resultMat').innerHTML = `<div class="cl-matrix">${res.visualizeMat()}</div>`
@@ -64,7 +75,7 @@ function subGVars() {
 function expGVars() {
 	const gvar1 = CL.build(document.getElementById('gvar1').value);
 	const res = gvar1.exp();
-	document.getElementById('gvarResult').value = res.toString();
+	document.getElementById('gvarResult').value = res.toString(4);
 	latexResult.innerHTML = `\( \\(e^{${gvar1.toLatexn()}}\\) = ${res.toLatex()}\)`;
 	MathJax.typesetPromise([latexResult]);
 	document.getElementById('resultMat').innerHTML = `<div class="cl-matrix">${res.visualizeMat()}</div>`
@@ -73,8 +84,18 @@ function expGVars() {
 function squareGVars() {
 	const gvar1 = CL.build(document.getElementById('gvar1').value);
 	const res = gvar1.square();
-	document.getElementById('gvarResult').value = res.toString();
+	document.getElementById('gvarResult').value = res.toString(4);
 	latexResult.innerHTML = `\( (${gvar1.toLatex()})^2 = ${res.toLatex()}\)`;
+	MathJax.typesetPromise([latexResult]);
+	document.getElementById('resultMat').innerHTML = `<div class="cl-matrix">${res.visualizeMat()}</div>`
+}
+
+function powerGVars() {
+	const gvar1 = CL.build(document.getElementById('gvar1').value);
+	const n = parseInt(document.getElementById('gvar2').value);
+	const res = gvar1.power(n);
+	document.getElementById('gvarResult').value = res.toString(4);
+	latexResult.innerHTML = `\( (${gvar1.toLatex()})^${n} = ${res.toLatex()}\)`;
 	MathJax.typesetPromise([latexResult]);
 	document.getElementById('resultMat').innerHTML = `<div class="cl-matrix">${res.visualizeMat()}</div>`
 }
@@ -84,7 +105,7 @@ function commuteGVars() {
 	const gvar2 = CL.build(document.getElementById('gvar2').value);
 	
 	const res = gvar1.commute(gvar2);
-	document.getElementById('gvarResult').value = res.toString();
+	document.getElementById('gvarResult').value = res.toString(4);
 	latexResult.innerHTML = `\([${gvar1.toLatex()}, ${gvar2.toLatex()}] = ${res.toLatex()}\)`;
 	MathJax.typesetPromise([latexResult]);
 	document.getElementById('resultMat').innerHTML = `<div class="cl-matrix">${res.visualizeMat()}</div>`
@@ -93,8 +114,10 @@ function commuteGVars() {
 function getExpression() {
 	const expr = document.getElementById('varExpression').value;
 	const exp = EXP.build(expr);
+	const varDictStr = document.getElementById('dictExpression').value;
 	document.getElementById('latexResultExpression').innerHTML = `\\(${exp.toLatex()}\\)`;
 	MathJax.typesetPromise([document.getElementById('latexResultExpression')]);
+	expressionValue.innerHTML = `Value: ${exp.evaluate(varDictStr)}`;
 }
 
 function buildLayout(d) {
@@ -618,22 +641,25 @@ body {
 
 </head>
 <body>
-<div>
+<div style="padding:10px;">
 	<input type="text" id="gvar1" placeholder="c(1)0g1" value="">
 	<input type="text" id="gvar2" placeholder="c(1)0g1" value="">
-	<div class="mini-but" style="height:20px; position:relative;" onclick="multGVars();">$$x*y$$</div>
-	<div class="mini-but" style="height:20px; position:relative;" onclick="addGVars();">$$x+y$$</div>
-	<div class="mini-but" style="height:20px; position:relative;" onclick="subGVars();">$$x-y$$</div>
-	<div class="mini-but" style="height:20px; position:relative;" onclick="expGVars();">$$e^x$$</div>
-	<div class="mini-but" style="height:20px; position:relative;" onclick="squareGVars();">$$x^2$$</div>
-	<div class="mini-but" style="height:20px; position:relative;" onclick="commuteGVars();">$$[x,y]$$</div>
-	<input type="text" id="gvarResult" placeholder="result of operation" value="" style="display:block;width:400px; margin-left:10px;">
+	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(multGVars);">$$x*y$$</div>
+	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(addGVars);">$$x+y$$</div>
+	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(subGVars);">$$x-y$$</div>
+	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(expGVars);">$$e^x$$</div>
+	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(squareGVars);">$$x^2$$</div>
+	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(powerGVars);">$$x^y$$</div>
+	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(commuteGVars);">$$[x,y]$$</div>
+	<input type="text" id="gvarResult" placeholder="result of operation" value="" style="display:block;width:700px; margin-left:10px;">
 	<div id="latexResult" style="padding:10px; font-size:32px;"></div>
+	<div id="resultMat" ></div>
 
-	<input type="text" id="varExpression" placeholder="5 * 3 exp(12) + 1" value="">
-	<div class="mini-but" style="height:20px; position:relative;" onclick="getExpression();">Expression</div>
+	<input type="text" id="varExpression" placeholder="5 * 3 exp(12) + 1" value="" style="width:400px; margin-left:10px;"/>
+	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(getExpression);">Calculate</div>
+	<input type="text" id="dictExpression" placeholder="a=3.2,b=40" value="" style="width:400px; margin-left:10px;"/>
 	<div id="latexResultExpression" ></div>
-
+	<div id="expressionValue" ></div>
 </div>
 <div id="contextMenuSet" class="contextMenu" onclick="closeContext();">
 	<div onclick="initMat(0, globalMat)" class="menuBut">Zero mat</div>

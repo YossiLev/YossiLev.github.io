@@ -38,48 +38,37 @@ class CL {
             // 3. Separate Coefficient from Blade
             // Finds the boundary where the blade (g..., I, or 1) starts
             let bladeMatch = content.match(/(g\d+|I|1)$/);
-            let coeffStr, blade;
+            let coeff, blade;
 
             if (bladeMatch) {
                 blade = bladeMatch[1];
-                coeffStr = content.substring(0, content.length - blade.length) || "1";
+                coeff = EXP.build(content.substring(0, content.length - blade.length) || "1");
             } else {
                 // It's a pure scalar
                 blade = "1";
-                coeffStr = content;
+                coeff = EXP.build(content);
             }
 
             if (blade === "I") blade = "g0123";
 
             // 4. Combine Op + Coeff and simplify
-            let rawCoeff = op + "(" + this._cleanCoeff(coeffStr) + ")";
-            let simplifiedCoeff = math.simplify(rawCoeff).toString();
+            let rawCoeff = EXP.build(op + "(" + this._cleanCoeff(coeff.toString()) + ")");
+            //let simplifiedCoeff = math.simplify(rawCoeff).toString();
 
             // 5. Accumulate
             if (terms[blade]) {
-                terms[blade] = math.simplify(`(${terms[blade]}) + (${simplifiedCoeff})`).toString();
+                terms[blade] = EXP.add(terms[blade], rawCoeff);
             } else {
-                terms[blade] = simplifiedCoeff;
+                terms[blade] = rawCoeff;
             }
         }
 
         return new CL(terms)._prune();
     }
-    static build2(str) {
-        const terms = {};
-        const parts = str.split(/\+(?![^\(]*\))/);
-        parts.forEach(part => {
-            let [_, coeff, blade] = part.trim().match(/^([^(g|1|I)]+)?(g\d+|1|I)$/) || [null, part, "1"];
-            coeff = coeff ? this._cleanCoeff(coeff) : "1";
-            if (blade === "I") blade = "g0123";
-            terms[blade] = math.simplify(coeff).toString();
-        });
-        return new CL(terms);
-    }
 
     // --- Arithmetic ---
 
-/**
+    /**
      * Symbolic Addition: (a) + (b)
      */
     add(other) {
@@ -88,8 +77,8 @@ class CL {
         for (let [blade, coeff] of Object.entries(other.terms)) {
             if (newTerms[blade]) {
                 // Wrap in parens to ensure algebra order: (old) + (new)
-                const combined = `(${newTerms[blade]}) + (${coeff})`;
-                newTerms[blade] = math.simplify(combined).toString();
+                const combined = EXP.add(newTerms[blade], coeff);
+                newTerms[blade] = combined;//.toString();
             } else {
                 newTerms[blade] = coeff;
             }
@@ -106,12 +95,12 @@ class CL {
         for (let [blade, coeff] of Object.entries(other.terms)) {
             if (newTerms[blade]) {
                 // Wrap in parens: (old) - (new)
-                const combined = `(${Number(newTerms[blade])}) - (${Number(coeff)})`;
-                newTerms[blade] = math.simplify(combined).toString();
+                const combined = EXP.subtract(newTerms[blade], coeff);
+                newTerms[blade] = combined;//.toString();
             } else {
                 // If the blade wasn't there, it becomes -(coeff)
-                const inverted = `-(${coeff})`;
-                newTerms[blade] = math.simplify(inverted).toString();
+                const inverted = EXP    .negate(coeff);
+                newTerms[blade] = inverted;
             }
         }
         return new CL(newTerms);
@@ -122,20 +111,42 @@ class CL {
         for (let [b1, c1] of Object.entries(this.terms)) {
             for (let [b2, c2] of Object.entries(other.terms)) {
                 const { blade, sign } = this._geometricProduct(b1, b2);
-                const combined = `(${c1}) * (${c2}) * ${sign}`;
-                const simplified = math.simplify(combined).toString();
+                const combined = EXP.multiply(EXP.multiply(c1, c2), EXP.build(sign.toString()));
+                const simplified = combined; // No need to simplify further since we're working symbolically
                 
                 resultTerms[blade] = resultTerms[blade] 
-                    ? math.simplify(`(${resultTerms[blade]}) + (${simplified})`).toString()
+                    ? EXP.add(resultTerms[blade], simplified)
                     : simplified;
             }
         }
         return new CL(resultTerms);
     }
 
+    static bladeFilterd(blade) {
+        if (blade === "1") return blade;
+        let nBlade = 'g' +blade.split('').slice(1).sort().join('');
+        return nBlade;
+    }
+
     _prune() {
+        let updated = {}
         for (let blade in this.terms) {
-            if (this.terms[blade] === "0") delete this.terms[blade];
+            let canonBlade = CL.bladeFilterd(blade);
+            if (updated[canonBlade]) {
+                updated[canonBlade] = EXP.add(updated[canonBlade], this.terms[blade]);
+            } else {
+                updated[canonBlade] = this.terms[blade];
+            }
+        }
+
+        this.terms = {};
+        const skeys = Object.keys(updated).sort();
+        for (let i in skeys) {
+            const blade = skeys[i];
+            const coeffStr = CL.disp(updated[blade].toString(), 5);
+            if (coeffStr != "0") {
+                this.terms[blade] = EXP.simplifyNumbers(updated[blade]);
+            }
         }
         return this;
     }
@@ -171,14 +182,17 @@ class CL {
 
     exp() {
         // Simple implementation for bivectors: exp(theta*B) = cos(theta) + sin(theta)B
-        // Check if it's a single bivector term for this simple identity
-        const sq = Number(this.square().toString());
+        // Check if it's a single biv§ector term for this simple identity
+        // const h1 = this.square().toString();
+        // const h2 = this.square()._prune().toString();
+        // const h3= math.simplify(h2).toString();    
+        const sq = Number(math.evaluate(this.square()._prune().toString()));
         const root = math.sqrt(math.abs(sq));
-        const cCoef = sq < 0 ? Math.cos(root) : Math.cosh(root);
-        const sCoef = (sq < 0 ? Math.sin(root) : Math.sinh(root)) / root;
+        const cCoefStr = sq < 0 ? `cos(sqrt(${sq}))` : `cosh(sqrt(${sq}))`;
+        const sCoefStr = sq < 0 ? `sin(sqrt(${sq}))` : `sinh(sqrt(${sq})) / sqrt(${sq})`;
 
-        const expXStringAdd = CL.build(`${cCoef}1`);
-        const expXStringMult = CL.build(`${sCoef}1`);
+        const expXStringAdd = CL.build(`${cCoefStr}1`);
+        const expXStringMult = CL.build(`${sCoefStr}1`);
         return expXStringAdd.add(expXStringMult.mult(this));
     // if sq == 0        throw new Error("General symbolic exp() requires a Taylor expansion parser.");
     }
@@ -186,20 +200,28 @@ class CL {
     square() {
         return this.mult(this);
     }
+    power(n) {
+        let result = CL.build("1");
+        for (let i = 0; i < n; i++) {
+            result = result.mult(this);
+        }
+        return result;
+    }
 
     commute(other) {
         return this.mult(other).sub(other.mult(this));
     }
     mat(basis = "d") {
         const matrices = this._getBasisMatrices(basis);
-        let finalMat = math.matrix(math.zeros([4, 4], 'complex'));
+        const z = math.complex(0);
+        let finalMat = [[z,z,z,z],[z,z,z,z],[z,z,z,z],[z,z,z,z]];
 
         for (let [blade, coeff] of Object.entries(this.terms)) {
             let bladeMat = this._getBladeMatrix(blade, matrices);
-            let scalar = math.evaluate(CL._cleanCoeff(coeff));
-            finalMat = math.add(finalMat, math.multiply(scalar, bladeMat));
+            let scalar = math.evaluate(CL._cleanCoeff(coeff.toString()));
+            finalMat = CL._addCMat4(finalMat, CL._multCMat4Scalar(scalar, bladeMat));
         }
-        return finalMat.toArray();
+        return finalMat;
     }
 
     visualizeMat(basis = "d") {
@@ -224,44 +246,109 @@ class CL {
         return html;
     }
 
+    static _complexKron(a, b) {
+        const rowsA = a.length, colsA = a[0].length;
+        const rowsB = b.length, colsB = b[0].length;
+        let result = math.zeros(rowsA * rowsB, colsA * colsB)._data;
+
+        for (let i = 0; i < rowsA; i++) {
+            for (let j = 0; j < colsA; j++) {
+                const aVal = math.complex(a[i][j]);
+                for (let k = 0; k < rowsB; k++) {
+                    for (let l = 0; l < colsB; l++) {
+                        result[i*rowsB + k][j*colsB + l] = math.multiply(aVal, math.complex(b[k][l]));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     _getBasisMatrices(basis) {
-        const I2 = math.identity(2);
-        const s0 = I2;
-        const s1 = [[0, 1], [1, 0]], s2 = [[0, 'i'], ['-i', 0]], s3 = [[1, 0], [0, -1]];
+        const one = math.complex(1);
+        const z = math.complex(0);
+        const i = math.complex(0, 1);
+        const m1 = math.complex(-1, 0);
+        const mi = math.complex(0, -1);
+        const I2 = [[one, z], [z, one]];
+        const s1 = [[z, one], [one, z]], s2 = [[z, mi], [i, z]], s3 = [[one, z], [z, m1]];
 
         if (basis === "d") { // Dirac Basis
             return [
-                math.kron([[1, 0], [0, -1]], I2), // g0
-                math.kron([[0, 1], [-1, 0]], s1), // g1
-                math.kron([[0, 1], [-1, 0]], s2), // g2
-                math.kron([[0, 1], [-1, 0]], s3)  // g3
+                CL._complexKron([[one, z], [z, m1]], I2), // g0
+                CL._complexKron([[z, one], [m1, z]], s1), // g1
+                CL._complexKron([[z, one], [m1, z]], s2), // g2
+                CL._complexKron([[z, one], [m1, z]], s3)  // g3
             ];
         } else { // Weyl (Chiral) Basis
             return [
-                math.kron([[0, 1], [1, 0]], I2), // g0
-                math.kron([[0, 1], [-1, 0]], s1),
-                math.kron([[0, 1], [-1, 0]], s2),
-                math.kron([[0, 1], [-1, 0]], s3)
+                CL._complexKron([[z, one], [one, z]], I2), // g0
+                CL._complexKron([[z, one], [m1, z]], s1), // g1
+                CL._complexKron([[z, one], [m1, z]], s2), // g2
+                CL._complexKron([[z, one], [m1, z]], s3)  // g3
             ];
         }
     }
 
+    static _multCMat4(A, B) {
+        const rowsA = A.length, colsA = A[0].length;
+        const rowsB = B.length, colsB = B[0].length;
+        let result = math.zeros(rowsA, colsB)._data;
+
+        for (let i = 0; i < rowsA; i++) {
+            for (let j = 0; j < colsB; j++) {
+                let sum = math.complex(0);
+                for (let k = 0; k < colsA; k++) {
+                    sum = math.add(sum, math.multiply(math.complex(A[i][k]), math.complex(B[k][j])));
+                }
+                result[i][j] = sum;
+            }
+        }
+        return result;
+    }
+    static _multCMat4Scalar(scalar, A) {
+        const rows = A.length, cols = A[0].length;
+        let result = math.zeros(rows, cols)._data;
+
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                result[i][j] = math.multiply(math.complex(scalar), math.complex(A[i][j]));
+            }
+        }
+        return result;
+    }
+    static _addCMat4(A, B) {
+        const rows = A.length, cols = A[0].length;
+        let result = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                result[i][j] = math.add(math.complex(A[i][j]), math.complex(B[i][j]));
+            }
+        }
+        return result;
+    }
     _getBladeMatrix(blade, basisMats) {
-        if (blade === "1") return math.identity(4);
+        const z = math.complex(0);
+        const one = math.complex(1);
+        const i = math.complex(0, 1);
+        const mi = math.complex(0, -1);
+        const unitMat = [[one,z,z,z],[z,one,z,z],[z,z,one,z],[z,z,z,one]];
+        if (blade === "1") return unitMat;
         const indices = blade.replace('g', '').split('').map(Number);
-        return indices.reduce((acc, idx) => math.multiply(acc, basisMats[idx]), math.identity(4));
+        return indices.reduce((acc, idx) => CL._multCMat4(acc, basisMats[idx]), unitMat);
     }
 
     /**
      * Returns a string representation of the CL object.
      */
-    toString() {
+    toString(acc = -1) {
         const terms = Object.entries(this.terms);
         if (terms.length === 0) return "0";
         return terms.map(([blade, coeff]) => {
-            if (blade === "1") return coeff;
-            if (coeff === "1") return blade;
-            return `${coeff}${blade}`;
+            if (blade === "1") return coeff.toString(acc);
+            if (coeff.toString() === "1") return blade;
+            return `${coeff.toString(acc)}${blade}`;
         }).join(" + ");//.replaceAll("+ -", "- ");
     }
     static _latexCoeff(str) {
@@ -274,20 +361,22 @@ class CL {
         return blade.replace(/g(\d+)/g, (_, idx) => `\\gamma_{${idx}}`);
     }
     static disp(num, acc) {
-        let str = Number(math.simplify(num)).toFixed(acc);
+        let str = Number(math.evaluate(num).toString()).toFixed(acc);
         return str.replace(/\.?0+$/, ''); // Remove trailing zeros
     }
     toLatex(acc = 3) {
         return '\\(' + this.toLatexn(acc) + '\\)';
     }
     toLatexn(acc = 3) {
+        this._prune();
         const terms = Object.entries(this.terms);
         if (terms.length === 0) return "0";
         return terms.map(([blade, coeff]) => {
-            let coeffLatex = CL._latexCoeff(CL.disp(coeff, acc));
+            let coeffStr = coeff.toString();
+            let coeffLatex = CL._latexCoeff(CL.disp(coeffStr, acc));
             if (blade === "1") return coeffLatex;
-            if (coeff === "1") return CL._latexBlade(blade);
-            if (coeff === "-1") coeffLatex = "-";
+            if (coeff.toString() === "1") return CL._latexBlade(blade);
+            if (coeff.toString() === "-1") coeffLatex = "-";
             return `${coeffLatex} ${CL._latexBlade(blade)}`;
         }).join(" + ").replace(/\+\s-/g, "- ");
     }
