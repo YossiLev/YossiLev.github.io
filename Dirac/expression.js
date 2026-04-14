@@ -2,6 +2,7 @@ function expToText(x, acc = -1) {
     const node = x.node;
     if (node.type === 'number') return acc <= 0 ? node.value : Number(node.value).toFixed(acc).replace(/\.?0+$/, '');
     if (node.type === 'variable') return node.name;
+    if (node.type === 'qop') return `${node.qopType}_${node.name}`;
     if (node.type === 'function') return `${node.name}(${expToText(node.argument, acc)})`;
     if (node.type === 'operator') {
         if (node.op === '-' && node.children.length === 1) {
@@ -19,11 +20,12 @@ function expToText(x, acc = -1) {
     }
 }
 
-
 function expToLatex(x) {
     const node = x.node;
     if (node.type === 'number') return node.value.replace('i', 'i');
     if (node.type === 'variable') return node.name;
+    if (node.type === 'qop') return `${node.qopType == "AD" ? "A^\\dagger" : node.qopType}_{${node.name}}`;
+
     if (node.type === 'function') {
         const arg = expToLatex(node.argument);
         if (node.name === 'exp') return `e^{${arg}}`;
@@ -73,6 +75,8 @@ function parseParams(input) {
     return dict;
 }
 
+let distributeModification = false;
+
 class EXP {
     constructor(node) {
         this.node = node; // { type: 'operator', op: '+', children: [...] }
@@ -87,7 +91,7 @@ class EXP {
         if (str.length === 0) {
             return { type: 'number', value: "1", level: 0 }; // Treat empty string as 1
         }
-        // Remove outer parentheses if they wrap the entire expression
+        // handle a unary minus
         if (str.startsWith('-') && this._isBalanced(str.slice(1))) {
             return {
                 type: 'operator',
@@ -96,6 +100,8 @@ class EXP {
                 level: 1
             };
         }
+
+        // Remove outer parentheses if they wrap the entire expression
         if (str.startsWith('(') && str.endsWith(')') && this._isBalanced(str.slice(1, -1))) {
             return this._parse(str.slice(1, -1));
         }
@@ -139,9 +145,12 @@ class EXP {
             };
         }
 
-        // 4. Handle Leaf Nodes (Numbers, Complex Numbers, Variables)
+        // 4. Handle Leaf Nodes (Numbers, Complex Numbers, Variables, quatum operators)
         if (/^\d+(\.\d+)?(i)?$/.test(str) || /^c\(.*\)$/.test(str)) {
             return { type: 'number', value: str };
+        }
+        if (/^(N|A|AD)_[A-Za-z]+$/.test(str)) {
+            return { type: 'qop', name: str.split('_')[1], qopType: str.split('_')[0] };
         }
         
         return { type: 'variable', name: str };
@@ -267,6 +276,95 @@ class EXP {
             if (node.op === '^') return math.pow(left, right);
             throw new Error(`Unknown operator ${node.op}`);
         }
+    }
+
+    distribute() {
+        distributeModification = false;
+        this = this._distribute();
+        return mod;
+    }
+    _distribute() {
+
+       if (this.node.type === 'operator' && (this.node.op === '+' || this.node.op === '-')) {
+            const left = new EXP(this.node.children[0].node).distribute();
+            const right = new EXP(this.node.children[1].node).distribute();
+            if (this.node.op === '+') {
+                return EXP.add(left, right);
+            } else {
+                return EXP.subtract(left, right);
+            }
+       }
+        
+       if (this.node.type === 'operator' && this.node.op === '*') {
+            const left = new EXP(this.node.children[0].node).distribute();
+            const right = new EXP(this.node.children[1].node).distribute();
+
+            if (left.node.type === 'operator' && left.node.op === '+') {
+                distributeModification = true;
+                return EXP.add(EXP.multiply(new EXP(left.node.children[0].node), right).distribute(), EXP.multiply(new EXP(left.node.children[1].node), right).distribute());
+            }
+            if (right.node.type === 'operator' && right.node.op === '+') {
+                distributeModification = true;
+                return EXP.add(EXP.multiply(left, new EXP(right.node.children[0].node)).distribute(), EXP.multiply(left, new EXP(right.node.children[1].node)).distribute());
+            }
+            if (left.node.type === 'operator' && left.node.op === '-') {
+                distributeModification = true;
+                return EXP.subtract(EXP.multiply(new EXP(left.node.children[0].node), right).distribute(), EXP.multiply(new EXP(left.node.children[1].node), right).distribute());
+            }
+            if (right.node.type === 'operator' && right.node.op === '-') {
+                distributeModification = true;
+                return EXP.subtract(EXP.multiply(left, new EXP(right.node.children[0].node)).distribute(), EXP.multiply(left, new EXP(right.node.children[1].node)).distribute());
+            }
+            return EXP.multiply(left, right);
+        }
+        if (this.node.type === 'operator' && this.node.op === '-') {
+            const left = new EXP(this.node.children[0].node).distribute();
+            if (left.node.type === 'operator' && left.node.op === '+') {
+                distributeModification = true;
+                left.node.op = '-';
+            } else if (left.node.type === 'operator' && left.node.op === '-') {
+                distributeModification = true;
+                left.node.op = '+';
+            }
+
+            if (this.node.children.length === 1) {
+                return EXP.negate(left);
+            }
+            const right = new EXP(this.node.children[1].node).distribute();
+            return EXP.subtract(left, right);
+        }
+        if (this.node.type === 'operator' && this.node.op === '/') {
+            const left = new EXP(this.node.children[0].node).distribute();
+            const right = new EXP(this.node.children[1].node).distribute();
+
+            if (left.node.type === 'operator' && left.node.op === '+') {
+                distributeModification = true;
+                return EXP.add(EXP.divide(new EXP(left.node.children[0].node), right).distribute(), EXP.divide(new EXP(left.node.children[1].node), right).distribute());
+            }
+            if (left.node.type === 'operator' && left.node.op === '-') {
+                distributeModification = true;
+                return EXP.subtract(EXP.divide(new EXP(left.node.children[0].node), right).distribute(), EXP.divide(new EXP(left.node.children[1].node), right).distribute());
+            }
+
+            return EXP.divide(left, right);
+        }
+        if (this.node.type === 'operator' && this.node.op === '^') {
+            const left = new EXP(this.node.children[0].node).distribute();
+            const right = new EXP(this.node.children[1].node).distribute();
+            if (right.node.type === 'number' && Number(right.node.value) === 2) {
+                distributeModification = true;
+                return EXP.multiply(left, left);
+            }
+            return EXP.pow(left, right);
+        }
+        if (this.node.type === 'function') {
+            return new EXP({
+                type: 'function',
+                name: this.node.name,
+                argument: new EXP(this.node.argument.node).distribute(),
+            });
+        }
+        return this; // For numbers, variables, and qops
     }
     // --- Output Formats ---
 

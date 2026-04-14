@@ -120,6 +120,15 @@ function getExpression() {
 	expressionValue.innerHTML = `Value: ${exp.evaluate(varDictStr)}`;
 }
 
+function getDistributedExpression() {
+	const expr = document.getElementById('varExpression').value;
+	const exp = EXP.build(expr).distribute();
+	const varDictStr = document.getElementById('dictExpression').value;
+	document.getElementById('latexResultExpression').innerHTML = `\\(${exp.toLatex()}\\)`;
+	MathJax.typesetPromise([document.getElementById('latexResultExpression')]);
+	// expressionValue.innerHTML = `Value: ${exp.evaluate(varDictStr)}`;
+}
+
 function buildLayout(d) {
 	dim = d
 	document.getElementById('tab1').innerHTML = buildSingleTable(1)
@@ -657,6 +666,7 @@ body {
 
 	<input type="text" id="varExpression" placeholder="5 * 3 exp(12) + 1" value="" style="width:400px; margin-left:10px;"/>
 	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(getExpression);">Calculate</div>
+	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(getDistributedExpression);">Distribute</div>
 	<input type="text" id="dictExpression" placeholder="a=3.2,b=40" value="" style="width:400px; margin-left:10px;"/>
 	<div id="latexResultExpression" ></div>
 	<div id="expressionValue" ></div>
