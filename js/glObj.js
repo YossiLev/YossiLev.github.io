@@ -206,7 +206,7 @@ class glBuild {
 		return new glInfo(data);
 
 	}
-	static torus(size, pos, col) {
+	static torus(size, pos, col, twistHalf = 0) {
 		let s = 0.5 * size
 
 		let data = glBuild.dataInit(pos, 0x0004 /*gl.TRIANGLES */);
@@ -218,12 +218,21 @@ class glBuild {
 		let lastTheta = 0;
 		let pRot = 0;
 		let last_pRot = 0;
+		let color = [...col];
 		for (let iTheta = -180; iTheta < 181; iTheta +=5) {
 			let theta = (Math.PI * iTheta) / 180
 			if (needFirstTheta) {
 				needFirstTheta = false
 				lastTheta = theta
 				continue
+			}
+			if ((twistHalf % 2 == 0 && twistHalf != 0 && iTheta < - 150) || 
+				(twistHalf % 2 == 1 && (iTheta < - 150 || (iTheta < 30 && iTheta > 0)))){
+				color = [1, 0, 0];
+			} else if (twistHalf % 2 == 0  && twistHalf != 0 && (iTheta < 30 && iTheta > 0)) {
+				color = [0, 1, 0];
+			} else {
+				color = [...col];
 			}
 
 			let needFirstPsi = true
@@ -235,6 +244,7 @@ class glBuild {
 				} else {
 					pRot = psi * 0.01;
 				}
+				pRot += 0.5 * twistHalf * psi;
 
 				if (needFirstPsi) {
 					needFirstPsi = false
@@ -242,6 +252,7 @@ class glBuild {
 					last_pRot = pRot
 					continue
 				}
+
 
 				let ll = data.vertices.length / 3;
 				data.vertices.push(...Torus.p(s, exp_eta, theta + pRot, psi))
@@ -252,7 +263,7 @@ class glBuild {
 				data.normals.push(...Torus.n(lastTheta + pRot, psi));
 				data.normals.push(...Torus.n(lastTheta + pRot, last_psi));
 				data.normals.push(...Torus.n(theta + pRot, last_psi));
-				data.colors.push(...col, ...col, ...col, ...col)
+				data.colors.push(...color, ...color, ...color, ...color)
 				data.indices.push(ll, ll + 1, ll + 3, ll + 2, ll + 1, ll + 3)
 
 				last_psi = psi

@@ -264,16 +264,38 @@ class glWorld {
 			'}'
 		].join('');
 
+		// let fragCode = [
+		// 	'precision mediump float;',
+		// 	'varying vec4 vColor;',
+		// 	'varying vec4 vNormal;',
+		// 	'void main(void) {',
+		// 		'vec4 vColorA = (vNormal[2] * 0.5 + 0.5) * vColor;',
+		// 		'vColorA[3] = 1.0;',
+		// 		'gl_FragColor = vColorA;',
+		// 	'}'
+		// ].join('');
+
 		let fragCode = [
 			'precision mediump float;',
 			'varying vec4 vColor;',
 			'varying vec4 vNormal;',
 			'void main(void) {',
-				'vec4 vColorA = (vNormal[2] * 0.5 + 0.5) * vColor;',
-				'vColorA[3] = 1.0;',
-				'gl_FragColor = vColorA;',
+				'vec3 normal = normalize(vNormal.xyz);',
+
+				// directional light
+				'float diffuse = normal.z * 0.5 + 0.5;',
+
+				// ambient light
+				'float ambient = 0.6;',
+
+				// combine
+				'float lighting = ambient + (1.0 - ambient) * diffuse;',
+
+				'vec3 color = vColor.rgb * lighting;',
+				'gl_FragColor = vec4(color, 1.0);',
 			'}'
 		].join('');
+
 
 		let vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
 		this.gl.shaderSource(vertShader, vertCode);

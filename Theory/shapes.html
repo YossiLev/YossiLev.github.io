@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Elementry Particles</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16x16.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/menus.css">
+    <script src="../js/main.js"></script>
+    <script src="../js/tts.js"></script>
+    <script type="text/javascript" src="../js/linesGeo.js"></script>
+    <script type="text/javascript" src="../js/glWorld.js"></script>
+    <script type="text/javascript" src="../js/glObj.js"></script>
+    <script type="text/javascript" src="../js/glMat.js"></script>
+    <script type="text/javascript" src="../js/tdObj.js"></script>
+    <script type="text/javascript" src="../js/tex/tex-mml-chtml.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+</head>
+<body>
+<div class="headLine">
+    <div class="appendHead"> - Particles topology</div>
+</div>
+<div class="container">
+    <div style="display: inline-block;" >
+        <canvas width="440" height="440" id="lepton1_Canvas" class="canvasWebGl " tabindex="0"></canvas>
+    </div>
+    <div style="display: inline-block;" >
+        <canvas width="440" height="440" id="lepton2_Canvas" class="canvasWebGl " tabindex="0"></canvas>
+    </div>
+</div>
+<script>
+    let worldSurf1 = new glWorld();
+    worldSurf1.addToRoot('torus1', glBuild.torus(0.4, [0, 0, 0, 0, 0, 0], [0, 0.5, 1], 3), { show: true });
+    //worldSurf1.addLabelView('side', [1.3737387097273113, 0, 0, 0, 0, 2.2895645162121854, 0, 0, 0, 0, -0.10512820512820514, -0.1, 0, 0, -0.20512820512820512, 0, 0.9998266232097757, 0.006730336679404935, -0.017361626914537763, 0, -0.016057591928409165, 0.7837095817816787, -0.6209198379541808, 0, 0.009427473807888864, 0.6210909707858957, 0.7836817777298599, 0, 0, 0, 0, 1]);
+    worldSurf1.prepare(document.getElementById('lepton1_Canvas'));
+    worldSurf1.startAnimation();
+
+    let worldSurf2 = new glWorld();
+    worldSurf2.addToRoot('torus2', glBuild.torus(0.4, [0, 0, 0, 0, 0, 0], [0, 0.5, 1], 2), { show: true });
+    worldSurf2.prepare(document.getElementById('lepton2_Canvas'));
+    worldSurf2.startAnimation();
+
+</script>
+</body>
+</html> 
