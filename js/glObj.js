@@ -219,6 +219,10 @@ class glBuild {
 		let pRot = 0;
 		let last_pRot = 0;
 		let color = [...col];
+		let twistSign = twistHalf >= 0 ? 1 : -1;
+		if (twistSign == -1) {
+			twistHalf = - twistHalf;
+		}
 		for (let iTheta = -180; iTheta < 181; iTheta +=5) {
 			let theta = (Math.PI * iTheta) / 180
 			if (needFirstTheta) {
@@ -244,7 +248,7 @@ class glBuild {
 				} else {
 					pRot = psi * 0.01;
 				}
-				pRot += 0.5 * twistHalf * psi;
+				pRot += 0.5 * twistHalf * twistSign * psi;
 
 				if (needFirstPsi) {
 					needFirstPsi = false

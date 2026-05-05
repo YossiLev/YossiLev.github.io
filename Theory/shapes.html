@@ -25,10 +25,32 @@
 </div>
 <div class="container">
     <div style="display: inline-block;" >
-        <canvas width="440" height="440" id="lepton1_Canvas" class="canvasWebGl " tabindex="0"></canvas>
+        <div>
+        <label>Particle 1
+            <select id="selectParticle1">
+            <option value="1">Electron</option>
+            <option value="-1">Positron</option>
+            <option value="3">Muon</option>
+            <option value="-3">Antimuon</option>
+            <option value="2">Neutrino</option>
+            <option value="-2">Antineutrino</option>
+            </select>
+        </label>
+        <div><canvas width="440" height="440" id="lepton1_Canvas" class="canvasWebGl " tabindex="0"></canvas></div>
+        </div>
     </div>
     <div style="display: inline-block;" >
-        <canvas width="440" height="440" id="lepton2_Canvas" class="canvasWebGl " tabindex="0"></canvas>
+        <label>Particle 2
+            <select id="selectParticle2">
+            <option value="1">Electron</option>
+            <option value="-1">Positron</option>
+            <option value="3">Muon</option>
+            <option value="-3">Antimuon</option>
+            <option value="2">Neutrino</option>
+            <option value="-2">Antineutrino</option>
+            </select>
+        </label>
+        <div><canvas width="440" height="440" id="lepton2_Canvas" class="canvasWebGl " tabindex="0"></canvas></div>
     </div>
 </div>
 <script>
@@ -43,6 +65,26 @@
     worldSurf2.prepare(document.getElementById('lepton2_Canvas'));
     worldSurf2.startAnimation();
 
+    function updateParticle1() {
+        console.log('update particle 1');
+        worldSurf1.removeObjects('torus1');
+        let val = parseInt(document.getElementById('selectParticle1').value);
+        console.log('val', val);
+        worldSurf1.addToRoot('torus1', glBuild.torus(0.4, [0, 0, 0, 0, 0, 0], [0, 0.5, 1], val), { show: true });
+        worldSurf1.prepare(document.getElementById('lepton1_Canvas'));
+        worldSurf1.startAnimation();        
+    }
+    function updateParticle2() {
+        console.log('update particle 2');
+        worldSurf2.removeObjects('torus2');
+        let val = parseInt(document.getElementById('selectParticle2').value);
+        worldSurf2.addToRoot('torus2', glBuild.torus(0.4, [0, 0, 0, 0, 0, 0], [0, 0.5, 1], val), { show: true });
+        worldSurf2.prepare(document.getElementById('lepton2_Canvas'));
+        worldSurf2.startAnimation();
+    }
+
+    document.getElementById('selectParticle1').addEventListener('change', updateParticle1);
+    document.getElementById('selectParticle2').addEventListener('change', updateParticle2);
 </script>
 </body>
 </html> 

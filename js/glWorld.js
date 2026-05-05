@@ -117,6 +117,12 @@ class glWorld {
 		this.getSelectedObjects(namesSelections).forEach(o => o.hideObj());
 		this.setFocus();
 	}
+	removeObjects(namesSelections) {
+		this.getSelectedObjects(namesSelections).forEach(o => {
+			this.objects = this.objects.filter(ob => ob !== o);
+		});
+		this.setFocus();
+	}
 	animate(operation, pos, namesSelections, time) {
 		if (this.animationIsRunning) {
 			return;
@@ -189,7 +195,7 @@ class glWorld {
 			this.proj_matrix = pp;
 			this.mo_matrix = mm;
 		} else {
-			console.log('Current pr-mo ', this.proj_matrix.concat(this.mo_matrix))
+			//console.log('Current pr-mo ', this.proj_matrix.concat(this.mo_matrix))
 			pp.forEach((p, ip) => {this.proj_matrix[ip] = p; });
 			mm.forEach((m, im) => {this.mo_matrix[im] = m; });
 		}
