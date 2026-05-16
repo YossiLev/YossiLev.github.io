@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Presentation — DECK</title>
+  <link rel="stylesheet" href="../css/deck.css" />
+  <style>
+    /* Add your custom styles here */
+  </style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- ════════════════════════════════════
+       SLIDE 1 — Title / Cover
+       ════════════════════════════════════ -->
+  <section class="slide"
+    data-narrate="Welcome to my presentation.">
+
+    <!-- Optional decorative glows -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="layout-hero">
+      <p class="slide-eyebrow">Topic / Company / Date</p>
+      <h1 class="slide-title">Your <em>Presentation</em><br>Title Here</h1>
+      <p class="slide-subtitle">A brief subtitle or tagline goes here.</p>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════
+       SLIDE 2 — Content with State Steps
+       Use → to reveal items one by one
+       ════════════════════════════════════ -->
+  <section class="slide"
+    data-narrate="Here are three key points.">
+
+    <div style="width: 100%; max-width: 700px;">
+      <p class="slide-eyebrow">Section name</p>
+      <h2 class="slide-title" style="font-size: 2.4rem; margin-bottom: 36px;">
+        Three key <em>points.</em>
+      </h2>
+
+      <!-- Item 1: visible from state 1 (immediately) -->
+      <div class="card card-accent-1" style="margin-bottom:16px;"
+        data-show-1
+        data-opacity-1="0" data-opacity-2="1"
+        data-pos-1="40px, 0px" data-pos-2="0px, 0px"
+        data-duration="500ms">
+        <h3 style="color: var(--accent-1); font-size:1rem; margin-bottom:6px;">Point One</h3>
+        <p class="slide-body">Describe your first point here. Use → to reveal the next.</p>
+      </div>
+
+      <!-- Item 2: hidden initially, shown at state 2 -->
+      <div class="card card-accent-2" style="margin-bottom:16px;"
+        data-hide-1
+        data-show-2
+        data-opacity-2="0" data-opacity-3="1"
+        data-pos-2="40px, 0px" data-pos-3="0px, 0px"
+        data-duration="500ms"
+        style="opacity:0">
+        <h3 style="color: var(--accent-2); font-size:1rem; margin-bottom:6px;">Point Two</h3>
+        <p class="slide-body">Describe your second point. Press → to continue.</p>
+      </div>
+
+      <!-- Item 3: hidden initially, shown at state 3 -->
+      <div class="card card-accent-3"
+        data-hide-1 data-hide-2
+        data-show-3
+        data-opacity-3="0" data-opacity-4="1"
+        data-pos-3="40px, 0px" data-pos-4="0px, 0px"
+        data-duration="500ms"
+        style="opacity:0">
+        <h3 style="color: var(--accent-3); font-size:1rem; margin-bottom:6px;">Point Three</h3>
+        <p class="slide-body">Describe your third point. Press ↓ to advance to the next slide.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════
+       SLIDE 3 — Two Column Layout
+       ════════════════════════════════════ -->
+  <section class="slide">
+
+    <div class="layout-2col" style="width:100%;">
+
+      <!-- Left column: text -->
+      <div>
+        <p class="slide-eyebrow">Left column</p>
+        <h2 class="slide-title" style="font-size: 2rem; margin-bottom: 16px;">
+          Split layouts <em>work great</em> for comparisons.
+        </h2>
+        <p class="slide-body" style="margin-bottom:20px;">
+          Use <code>.layout-2col</code> for a 50/50 grid.
+          Try <code>.layout-3col</code> for three columns.
+        </p>
+        <ul class="deck-list">
+          <li>First bullet point here</li>
+          <li>Second bullet point here</li>
+          <li>Third bullet point here</li>
+        </ul>
+      </div>
+
+      <!-- Right column: chart revealed at state 2 -->
+      <div>
+        <p class="slide-label" style="margin-bottom:12px;">Data visualization</p>
+        <div class="chart-container card"
+          data-chart="bar"
+          data-chart-data='{"labels":["A","B","C","D","E"],"values":[30,55,42,78,61]}'
+          data-chart-color="#4fffb0"
+          data-chart-text-color="#aabbcc"
+          data-chart-state="1">
+        </div>
+        <p class="slide-body" style="font-size:0.8rem; margin-top:8px; opacity:0.5;">Press → to animate chart</p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════
+       SLIDE 4 — Big Quote
+       ════════════════════════════════════ -->
+  <section class="slide slide-purple"
+    data-narrate="Here is a key quote or insight.">
+
+    <div class="orb" style="background: rgba(124,111,255,0.1); width:600px; height:600px; top:-200px; right:-200px;"></div>
+
+    <div class="layout-hero" style="max-width:700px;">
+      <blockquote class="slide-quote">
+        "Your most memorable insight, quote, or key message goes here. Make it count."
+        <cite>— Source or Author Name</cite>
+      </blockquote>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════
+       SLIDE 5 — Stats / Numbers
+       ════════════════════════════════════ -->
+  <section class="slide">
+
+    <div style="width:100%;">
+      <p class="slide-eyebrow">Results</p>
+      <h2 class="slide-title" style="font-size: 2rem; margin-bottom: 32px;">By the <em>numbers.</em></h2>
+
+      <div class="layout-3col">
+        <div class="stat-card" style="padding:28px; border-radius:16px; border:1px solid var(--border); background:rgba(255,255,255,0.02); text-align:center;">
+          <div class="slide-big-number hl-1">87%</div>
+          <div class="slide-label" style="margin-top:8px;">Metric One</div>
+        </div>
+        <div class="stat-card" style="padding:28px; border-radius:16px; border:1px solid var(--border); background:rgba(255,255,255,0.02); text-align:center;">
+          <div class="slide-big-number hl-2">2.4×</div>
+          <div class="slide-label" style="margin-top:8px;">Metric Two</div>
+        </div>
+        <div class="stat-card" style="padding:28px; border-radius:16px; border:1px solid var(--border); background:rgba(255,255,255,0.02); text-align:center;">
+          <div class="slide-big-number hl-3">$1.2M</div>
+          <div class="slide-label" style="margin-top:8px;">Metric Three</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════
+       SLIDE 6 — Thank You / Close
+       ════════════════════════════════════ -->
+  <section class="slide"
+    data-narrate="Thank you. Questions?">
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="layout-hero">
+      <p class="slide-eyebrow">Thank you</p>
+      <h2 class="slide-title" style="font-size: clamp(3rem, 7vw, 6rem);">
+        <em>Questions?</em>
+      </h2>
+      <hr class="divider" style="margin: 0 auto;">
+      <p class="slide-subtitle">your@email.com · yoursite.com</p>
+    </div>
+  </section>
+
+</div><!-- /.deck -->
+
+<script src="../js/deck.js"></script>
+</body>
+</html>

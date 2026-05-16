@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Presentation — DECK</title>
+  <link rel="stylesheet" href="../css/deck.css" />
+  <style>
+    .table-mat {
+      border-collapse: collapse;
+      margin: 0;
+      font-size: 0.9em;
+      font-family: sans-serif;
+      font-size: 16px;
+    }
+    .table-mat thead tr {
+      background-color: #009879;
+      color: #ffffff;
+      text-align: left;
+    }
+    .table-mat th,
+    .table-mat td {
+      text-align: center;
+      border: 1px solid var(--border);
+      padding: 0.6em 0.9em;
+    }
+  </style>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- ════════════════════════════════════
+       SLIDE 1 — Title / Cover
+       ════════════════════════════════════ -->
+  <section class="slide">
+
+    <!-- Optional decorative glows -->
+    <div class="orb orb-1"></div>
+
+    <div class="layout-hero">
+      <p class="slide-eyebrow">Spacetime in Geometric Algebra</p>
+      <h1 class="slide-title">The right way to look at<br><em>Spacetime</em> and <em>Maxwell's Equations</em></h1>
+      <p class="slide-subtitle">(or should I say "equation")</p>
+    </div>
+    <div class="orb orb-2"></div>
+  </section>
+
+
+  <!-- ════════════════════════════════════
+       SLIDE 2 — Content with State Steps
+       Use → to reveal items one by one
+       ════════════════════════════════════ -->
+  <section class="slide layout-2col">
+    <div style="width: 100%; max-width: 700px;">
+      <img data-remove-2 data-add-1 src="./img/maxwell1.png" alt="Maxwell's equations" style="border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+      <img data-remove-1 data-add-2 src="./img/maxwellcomparison.webp" alt="Maxwell's equations" style="border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+    </div>
+    <div style="width: 100%; max-width: 700px;">
+      <div data-remove-2 data-add-1 style="opacity:0">
+        <p class="slide-eyebrow">Introduction</p>
+        <h3 class="slide-title" style="font-size: 2.4rem; margin-bottom: 36px;">
+          The original Maxwell's equations are often seen as complex and unintuitive.
+        </h3>
+      </div>
+      <div data-remove-1 data-add-2 style="opacity:0">
+        <p class="slide-body" style="margin-bottom:20px;">
+          Compare with the equations that we currently teach in school. More modern formulations that are more compact and elegant.
+        <p>
+        $$\nabla \cdot \vec{E} = \frac{\rho}{\epsilon_0}$$
+        $$\nabla \cdot \vec{B} = 0$$
+        $$\nabla \times \vec{E} = - \frac{\partial \vec{B}}{\partial t}$$
+        $$\nabla \times \vec{B} = \mu_0 \vec{J} + \mu_0 \epsilon_0 \frac{\partial \vec{E}}{\partial t}$$
+      </div>
+      <div data-remove-1 data-add-3 style="opacity:0">
+        <p class="slide-body" style="margin-bottom:20px;">
+          and some more.
+        </p>
+        $$\frac{\partial \rho}{\partial t} + \nabla \cdot \vec{J} = 0$$
+        $$\vec{B} = \nabla \times \vec{A} \qquad \vec{E} = -\nabla \phi - \frac{\partial \vec{A}}{\partial t}$$
+      </div>
+    </div>
+
+
+  </section>
+
+
+  <!-- ════════════════════════════════════
+       SLIDE 3 — Space Algebra Formulation
+       ════════════════════════════════════ -->
+  <section class="slide">
+
+    <div class="layout-hero">
+      <h1 class="slide-title">Space Algebra</h1>
+      <p class="slide-subtitle">Add multiplication to vector space</p>
+    </div>
+    <div data-hide-1 data-show-2 style="opacity:0; max-width:700px; margin: 0 auto;">
+      <p class="slide-body" style="margin-bottom:20px;">
+        We start with 3 base vectors $$e_1, e_2, e_3$$ They represent the three dimensions of space. We can then define a new type of multiplication, called the geometric product, that allows us to combine these vectors in a way that captures both their magnitude and direction.
+      </p>
+
+      <div data-remove-1 data-add-3>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
+            $$1$$
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+        <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+          $$e_1$$
+        </div>
+        <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+          $$e_2$$
+        </div>
+        <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+          $$e_3$$
+        </div>
+      </div>
+      <div data-hide-1 data-show-4>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$e_{23}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$e_{31}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$e_{12}$$
+          </div>
+        </div>
+      </div>
+      <div data-hide-1 data-show-5>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
+            $$e_{123} = I$$
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:20px;">
+        <div class="card" style="padding:16px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex:1;">
+          $$e_1 e_2 = e_1 \cdot e_2 + e_1 \wedge e_2$$
+        </div>
+        <div class="card" style="padding:16px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex:1;">
+          $$e_2 e_3 = e_2 \cdot e_3 + e_2 \wedge e_3$$
+        </div>
+        <div class="card" style="padding:16px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex:1;">
+          $$e_3 e_1 = e_3 \cdot e_1 + e_3 \wedge e_1$$
+        </div>
+      </div>
+
+  </section>
+
+  
+  <!-- ════════════════════════════════════
+       SLIDE 4 — Space Algebra Representation
+       ════════════════════════════════════ -->
+  <section class="slide slide-purple">
+    <div class="layout-hero">
+      <h1 class="slide-title">Space Algebra</h1>
+    </div>
+    <div class="layout-2col" style="width:80%;">
+      <div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
+            $$1$$
+          </div>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$e_1$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$e_2$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$e_3$$
+          </div>
+        </div>
+        <div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$e_{23}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$e_{31}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$e_{12}$$
+          </div>
+        </div>
+        </div>
+        <div>
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
+              $$I$$
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style=" padding:3px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            <table class="table-mat"><tr><td>1</td><td>0</td></tr><tr><td>0</td><td>1</td></tr></table>
+          </div>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style=" padding:3px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td>1</td><tr><td>1</td><td>0</td></tr></tr></table>
+          </div>
+            <div class="card" style=" padding:3px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td>-i</td><tr><td>i</td><td>0</td></tr></tr></table>
+          </div>          
+            <div class="card" style=" padding:3px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>1</td><td>0</td></tr><tr><td>0</td><td>-1</td></tr></table>
+          </div>        
+        </div>
+        <div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style=" padding:3px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>i</td><td>0</td><tr><td>0</td><td>-i</td></tr></tr></table>
+          </div>
+            <div class="card" style=" padding:3px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td>i</td><tr><td>i</td><td>0</td></tr></tr></table>
+          </div>          
+          <div class="card" style=" padding:3px; background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td>1</td></tr><tr><td>-1</td><td>0</td></tr></table>
+          </div>        
+        </div>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style=" padding:3px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
+            <table class="table-mat"><tr><td>i</td><td>0</td></tr><tr><td>0</td><td>i</td></tr></table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════
+       SLIDE 5 — Spacetime Algebra Representation
+       ════════════════════════════════════ -->
+  <section class="slide slide-purple">
+    <div class="layout-hero">
+      <h1 class="slide-title">Spacetime Algebra</h1>
+    </div>
+    <div class="layout-2col" style="width:80%;">
+      <div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
+            $$1$$
+          </div>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_0$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_1$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_2$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_3$$
+          </div>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_{10}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_{20}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_{30}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_{23}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_{31}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_{12}$$
+          </div>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_{123}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_{230}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_{310}$$
+          </div>
+          <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            $$\gamma_{120}$$
+          </div>
+        </div>        
+        <div>
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
+              $$\gamma_{0123} =I$$
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
+            <table class="table-mat"><tr><td>1</td><td>0</td></tr><tr><td>0</td><td>1</td></tr></table>
+          </div>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>1</td><td>0</td></tr><tr><td>0</td><td>-1</td></tr></table>
+          </div>
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td><math><msub><mi>&sigma;</mi><mi>x</mi></msub></math></td></tr><tr><td><math><mo>-</mo><msub><mi>&sigma;</mi><mi>x</mi></msub></math></td><td>0</td></tr></table>
+          </div>          
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td><math><msub><mi>&sigma;</mi><mi>y</mi></msub></math></td></tr><tr><td><math><mo>-</mo><msub><mi>&sigma;</mi><mi>y</mi></msub></math></td><td>0</td></tr></table>
+          </div>          
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td><math><msub><mi>&sigma;</mi><mi>z</mi></msub></math></td></tr><tr><td><math><mo>-</mo><msub><mi>&sigma;</mi><mi>z</mi></msub></math></td><td>0</td></tr></table>
+          </div>        
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td><math><mo>-</mo><msub><mi>&sigma;</mi><mi>x</mi></msub></math></td></tr><tr><td><math><mo>-</mo><msub><mi>&sigma;</mi><mi>x</mi></msub></math></td><td>0</td></tr></table>
+          </div>          
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td><math><mo>-</mo><msub><mi>&sigma;</mi><mi>y</mi></msub></math></td></tr><tr><td><math><mo>-</mo><msub><mi>&sigma;</mi><mi>y</mi></msub></math></td><td>0</td></tr></table>
+          </div>          
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td><math><mo>-</mo><msub><mi>&sigma;</mi><mi>z</mi></msub></math></td></tr><tr><td><math><mo>-</mo><msub><mi>&sigma;</mi><mi>z</mi></msub></math></td><td>0</td></tr></table>
+          </div>        
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td><math><mo>-i</mo><msub><mi>&sigma;</mi><mi>x</mi></msub></math></td><td>0</td></tr><tr><td>0</td><td><math><mo>-i</mo><msub><mi>&sigma;</mi><mi>x</mi></msub></math></td></tr></table>
+          </div>        
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td><math><mo>-i</mo><msub><mi>&sigma;</mi><mi>y</mi></msub></math></td><td>0</td></tr><tr><td>0</td><td><math><mo>-i</mo><msub><mi>&sigma;</mi><mi>y</mi></msub></math></td></tr></table>
+          </div>        
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td><math><mo>-i</mo><msub><mi>&sigma;</mi><mi>z</mi></msub></math></td><td>0</td></tr><tr><td>0</td><td><math><mo>-i</mo><msub><mi>&sigma;</mi><mi>z</mi></msub></math></td></tr></table>
+          </div>        
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td>0</td><td>-i</td><tr><td>i</td><td>0</td></tr></tr></table>
+          </div>
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td><math><mo>-i</mo><msub><mi>&sigma;</mi><mi>x</mi></msub></math></td><td>0</td></tr><tr><td>0</td><td><math><mo>i</mo><msub><mi>&sigma;</mi><mi>x</mi></msub></math></td></tr></table>
+          </div>          
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td><math><mo>-i</mo><msub><mi>&sigma;</mi><mi>y</mi></msub></math></td><td>0</td></tr><tr><td>0</td><td><math><mo>i</mo><msub><mi>&sigma;</mi><mi>y</mi></msub></math></td></tr></table>
+          </div>          
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0;  ">
+            <table class="table-mat"><tr><td><math><mo>-i</mo><msub><mi>&sigma;</mi><mi>z</mi></msub></math></td><td>0</td></tr><tr><td>0</td><td><math><mo>i</mo><msub><mi>&sigma;</mi><mi>z</mi></msub></math></td></tr></table>
+          </div>          
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div class="card" style=" padding:1px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
+            <table class="table-mat"><tr><td>0</td><td>-i</td><tr><td>-i</td><td>0</td></tr></tr></table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+
+  <!-- ════════════════════════════════════
+       SLIDE 5 — Stats / Numbers
+       ════════════════════════════════════ -->
+  <section class="slide">
+
+    <div style="width:100%;">
+      <p class="slide-eyebrow">Results</p>
+      <h2 class="slide-title" style="font-size: 2rem; margin-bottom: 32px;">By the <em>numbers.</em></h2>
+
+      <div class="layout-3col">
+        <div class="stat-card" style="padding:28px; border-radius:16px; border:1px solid var(--border); background:rgba(255,255,255,0.02); text-align:center;">
+          <div class="slide-big-number hl-1">87%</div>
+          <div class="slide-label" style="margin-top:8px;">Metric One</div>
+        </div>
+        <div class="stat-card" style="padding:28px; border-radius:16px; border:1px solid var(--border); background:rgba(255,255,255,0.02); text-align:center;">
+          <div class="slide-big-number hl-2">2.4×</div>
+          <div class="slide-label" style="margin-top:8px;">Metric Two</div>
+        </div>
+        <div class="stat-card" style="padding:28px; border-radius:16px; border:1px solid var(--border); background:rgba(255,255,255,0.02); text-align:center;">
+          <div class="slide-big-number hl-3">$1.2M</div>
+          <div class="slide-label" style="margin-top:8px;">Metric Three</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<td>0</td>
+  <!-- ════════════════════════════════════
+       SLIDE 6 — Thank You / Close
+       ════════════════════════════════════ -->
+  <section class="slide"
+    data-narrate="Thank you. Questions?">
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="layout-hero">
+      <p class="slide-eyebrow">Thank you</p>
+      <h2 class="slide-title" style="font-size: clamp(3rem, 7vw, 6rem);">
+        <em>Questions?</em>
+      </h2>
+      <hr class="divider" style="margin: 0 auto;">
+      <p class="slide-subtitle">your@email.com · yoursite.com</p>
+    </div>
+  </section>
+
+</div><!-- /.deck -->
+
+<script src="../js/deck.js"></script>
+</body>
+</html>

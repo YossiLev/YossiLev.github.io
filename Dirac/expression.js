@@ -280,7 +280,7 @@ class EXP {
 
     distribute() {
         distributeModification = false;
-        this = this._distribute();
+        let mod = this._distribute();
         return mod;
     }
     _distribute() {

@@ -123,19 +123,37 @@ class CL {
     }
 
     static bladeFilterd(blade) {
-        if (blade === "1") return blade;
-        let nBlade = 'g' +blade.split('').slice(1).sort().join('');
-        return nBlade;
+        if (blade === "1") return [blade, 1];
+        let bc = blade.split('').slice(1);
+        let sign = 1;
+        let change = true;
+        while (change) {
+            change = false;
+            for (let i = 0; i < bc.length - 1; i++) {
+                if (bc[i] > bc[i+1]) {
+                    [bc[i], bc[i+1]] = [bc[i+1], bc[i]];
+                    sign *= -1;
+                    change = true;
+                }
+            }
+        }
+
+        return ['g' + bc.join(''), sign];
     }
 
     _prune() {
         let updated = {}
         for (let blade in this.terms) {
-            let canonBlade = CL.bladeFilterd(blade);
+            let [canonBlade, sign] = CL.bladeFilterd(blade);
+            let coeff = this.terms[blade];
+            if (sign === -1) {
+                coeff = EXP.negate(coeff);
+            }
+
             if (updated[canonBlade]) {
-                updated[canonBlade] = EXP.add(updated[canonBlade], this.terms[blade]);
+                updated[canonBlade] = EXP.add(updated[canonBlade], coeff);
             } else {
-                updated[canonBlade] = this.terms[blade];
+                updated[canonBlade] = coeff;
             }
         }
 

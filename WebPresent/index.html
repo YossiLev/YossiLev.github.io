@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DECK — Web Presentation Framework</title>
+  <link rel="stylesheet" href="css/deck.css" />
+  <style>
+    /* ── Demo-specific extras ── */
+    .logo-mark {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--accent-1);
+      text-transform: uppercase;
+      position: fixed;
+      top: 20px;
+      left: 24px;
+      z-index: 1000;
+      opacity: 0.5;
+    }
+
+    /* Cover slide */
+    .slide-cover { background: radial-gradient(ellipse at 70% 50%, #0d2218, #070d1a 70%); }
+    .cover-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      width: 100%;
+      align-items: center;
+    }
+    .cover-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      line-height: 1.0;
+      font-weight: 400;
+    }
+    .cover-title strong {
+      display: block;
+      font-style: italic;
+      color: var(--accent-1);
+    }
+    .cover-visual {
+      position: relative;
+      height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hex-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+    .hex {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      transition: all 1.5s ease;
+    }
+    .hex.lit { background: rgba(79,255,176,0.12); border-color: rgba(79,255,176,0.35); box-shadow: 0 0 12px rgba(79,255,176,0.15); }
+    .hex.lit2 { background: rgba(124,111,255,0.1); border-color: rgba(124,111,255,0.3); }
+
+    /* Feature slide */
+    .feature-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 700px;
+    }
+    .feature-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 18px 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      transition: all 0.5s ease;
+    }
+    .feature-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .feature-title { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); }
+    .feature-desc { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Animation demo slide */
+    .anim-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    .floating-box {
+      position: absolute;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      padding: 14px 24px;
+      white-space: nowrap;
+    }
+    .fb-green  { background: rgba(79,255,176,0.12);  border: 1px solid rgba(79,255,176,0.3); color: var(--accent-1); }
+    .fb-purple { background: rgba(124,111,255,0.12); border: 1px solid rgba(124,111,255,0.3); color: var(--accent-2); }
+    .fb-pink   { background: rgba(255,107,157,0.12); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-3); }
+    .fb-yellow { background: rgba(255,209,102,0.12); border: 1px solid rgba(255,209,102,0.3); color: var(--accent-4); }
+
+    .connector-line {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+      transform-origin: left center;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    /* Code slide */
+    .code-block {
+      background: #060c18;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      width: 100%;
+      overflow-x: auto;
+    }
+    .code-block .kw  { color: var(--accent-2); }
+    .code-block .at  { color: var(--accent-4); }
+    .code-block .st  { color: var(--accent-3); }
+    .code-block .cm  { color: var(--text-muted); font-style: italic; }
+    .code-block .hl  { color: var(--accent-1); }
+
+    /* Stat cards */
+    .stat-card {
+      padding: 28px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      text-align: center;
+      transition: all 0.5s ease;
+    }
+    .stat-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 3.5rem;
+      line-height: 1;
+      margin-bottom: 8px;
+      font-weight: 400;
+    }
+    .stat-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* TTS indicator */
+    .tts-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: rgba(79,255,176,0.08);
+      border: 1px solid rgba(79,255,176,0.2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent-1);
+    }
+    .tts-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-1);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* ── Slide 7: Step-by-step ── */
+    .step-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* ── Thank you ── */
+    .final-glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(79,255,176,0.08), transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="logo-mark">DECK.JS</div>
+
+<div class="deck">
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 1 — COVER                            ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide slide-cover"
+    data-narrate="Welcome to DECK — a web-native presentation framework with animation states, charts, and text to speech.">
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="cover-grid">
+      <div>
+        <p class="slide-eyebrow">Introducing</p>
+        <h1 class="cover-title">
+          The Web<br>
+          <strong>Presentation</strong><br>
+          Framework
+        </h1>
+        <p class="slide-subtitle" style="margin-top: 24px; max-width: 420px;">
+          Slides, animation states, charts & narration — all in plain HTML.
+        </p>
+        <div style="margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+          <span class="pill pill-1">↑↓ Slides</span>
+          <span class="pill pill-2">←→ States</span>
+          <span class="pill pill-3">F Fullscreen</span>
+          <span class="pill pill-4">T Speech</span>
+        </div>
+      </div>
+
+      <div class="cover-visual">
+        <div class="hex-grid" id="hexGrid">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+
+    <p class="slide-label" style="position:absolute; bottom: 52px; left: 80px;">Press ↓ or Space to continue</p>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 2 — FEATURES                         ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide"
+    data-narrate="DECK gives you slide navigation, animation states, charts, text to speech, and touch support out of the box.">
+
+    <div class="orb orb-1" style="opacity:0.5"></div>
+
+    <div style="width:100%; max-width: 800px;">
+      <p class="slide-eyebrow">What's included</p>
+      <h2 class="slide-title" style="margin-bottom: 36px;">Everything you need.<br><em>Nothing you don't.</em></h2>
+
+      <div class="feature-stack">
+        <!-- Features revealed one by one with state -->
+        <div class="feature-row" data-show-1 data-hide-1 style="opacity:0">
+          <span class="feature-icon">🎬</span>
+          <div>
+            <div class="feature-title">Slide Navigation</div>
+            <div class="feature-desc">↑↓ arrows or Space to move between slides. Touch swipe supported.</div>
+          </div>
+          <span class="pill pill-1" style="margin-left:auto">Built-in</span>
+        </div>
+
+        <div class="feature-row" data-hide-1 data-show-2 style="opacity:0">
+          <span class="feature-icon">✨</span>
+          <div>
+            <div class="feature-title">Animation States</div>
+            <div class="feature-desc">←→ to step through states. Position, opacity, scale, rotate, show/hide per element.</div>
+          </div>
+          <span class="pill pill-2" style="margin-left:auto">Built-in</span>
+        </div>
+
+        <div class="feature-row" data-hide-1 data-hide-2 data-show-3 style="opacity:0">
+          <span class="feature-icon">📊</span>
+          <div>
+            <div class="feature-title">Canvas Charts</div>
+            <div class="feature-desc">Animated bar, line, area, pie & donut charts — all via data attributes, no libraries.</div>
+          </div>
+          <span class="pill pill-3" style="margin-left:auto">Built-in</span>
+        </div>
+
+        <div class="feature-row" data-hide-1 data-hide-2 data-hide-3 data-show-4 style="opacity:0">
+          <span class="feature-icon">🔊</span>
+          <div>
+            <div class="feature-title">Text-to-Speech</div>
+            <div class="feature-desc">Per-slide <code>data-narrate</code> auto-plays on entry. Press T to replay.</div>
+          </div>
+          <span class="pill pill-4" style="margin-left:auto">Built-in</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 3 — ANIMATION DEMO                   ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide">
+    <div style="width:100%; height:100%; display:flex; flex-direction:column;">
+      <div style="flex-shrink:0; margin-bottom: 16px;">
+        <p class="slide-eyebrow">State Animation Engine</p>
+        <h2 class="slide-title" style="font-size: 2rem;">Elements move on cue. <em>Watch.</em></h2>
+        <p class="slide-body" style="margin-top: 8px;">Press → to step through the animation states below.</p>
+      </div>
+
+      <!-- Animation stage using position data-attributes -->
+      <div class="anim-stage" style="flex:1; position:relative;">
+
+        <!-- Step labels on left -->
+        <div style="position:absolute; left:0; top:0; bottom:0; width:180px; display:flex; flex-direction:column; justify-content:space-around; padding: 16px 0;">
+          <div data-show-1 data-hide-1 style="opacity:0; transition: opacity 0.4s ease;">
+            <p class="slide-label" style="margin-bottom:4px">State 1</p>
+            <p class="slide-body" style="font-size:0.8rem">Elements spawn at initial positions</p>
+          </div>
+          <div data-hide-1 data-show-2 data-hide-3 style="opacity:0; transition: opacity 0.4s ease;">
+            <p class="slide-label" style="margin-bottom:4px">State 2</p>
+            <p class="slide-body" style="font-size:0.8rem">They glide to new coordinates</p>
+          </div>
+          <div data-hide-1 data-hide-2 data-show-3 data-hide-4 style="opacity:0; transition: opacity 0.4s ease;">
+            <p class="slide-label" style="margin-bottom:4px">State 3</p>
+            <p class="slide-body" style="font-size:0.8rem">New elements appear, others scale</p>
+          </div>
+          <div data-hide-1 data-hide-2 data-hide-3 data-show-4 style="opacity:0; transition: opacity 0.4s ease;">
+            <p class="slide-label" style="margin-bottom:4px">State 4</p>
+            <p class="slide-body" style="font-size:0.8rem">Final composition with rotation</p>
+          </div>
+        </div>
+
+        <!-- The animated boxes -->
+        <div style="position:absolute; left:200px; right:0; top:0; bottom:0;">
+
+          <div class="floating-box fb-green"
+            data-pos-1="60px, 20px"
+            data-pos-2="180px, 20px"
+            data-pos-3="280px, 20px"
+            data-pos-4="180px, 80px"
+            data-scale-4="1.15"
+            data-duration="600ms">
+            data-pos
+          </div>
+
+          <div class="floating-box fb-purple"
+            data-pos-1="60px, 100px"
+            data-pos-2="60px, 20px"
+            data-pos-3="60px, 100px"
+            data-pos-4="60px, 20px"
+            data-duration="500ms">
+            data-show/hide
+          </div>
+
+          <div class="floating-box fb-pink"
+            data-pos-1="240px, 130px"
+            data-pos-2="60px, 130px"
+            data-pos-3="180px, 60px"
+            data-pos-4="280px, 130px"
+            data-duration="700ms">
+            data-scale
+          </div>
+
+          <div class="floating-box fb-yellow"
+            data-hide-1
+            data-show-3
+            data-pos-3="180px, 140px"
+            data-pos-4="60px, 140px"
+            data-rotate-4="12"
+            data-duration="600ms"
+            style="opacity:0">
+            data-rotate
+          </div>
+
+          <!-- Hint arrows -->
+          <div style="position:absolute; bottom: 20px; right: 20px; font-family:'JetBrains Mono',monospace; font-size:12px; color: var(--text-muted);">
+            Use <span style="color:var(--accent-1)">← →</span> to step
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 4 — CHARTS                           ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide"
+    data-narrate="Charts are rendered natively on canvas with smooth animation. No external libraries required.">
+
+    <div style="width:100%;">
+      <p class="slide-eyebrow">Built-in Data Visualization</p>
+      <h2 class="slide-title" style="margin-bottom: 28px; font-size:2.2rem;">Canvas charts. <em>Zero libraries.</em></h2>
+
+      <div class="layout-2col" style="align-items: start;">
+
+        <!-- Bar chart -->
+        <div>
+          <p class="slide-label" style="margin-bottom: 12px;">Bar chart — via data-chart="bar"</p>
+          <div class="chart-container card"
+            data-chart="bar"
+            data-chart-data='{"labels":["Q1","Q2","Q3","Q4"],"values":[42,67,54,89]}'
+            data-chart-color="#4fffb0"
+            data-chart-text-color="#aabbcc"
+            data-chart-state="0">
+          </div>
+        </div>
+
+        <!-- Line chart -->
+        <div>
+          <p class="slide-label" style="margin-bottom: 12px;">Line chart — via data-chart="line"</p>
+          <div class="chart-container card"
+            data-chart="line"
+            data-chart-data='{"labels":["Jan","Feb","Mar","Apr","May","Jun"],"values":[12,28,22,41,38,55]}'
+            data-chart-color="#7c6fff"
+            data-chart-text-color="#aabbcc"
+            data-chart-state="0">
+          </div>
+        </div>
+
+        <!-- Area chart -->
+        <div>
+          <p class="slide-label" style="margin-bottom: 12px;">Area chart — data-chart="area"</p>
+          <div class="chart-container card"
+            data-chart="area"
+            data-chart-data='{"labels":["W1","W2","W3","W4","W5","W6"],"series":[{"values":[20,35,28,45,38,52]},{"values":[10,18,15,24,22,31]}]}'
+            data-chart-state="0">
+          </div>
+        </div>
+
+        <!-- Donut chart -->
+        <div>
+          <p class="slide-label" style="margin-bottom: 12px;">Donut chart — data-chart="donut"</p>
+          <div class="chart-container card"
+            data-chart="donut"
+            data-chart-data='{"labels":["Web","Mobile","Desktop","Other"],"values":[44,28,18,10]}'
+            data-chart-state="0">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 5 — TEXT TO SPEECH                   ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide slide-purple"
+    data-narrate="Text to Speech is built in. Add data-narrate to any slide for automatic narration when it becomes active. Press T at any time to replay.">
+
+    <div class="orb" style="background: rgba(124,111,255,0.12); width:500px; height:500px; top:-150px; right:-100px;"></div>
+
+    <div class="layout-hero" style="max-width: 680px; text-align: center;">
+      <div class="tts-badge">
+        <div class="tts-dot"></div>
+        Auto-narrating this slide
+      </div>
+
+      <h2 class="slide-title" style="font-size: 2.8rem;">
+        <em>Voice</em> your<br>presentation.
+      </h2>
+
+      <p class="slide-subtitle">
+        Add <code>data-narrate="..."</code> to any slide element.<br>
+        The Web Speech API reads it aloud on entry.
+      </p>
+
+      <div class="code-block" style="text-align:left; max-width:560px;">
+<span class="cm">&lt;!-- On the slide element: --&gt;</span>
+<span class="kw">&lt;section</span> <span class="at">class</span>=<span class="st">"slide"</span>
+  <span class="at">data-narrate</span>=<span class="st">"Welcome everyone!"</span><span class="kw">&gt;</span>
+
+<span class="cm">&lt;!-- Or on any element: --&gt;</span>
+<span class="kw">&lt;p</span> <span class="at">data-tts</span>=<span class="st">"This is key insight #1"</span><span class="kw">&gt;</span>
+  Key insight #1
+<span class="kw">&lt;/p&gt;</span>
+      </div>
+
+      <p class="slide-label">Press <span style="color:var(--accent-2)">T</span> to replay narration</p>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 6 — DATA ATTRIBUTES REFERENCE        ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide">
+    <div style="width:100%;">
+      <p class="slide-eyebrow">Quick Reference</p>
+      <h2 class="slide-title" style="margin-bottom: 28px; font-size: 2rem;">All <em>data-attributes</em> at a glance.</h2>
+
+      <div class="layout-2col" style="align-items:start; gap:24px;">
+        <div>
+          <p class="slide-label" style="margin-bottom:12px;">Animation Attributes</p>
+          <div class="code-block">
+<span class="cm">&lt;!-- Position: translate X,Y --&gt;</span>
+<span class="at">data-pos-1</span>=<span class="st">"[100px, 50px]"</span>
+<span class="at">data-pos-2</span>=<span class="st">"[300px, 50px]"</span>
+
+<span class="cm">&lt;!-- Show/hide (opacity + class) --&gt;</span>
+<span class="at">data-show-1</span>  <span class="at">data-hide-2</span>
+
+<span class="cm">&lt;!-- Opacity 0–1 --&gt;</span>
+<span class="at">data-opacity-1</span>=<span class="st">"0"</span>
+<span class="at">data-opacity-2</span>=<span class="st">"1"</span>
+
+<span class="cm">&lt;!-- Scale --&gt;</span>
+<span class="at">data-scale-1</span>=<span class="st">"0.5"</span>
+<span class="at">data-scale-2</span>=<span class="st">"1.2"</span>
+
+<span class="cm">&lt;!-- Rotation (degrees) --&gt;</span>
+<span class="at">data-rotate-2</span>=<span class="st">"45"</span>
+
+<span class="cm">&lt;!-- Duration per element --&gt;</span>
+<span class="at">data-duration</span>=<span class="st">"800ms"</span>
+
+<span class="cm">&lt;!-- Add CSS class at state N --&gt;</span>
+<span class="at">data-class-2</span>=<span class="st">"highlighted"</span>
+          </div>
+        </div>
+
+        <div>
+          <p class="slide-label" style="margin-bottom:12px;">Charts & Narration</p>
+          <div class="code-block">
+<span class="cm">&lt;!-- Chart types: bar line area pie donut --&gt;</span>
+<span class="at">data-chart</span>=<span class="st">"bar"</span>
+<span class="at">data-chart-data</span>=<span class="st">'{"labels":[...],"values":[...]}'</span>
+<span class="at">data-chart-color</span>=<span class="st">"#4fffb0"</span>
+
+<span class="cm">&lt;!-- Reveal chart at state N --&gt;</span>
+<span class="at">data-chart-state</span>=<span class="st">"2"</span>
+
+<span class="cm">&lt;!-- Slide narration (auto on entry) --&gt;</span>
+<span class="at">data-narrate</span>=<span class="st">"Hello everyone..."</span>
+
+<span class="cm">&lt;!-- Element TTS (plays on T key) --&gt;</span>
+<span class="at">data-tts</span>=<span class="st">"This is important!"</span>
+
+<span class="cm">&lt;!-- Navigation controls --&gt;</span>
+↑ ↓ Space  <span class="hl">→ Change slide</span>
+← →        <span class="hl">→ Change state</span>
+F          <span class="hl">→ Fullscreen</span>
+T          <span class="hl">→ Narrate</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 7 — HOW TO BUILD A SLIDE             ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide">
+    <div style="width:100%;">
+      <p class="slide-eyebrow">Getting started</p>
+      <h2 class="slide-title" style="font-size:2rem; margin-bottom: 28px;">Building your first <em>slide</em>.</h2>
+
+      <div class="layout-2col" style="align-items:start;">
+        <div class="step-grid">
+          <div class="step" data-show-1 data-hide-1 style="opacity:0" data-duration="400ms">
+            <div class="step-num">1</div>
+            <div>
+              <p style="font-weight:500; color:var(--text-primary); margin-bottom:4px;">Include the files</p>
+              <p class="slide-body" style="font-size:0.85rem;">Add <code>deck.css</code> and <code>deck.js</code> to your HTML page.</p>
+            </div>
+          </div>
+
+          <div class="step" data-hide-1 data-show-2 data-hide-2 style="opacity:0" data-duration="400ms">
+            <div class="step-num">2</div>
+            <div>
+              <p style="font-weight:500; color:var(--text-primary); margin-bottom:4px;">Wrap slides in <code>.deck</code></p>
+              <p class="slide-body" style="font-size:0.85rem;">Each <code>&lt;section class="slide"&gt;</code> is one slide.</p>
+            </div>
+          </div>
+
+          <div class="step" data-hide-1 data-hide-2 data-show-3 data-hide-3 style="opacity:0" data-duration="400ms">
+            <div class="step-num">3</div>
+            <div>
+              <p style="font-weight:500; color:var(--text-primary); margin-bottom:4px;">Add data-attributes</p>
+              <p class="slide-body" style="font-size:0.85rem;">Use <code>data-pos-N</code>, <code>data-show-N</code>, etc. on elements.</p>
+            </div>
+          </div>
+
+          <div class="step" data-hide-1 data-hide-2 data-hide-3 data-show-4 style="opacity:0" data-duration="400ms">
+            <div class="step-num">4</div>
+            <div>
+              <p style="font-weight:500; color:var(--text-primary); margin-bottom:4px;">Present!</p>
+              <p class="slide-body" style="font-size:0.85rem;">Open in any browser. No build step, no server needed.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code panel -->
+        <div class="code-block" style="font-size:12px;">
+<span class="kw">&lt;!DOCTYPE html&gt;</span>
+<span class="kw">&lt;html&gt;</span>
+<span class="kw">&lt;head&gt;</span>
+  <span class="kw">&lt;link</span> <span class="at">rel</span>=<span class="st">"stylesheet"</span> <span class="at">href</span>=<span class="st">"css/deck.css"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;/head&gt;</span>
+<span class="kw">&lt;body&gt;</span>
+
+<span class="kw">&lt;div</span> <span class="at">class</span>=<span class="st">"deck"</span><span class="kw">&gt;</span>
+
+  <span class="cm">&lt;!-- Slide 1 --&gt;</span>
+  <span class="kw">&lt;section</span> <span class="at">class</span>=<span class="st">"slide"</span>
+    <span class="at">data-narrate</span>=<span class="st">"Hello world!"</span><span class="kw">&gt;</span>
+
+    <span class="kw">&lt;h1</span> <span class="at">class</span>=<span class="st">"slide-title"</span><span class="kw">&gt;</span>My Slide<span class="kw">&lt;/h1&gt;</span>
+
+    <span class="kw">&lt;p</span>
+      <span class="at">data-pos-1</span>=<span class="st">"[0px, 100px]"</span>
+      <span class="at">data-pos-2</span>=<span class="st">"[0px, 0px]"</span>
+      <span class="at">data-opacity-1</span>=<span class="st">"0"</span>
+      <span class="at">data-opacity-2</span>=<span class="st">"1"</span><span class="kw">&gt;</span>
+      Animates in on state 2
+    <span class="kw">&lt;/p&gt;</span>
+
+  <span class="kw">&lt;/section&gt;</span>
+
+<span class="kw">&lt;/div&gt;</span>
+
+<span class="kw">&lt;script</span> <span class="at">src</span>=<span class="st">"js/deck.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+<span class="kw">&lt;/body&gt;&lt;/html&gt;</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 8 — STATS (animated numbers)         ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide">
+    <div style="width:100%;">
+      <p class="slide-eyebrow">By the numbers</p>
+      <h2 class="slide-title" style="font-size:2rem; margin-bottom: 36px;">Pure HTML. <em>Real power.</em></h2>
+
+      <div class="layout-3col">
+        <div class="stat-card"
+          data-opacity-1="0"
+          data-opacity-2="1"
+          data-pos-1="0px, 40px"
+          data-pos-2="0px, 0px"
+          data-duration="500ms">
+          <div class="stat-num hl-1" id="stat1">0</div>
+          <div class="stat-label">Lines of CSS</div>
+        </div>
+
+        <div class="stat-card"
+          data-opacity-1="0"
+          data-opacity-2="1"
+          data-pos-1="0px, 40px"
+          data-pos-2="0px, 0px"
+          data-duration="700ms">
+          <div class="stat-num hl-2" id="stat2">0</div>
+          <div class="stat-label">Lines of JS</div>
+        </div>
+
+        <div class="stat-card"
+          data-opacity-1="0"
+          data-opacity-2="1"
+          data-pos-1="0px, 40px"
+          data-pos-2="0px, 0px"
+          data-duration="900ms">
+          <div class="stat-num hl-3" id="stat3">0</div>
+          <div class="stat-label">External Dependencies</div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 28px; text-align: center;">
+        ✦ Works in any modern browser — no build step, no bundler, no framework required
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 9 — THANK YOU                        ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide"
+    data-narrate="That's the DECK framework. Open the demo file, customize the slides, and start presenting.">
+
+    <div class="final-glow"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="layout-hero">
+      <p class="slide-eyebrow">You're ready</p>
+      <h2 class="slide-title" style="font-size: clamp(2.5rem, 6vw, 5rem);">
+        Start<br><em>presenting.</em>
+      </h2>
+      <hr class="divider" style="margin: 8px auto;">
+      <p class="slide-subtitle" style="max-width:500px;">
+        Open <code>demo/demo.html</code> as your starting point.<br>
+        Copy slides, tweak styles, go.
+      </p>
+
+      <div style="display:flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 8px;">
+        <div class="card" style="padding: 16px 24px; text-align:center;">
+          <div style="font-size:1.6rem; margin-bottom:6px;">📄</div>
+          <div class="slide-label">index.html</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">This demo</div>
+        </div>
+        <div class="card" style="padding: 16px 24px; text-align:center;">
+          <div style="font-size:1.6rem; margin-bottom:6px;">🎨</div>
+          <div class="slide-label">css/deck.css</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">All styles</div>
+        </div>
+        <div class="card" style="padding: 16px 24px; text-align:center;">
+          <div style="font-size:1.6rem; margin-bottom:6px;">⚙️</div>
+          <div class="slide-label">js/deck.js</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Engine</div>
+        </div>
+        <div class="card" style="padding: 16px 24px; text-align:center;">
+          <div style="font-size:1.6rem; margin-bottom:6px;">📋</div>
+          <div class="slide-label">demo/starter.html</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Blank template</div>
+        </div>
+      </div>
+
+      <p class="slide-label" style="margin-top: 20px; opacity:0.5;">DECK.JS — Web Presentation Framework</p>
+    </div>
+  </section>
+
+</div><!-- /.deck -->
+
+<script src="js/deck.js"></script>
+<script>
+  // ── Hex grid animation (slide 1) ──────────────────────────────
+  (function() {
+    const grid = document.getElementById('hexGrid');
+    if (!grid) return;
+    const litPattern = [2,4,6,9,11,13,15,16,18,20];
+    const lit2Pattern = [0,5,10,14,19];
+    for (let i = 0; i < 25; i++) {
+      const h = document.createElement('div');
+      h.className = 'hex' + (litPattern.includes(i) ? ' lit' : lit2Pattern.includes(i) ? ' lit2' : '');
+      grid.appendChild(h);
+    }
+    // Animate hex cells on load
+    setTimeout(() => {
+      grid.querySelectorAll('.hex').forEach((h, i) => {
+        setTimeout(() => {
+          if (!h.classList.contains('lit') && !h.classList.contains('lit2')) {
+            h.style.background = 'rgba(255,255,255,0.015)';
+          }
+        }, i * 30);
+      });
+    }, 400);
+  })();
+
+  // ── Animated number counters (slide 8) ────────────────────────
+  function countUp(el, target, duration = 1200) {
+    let start = 0;
+    const step = (timestamp) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(ease * target).toLocaleString();
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  // Trigger counters when slide 8 becomes active and state 2 fires
+  document.addEventListener('deck:state', (e) => {
+    const { stateIndex, slide } = e.detail;
+    if (slide.dataset.slideIndex === '7' && stateIndex === 1) {
+      countUp(document.getElementById('stat1'), 420);
+      setTimeout(() => countUp(document.getElementById('stat2'), 580), 200);
+      setTimeout(() => countUp(document.getElementById('stat3'), 0), 400);
+    }
+  });
+</script>
+</body>
+</html>
