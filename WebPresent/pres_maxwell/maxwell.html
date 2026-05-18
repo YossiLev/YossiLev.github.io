@@ -94,21 +94,21 @@
 
     <div class="layout-hero">
       <h1 class="slide-title">Space Algebra</h1>
-      <p class="slide-subtitle">Add multiplication to vector space</p>
+      <p class="slide-subtitle">Add multiplication to a vector space <math><msub><mi>e</mi><mi>1</mi></msub></math>, <math><msub><mi>e</mi><mi>2</mi></msub></math>, <math><msub><mi>e</mi><mi>3</mi></msub></math></p>
+      <p data-hide-1 data-show-2 class="slide-subtitle">We want <math><msub><mi>e</mi><mi>i</mi></msub></math><math><msub><mi>e</mi><mi>i</mi></msub></math> to be a multiplication scalar (marked as 1) </p>
+      <p data-hide-1 data-show-3 class="slide-subtitle">So tha "scalar" symbol 1 becomes a member of the algebra</p>
+      <p data-hide-1 data-show-4 class="slide-subtitle">We actually want any combination VV to ba a scalar</p>
+      <p data-hide-1 data-show-5 class="slide-subtitle">This leads to <math><msub><mi>e</mi><mi>1</mi></msub></math><math><msub><mi>e</mi><mi>2</mi></msub></math> = -<math><msub><mi>e</mi><mi>2</mi></msub></math><math><msub><mi>e</mi><mi>1</mi></msub></math> </p>
+      <p data-hide-1 data-show-6 class="slide-subtitle">But <math><msub><mi>e</mi><mi>1</mi></msub></math><math><msub><mi>e</mi><mi>2</mi></msub></math> is a new member of the algebra </p>
     </div>
-    <div data-hide-1 data-show-2 style="opacity:0; max-width:700px; margin: 0 auto;">
-      <p class="slide-body" style="margin-bottom:20px;">
-        We start with 3 base vectors $$e_1, e_2, e_3$$ They represent the three dimensions of space. We can then define a new type of multiplication, called the geometric product, that allows us to combine these vectors in a way that captures both their magnitude and direction.
-      </p>
-
-      <div data-remove-1 data-add-3>
+      <div data-remove-1 data-add-8>
         <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
           <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
             $$1$$
           </div>
         </div>
       </div>
-      <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+      <div data-hide-1 data-show-7 style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
         <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
           $$e_1$$
         </div>
@@ -119,9 +119,8 @@
           $$e_3$$
         </div>
       </div>
-      <div data-hide-1 data-show-4>
+      <div data-hide-1 data-show-9>
         <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
-
           <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
             $$e_{23}$$
           </div>
@@ -132,15 +131,14 @@
             $$e_{12}$$
           </div>
         </div>
-      </div>
-      <div data-hide-1 data-show-5>
+      <div data-hide-1 data-show-10>
         <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
           <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
             $$e_{123} = I$$
           </div>
         </div>
       </div>
-      <div style="display:flex; gap:12px; margin-top:20px;">
+      <!-- <div style="display:flex; gap:12px; margin-top:20px;">
         <div class="card" style="padding:16px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex:1;">
           $$e_1 e_2 = e_1 \cdot e_2 + e_1 \wedge e_2$$
         </div>
@@ -150,19 +148,53 @@
         <div class="card" style="padding:16px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex:1;">
           $$e_3 e_1 = e_3 \cdot e_1 + e_3 \wedge e_1$$
         </div>
-      </div>
+      </div> -->
 
   </section>
 
   
   <!-- ════════════════════════════════════
-       SLIDE 4 — Space Algebra Representation
+       SLIDE 4 — Space Algebra Multipication
        ════════════════════════════════════ -->
   <section class="slide slide-purple">
     <div class="layout-hero">
-      <h1 class="slide-title">Space Algebra</h1>
+      <h1 class="slide-title">Mechanism of Space Algebra Multiplication</h1>
+      <div class="layout-2col" style="width:80%;">
+
+        <div>
+          $$e_{12}e_{23} = e_{13} = - e_{31}$$
+          $$e_{23}e_{13} = -e_{23}e_{31} = - e_{21} = e_{12}$$
+          $$e_{31}e_{123} = e_{3}e_{23} = - e_{2}$$
+          $$(\alpha e_{1} + \beta e_{12})(\gamma e_{3} + \delta e_{23}) = \alpha \gamma e_{1}e_{3} + \alpha \delta e_{1}e_{23} + \beta \gamma e_{12}e_{3} + \beta \delta e_{12}e_{23} = $$
+          $$= (\alpha \gamma + \beta \delta) e_{13} + (\alpha \delta + \beta \gamma) e_{123}$$
+        </div>
+        <div>
+          Symmetric and antisymmetric parts of the product of two vectors
+          $$(A_1 e_1 + A_2 e_2 + A_3 e_3)(B_1 e_1 + B_2 e_2 + B_3 e_3) = $$
+          $$= (A_1 B_1 + A_2 B_2 + A_3 B_3) 1 + (A_1 B_2 - A_2 B_1) e_{12} + (A_2 B_3 - A_3 B_2) e_{23} + (A_3 B_1 - A_1 B_3) e_{31} = $$
+          $$= \vec{A} \cdot \vec{B} + \vec{A} \wedge \vec{B}$$
+          $$(\vec{A} \times \vec{B} = I (\vec{A} \wedge \vec{B}))$$
+          $$\vec{\nabla}= \partial_x e_1 + \partial_y e_2 + \partial_z e_3 \quad \vec{\nabla} \vec{A} = \vec{\nabla} \cdot \vec{A} + \vec{\nabla} \wedge \vec{A}$$
+          
+        </div>
+      </div>
+    </div>  
+  </section>
+
+  <!-- ════════════════════════════════════
+       SLIDE 5 — Space Algebra Representation
+       ════════════════════════════════════ -->
+  <section class="slide slide-purple">
+    <div class="layout-hero">
+      <h1 class="slide-title">Space Algebra Representation</h1>
     </div>
-    <div class="layout-2col" style="width:80%;">
+    <div class="layout-3col" style="width:80%;">
+      <div>
+        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 1 - Scalar</span><span data-hide-1 data-show-2 style="color:#989696;"></br>Pressure, density, Energy, Charge</span></div>
+        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 2 - Vectors</span><span data-hide-1 data-show-3 style="color:#989696;"></br>Momentum, Velocity, Magnetic potential</span></div>
+        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 3 - Bivectors (pseudovectors)</span><span data-hide-1 data-show-4 style="color:#989696;"></br>Angular momentum, Magnetic field, Vorticity</span></div>
+        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 4 - Trivectors (pseudo-scalars)</span><span data-hide-1 data-show-5 style="color:#989696;"></br>Helicity</span></div>
+      </div>
       <div>
         <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
           <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
@@ -243,11 +275,12 @@
   </section>
 
   <!-- ════════════════════════════════════
-       SLIDE 5 — Spacetime Algebra Representation
+       SLIDE 6 — Spacetime Algebra Representation
        ════════════════════════════════════ -->
   <section class="slide slide-purple">
     <div class="layout-hero">
       <h1 class="slide-title">Spacetime Algebra</h1>
+      <p class="slide-subtitle">Good for representing spacetime physics, including Maxwell's equations</p>
     </div>
     <div class="layout-2col" style="width:80%;">
       <div>
@@ -376,51 +409,37 @@
     </div>
   </section>
 
-
-
   <!-- ════════════════════════════════════
-       SLIDE 5 — Stats / Numbers
+       SLIDE 7 — Electromagnetic Field Representation
+       ════════════════════════════════════ -->
+  <section class="slide slide-purple">
+    <div class="layout-hero">
+      <h1 class="slide-title">Electromagnetic Field Representation</h1>
+      <p class="slide-subtitle">The simplest spacetime theory - Start with a vector A</p>
+      <p>$$F = \nabla A\quad \text{F is a bivector if we assume} \quad\nabla\cdot A = 0$$</p>
+      <p>$$F = E_x e_{01} + E_y e_{02} + E_z e_{03} + B_x e_{23} + B_y e_{31} + B_z e_{12}$$</p>
+      <p>$$\nabla F = J \quad \text{where } J = \nabla\cdot F \quad\text{since} \quad \nabla\wedge F = 0$$</p>
+      <p>$$\nabla F = \nabla \nabla A = \nabla^2 A = \text{&#x25A1;} A $$</p>
+      
+
+    </div>
+  </section>  
+
+  
+  <!-- ════════════════════════════════════
+       SLIDE 8 — Thank You / Close
        ════════════════════════════════════ -->
   <section class="slide">
-
-    <div style="width:100%;">
-      <p class="slide-eyebrow">Results</p>
-      <h2 class="slide-title" style="font-size: 2rem; margin-bottom: 32px;">By the <em>numbers.</em></h2>
-
-      <div class="layout-3col">
-        <div class="stat-card" style="padding:28px; border-radius:16px; border:1px solid var(--border); background:rgba(255,255,255,0.02); text-align:center;">
-          <div class="slide-big-number hl-1">87%</div>
-          <div class="slide-label" style="margin-top:8px;">Metric One</div>
-        </div>
-        <div class="stat-card" style="padding:28px; border-radius:16px; border:1px solid var(--border); background:rgba(255,255,255,0.02); text-align:center;">
-          <div class="slide-big-number hl-2">2.4×</div>
-          <div class="slide-label" style="margin-top:8px;">Metric Two</div>
-        </div>
-        <div class="stat-card" style="padding:28px; border-radius:16px; border:1px solid var(--border); background:rgba(255,255,255,0.02); text-align:center;">
-          <div class="slide-big-number hl-3">$1.2M</div>
-          <div class="slide-label" style="margin-top:8px;">Metric Three</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-<td>0</td>
-  <!-- ════════════════════════════════════
-       SLIDE 6 — Thank You / Close
-       ════════════════════════════════════ -->
-  <section class="slide"
-    data-narrate="Thank you. Questions?">
 
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
     <div class="layout-hero">
       <p class="slide-eyebrow">Thank you</p>
+      <hr class="divider" style="margin: 0 auto;">
       <h2 class="slide-title" style="font-size: clamp(3rem, 7vw, 6rem);">
         <em>Questions?</em>
       </h2>
-      <hr class="divider" style="margin: 0 auto;">
-      <p class="slide-subtitle">your@email.com · yoursite.com</p>
     </div>
   </section>
 
