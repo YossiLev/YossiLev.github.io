@@ -169,8 +169,8 @@
           $$= (\alpha \gamma + \beta \delta) e_{13} + (\alpha \delta + \beta \gamma) e_{123}$$
         </div>
         <div>
-          Symmetric and antisymmetric parts of the product of two vectors
-          $$(A_1 e_1 + A_2 e_2 + A_3 e_3)(B_1 e_1 + B_2 e_2 + B_3 e_3) = $$
+          Symmetric and antisymmetric parts of the product of two vectors A and B
+          $$AB =(A_1 e_1 + A_2 e_2 + A_3 e_3)(B_1 e_1 + B_2 e_2 + B_3 e_3) = $$
           $$= (A_1 B_1 + A_2 B_2 + A_3 B_3) 1 + (A_1 B_2 - A_2 B_1) e_{12} + (A_2 B_3 - A_3 B_2) e_{23} + (A_3 B_1 - A_1 B_3) e_{31} = $$
           $$= \vec{A} \cdot \vec{B} + \vec{A} \wedge \vec{B}$$
           $$(\vec{A} \times \vec{B} = I (\vec{A} \wedge \vec{B}))$$
@@ -190,10 +190,10 @@
     </div>
     <div class="layout-3col" style="width:80%;">
       <div>
-        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 1 - Scalar</span><span data-hide-1 data-show-2 style="color:#989696;"></br>Pressure, density, Energy, Charge</span></div>
-        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 2 - Vectors</span><span data-hide-1 data-show-3 style="color:#989696;"></br>Momentum, Velocity, Magnetic potential</span></div>
-        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 3 - Bivectors (pseudovectors)</span><span data-hide-1 data-show-4 style="color:#989696;"></br>Angular momentum, Magnetic field, Vorticity</span></div>
-        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 4 - Trivectors (pseudo-scalars)</span><span data-hide-1 data-show-5 style="color:#989696;"></br>Helicity</span></div>
+        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 0 - Scalar</span><span data-hide-1 data-show-2 style="color:#989696;"></br>Pressure, density, Energy, Charge</span></div>
+        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 1 - Vectors</span><span data-hide-1 data-show-3 style="color:#989696;"></br>Momentum, Velocity, Magnetic potential</span></div>
+        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 2 - Bivectors (pseudovectors)</span><span data-hide-1 data-show-4 style="color:#989696;"></br>Angular momentum, Magnetic field, Vorticity</span></div>
+        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Grade 3 - Trivectors (pseudo-scalars)</span><span data-hide-1 data-show-5 style="color:#989696;"></br>Helicity</span></div>
       </div>
       <div>
         <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
@@ -416,12 +416,20 @@
     <div class="layout-hero">
       <h1 class="slide-title">Electromagnetic Field Representation</h1>
       <p class="slide-subtitle">The simplest spacetime theory - Start with a vector A</p>
-      <p>$$F = \nabla A\quad \text{F is a bivector if we assume} \quad\nabla\cdot A = 0$$</p>
+      <p>$$F = \nabla A\quad F\text{ is a bivector if we assume} \quad\nabla\cdot A = 0$$</p>
       <p>$$F = E_x e_{01} + E_y e_{02} + E_z e_{03} + B_x e_{23} + B_y e_{31} + B_z e_{12}$$</p>
       <p>$$\nabla F = J \quad \text{where } J = \nabla\cdot F \quad\text{since} \quad \nabla\wedge F = 0$$</p>
       <p>$$\nabla F = \nabla \nabla A = \nabla^2 A = \text{&#x25A1;} A $$</p>
       
 
+    </div>
+
+    <div class="card card-accent-2" style="position: fixed; z-index: 10;" 
+      data-pos-1="-2000px, 0px"
+      data-pos-2="-400px, 0px"
+      >
+      <h3 style="color: var(--accent-2); font-size:1rem; margin-bottom:6px;">Maxwell's Equation</h3>
+      <p class="slide-body">$$\nabla F = J$$</p>
     </div>
   </section>  
 
