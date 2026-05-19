@@ -230,6 +230,20 @@ function diracRepMat(g) {
 	
 	return tab
 }
+function algebraRepMat(g) {
+
+	let tab = zeroMat()
+	
+	switch (g) {
+	case -1: tab[0][0] = getComplex(1, 0); tab[1][1] = getComplex(1, 0); tab[2][2] = getComplex(1, 0); tab[3][3] = getComplex(1, 0); break
+	case 0: tab[0][0] = getComplex(0, 1); tab[1][1] = getComplex(0, 1); tab[2][2] = getComplex(0, - 1); tab[3][3] = getComplex(0, - 1); break
+	case 1: tab[0][3] = getComplex(0, 1); tab[1][2] = getComplex(0, 1); tab[2][1] = getComplex(0, - 1); tab[3][0] = getComplex(0, - 1); break
+	case 2: tab[0][3] = getComplex(1, 0); tab[1][2] = getComplex(-1, 0); tab[2][1] = getComplex(- 1, 0); tab[3][0] = getComplex(1, 0); break
+	case 3: tab[0][2] = getComplex(0, 1); tab[1][3] = getComplex(0, - 1); tab[2][0] = getComplex(0, - 1); tab[3][1] = getComplex(0, 1); break
+	}
+	
+	return tab
+}
 
 function zeroMat() {
 	let tab = []
@@ -359,6 +373,11 @@ function buildMat(tt) {
 		case 35: tab = su3RepMat(5); break;
 		case 36: tab = su3RepMat(6); break;
 		case 37: tab = su3RepMat(7); break;
+		case 40: tab = algebraRepMat(-1); break;
+		case 41: tab = algebraRepMat(0); break;
+		case 42: tab = algebraRepMat(1); break;
+		case 43: tab = algebraRepMat(2); break;
+		case 44: tab = algebraRepMat(3); break;
 	}
 
 	return tab
@@ -430,7 +449,38 @@ function buildMatMultiTable2(idbut) {
 	document.getElementById('tabMulti').innerHTML = s;
 }
 
+function buildGeometricAlgebra() {
+	let g = [41, 42, 43, 44].map(tt => buildMat(tt));
+	let I = buildMat(40);
+	let s = '<table class="multiTabFrame"><tr>';
+	
+	s += '<td>' + buildSingleTableShowSign('kga', I, '0') + '</td>';
+	s += '</tr><tr>';
+	
+	for (let j = 0; j < 4; j++) {
+		s += '<td>' + buildSingleTableShowSign('kga', g[j], '0') + '</td>';
+	}
+	s += '</tr><tr>';
 
+	for (let j = 0; j < 3; j++) {
+		s += '<td>' + buildSingleTableShowSign('kga', multTables(g[j+ 1], g[0]), '0') + '</td>';
+	}
+	s += '<td>' + buildSingleTableShowSign('kga', multTables(g[2], g[3]), '0') + '</td>';
+	s += '<td>' + buildSingleTableShowSign('kga', multTables(g[3], g[1]), '0') + '</td>';
+	s += '<td>' + buildSingleTableShowSign('kga', multTables(g[1], g[2]), '0') + '</td>';
+	s += '</tr><tr>';
+
+	s += '<td>' + buildSingleTableShowSign('kga', multTables(g[1], multTables(g[2], g[3])), '0') + '</td>';
+	s += '<td>' + buildSingleTableShowSign('kga', multTables(g[2], multTables(g[3], g[0])), '0') + '</td>';
+	s += '<td>' + buildSingleTableShowSign('kga', multTables(g[3], multTables(g[1], g[0])), '0') + '</td>';
+	s += '<td>' + buildSingleTableShowSign('kga', multTables(g[1], multTables(g[2], g[0])), '0') + '</td>';
+	s += '</tr><tr>';
+
+	s += '<td>' + buildSingleTableShowSign('kga', multTables(g[0], multTables(g[1], multTables(g[2], g[3]))), '0') + '</td>';
+	
+	s += '</tr></table>';
+	document.getElementById('geoAlgebra').innerHTML = s;
+}
 
 function openMenu(event, menuElement) {
 	closeContext();
@@ -505,6 +555,20 @@ function buildSingleTableShow(t, tab, mode) {
 		s += buildSingleRowShow(t, r, tab, mode)
 	}
 
+	s += '</div>'
+
+	return s
+}
+
+function buildSingleTableShowSign(t, tab, mode) {
+	let I2 = multTables(tab, tab);
+	let color = I2[0][0].r > 0 ? 'red' : 'blue';
+	let s = "<div class='tab' style='color:" + color + ";'>";
+	//let s = "<div class='tab'>";
+
+	for (let r = 0; r < dim; r++) {
+		s += buildSingleRowShow(t, r, tab, mode)
+	}
 	s += '</div>'
 
 	return s
@@ -704,21 +768,21 @@ body {
 	<div id='tab4' style='padding-left:60px;'></div>
 	<div style="display: flex">
 		<div style="display:flex; flex-direction: column;">
-	<!-- <div class="mini-but" onclick="buildMatMultiTable(10, 'AntiCom');">DIRAC AntiCommute</div>
-	<div class="mini-but" onclick="buildMatMultiTable(10, 'Com');">DIRAC Commute</div>
-	<div class="mini-but" onclick="buildMatMultiTable(10, 'Mult');">DIRAC Multiply</div>
-	<div class="mini-but" onclick="buildMatMultiTable(20, 'AntiCom');">Weyl AntiCommute</div>
-	<div class="mini-but" onclick="buildMatMultiTable(20, 'Com');">Weyl Commute</div>
-	<div class="mini-but" onclick="buildMatMultiTable(20, 'Mult');">Weyl Multiply</div> -->
-	<div id="DIRAC" class="mdop mini-but but-on" onclick="buildMatMultiTable2('DIRAC');">DIRAC</div>
-	<div id="WEYL" class="mdop mini-but" onclick="buildMatMultiTable2('WEYL');">WEYL</div>
-	<div id="AntiCom" class="op mini-but but-on" onclick="buildMatMultiTable2('AntiCom');">AntiCommute</div>
-	<div id="Com" class="op mini-but" onclick="buildMatMultiTable2('Com');">Commute</div>
-	<div id="Mult" class="op mini-but" onclick="buildMatMultiTable2('Mult');">Multiply</div>
-		</div><div>
-	<div id='tabMulti' style='padding-left:60px;'></div>
+
+			<div id="DIRAC" class="mdop mini-but but-on" onclick="buildMatMultiTable2('DIRAC');">DIRAC</div>
+			<div id="WEYL" class="mdop mini-but" onclick="buildMatMultiTable2('WEYL');">WEYL</div>
+			<div id="AntiCom" class="op mini-but but-on" onclick="buildMatMultiTable2('AntiCom');">AntiCommute</div>
+			<div id="Com" class="op mini-but" onclick="buildMatMultiTable2('Com');">Commute</div>
+			<div id="Mult" class="op mini-but" onclick="buildMatMultiTable2('Mult');">Multiply</div>
+		</div>
+		<div>
+			<div id='tabMulti' style='padding-left:60px;'></div>
 		</div>
 	</div>
+	<div class="mini-but" style="height:20px; position:relative;" onclick="buildGeometricAlgebra();">Geo</div>
+
+	<div id='geoAlgebra' style='padding-left:60px;'></div>
+
 
 </body>
 </html>
