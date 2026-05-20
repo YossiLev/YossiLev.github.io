@@ -77,23 +77,24 @@
         <p class="slide-body" style="margin-bottom:20px;">
           Compare with the equations that we currently teach in school. More modern formulations that are more compact and elegant.
         <p>
-        <p class="slide-subtitle">\[\nabla \cdot \overrightarrow{E} = \frac{\rho}{\epsilon_0}\]</p>
-        <p class="slide-subtitle">\[\nabla \cdot \overrightarrow{B} = 0\]</p>
-        <p class="slide-subtitle">\[\nabla \times \overrightarrow{E} = - \frac{\partial \overrightarrow{B}}{\partial t}\]</p>
-        <p class="slide-subtitle">\[\nabla \times \overrightarrow{B} = \mu_0 \overrightarrow{J} + \mu_0 \epsilon_0 \frac{\partial \overrightarrow{E}}{\partial t}\]</p>
+        <p class="slide-subtitle">\[\overrightarrow{\nabla} \cdot \overrightarrow{E} = \frac{\rho}{\epsilon_0}\]</p>
+        <p class="slide-subtitle">\[\overrightarrow{\nabla} \cdot \overrightarrow{B} = 0\]</p>
+        <p class="slide-subtitle">\[\overrightarrow{\nabla} \times \overrightarrow{E} = - \frac{\partial \overrightarrow{B}}{\partial t}\]</p>
+        <p class="slide-subtitle">\[\overrightarrow{\nabla} \times \overrightarrow{B} = \mu_0 \overrightarrow{J} + \mu_0 \epsilon_0 \frac{\partial \overrightarrow{E}}{\partial t}\]</p>
         <div data-hide-1 data-show-3 style="opacity:0">
           <p class="slide-body" style="margin-bottom:20px;">
             and some more.
           </p>
-          <p class="slide-subtitle">\[\frac{\partial \rho}{\partial t} + \nabla \cdot \overrightarrow{J} = 0\]</p>
-          <p class="slide-subtitle">\[\overrightarrow{B} = \nabla \times \overrightarrow{A} \qquad \overrightarrow{E} = -\nabla \phi - \frac{\partial \overrightarrow{A}}{\partial t}\]</p>
+          <p class="slide-subtitle">\[\frac{\partial \rho}{\partial t} + \overrightarrow{\nabla} \cdot \overrightarrow{J} = 0\]</p>
+          <p class="slide-subtitle">\[\overrightarrow{B} = \overrightarrow{\nabla} \times \overrightarrow{A} \qquad \overrightarrow{E} = -\overrightarrow{\nabla} \phi - \frac{\partial \overrightarrow{A}}{\partial t}\]</p>
         </div>
           <div data-hide-1 data-show-4 style="opacity:0">
             <p class="slide-body" style="margin-bottom:20px;">
-              The new form is very compact and elegant, but it is not just a mathematical trick. It reveals the underlying geometric structure of electromagnetism and spacetime.
+              This is not just a mathematical trick. It reveals the underlying geometric structure of electromagnetism and spacetime.
             </p>
             <p class="slide-body" style="margin-bottom:20px;">
-              Note that we use <span class="highlight">Vectors</span>, but we also multiply them. So this is more than a vector space, it is an <span class="highlight">Algebra</span>, a Geometric Algebra.
+              We use <span class="highlight">Vectors</span>, but we also multiply them. So this is more than a 
+              <span class="highlight">vector space</span>, it is an <span class="highlight">Algebra</span>, a <span class="highlight">Geometric Algebra</span>.
             </p>
         </div> 
       </div>
@@ -114,12 +115,12 @@
       <div class="layout-2col" style="width:80%;">
 
         <div style="text-align: left;">
-          <p class="slide-subtitle">Add multiplication to a vector space <math><msub><mi>e</mi><mi>1</mi></msub></math>, <math><msub><mi>e</mi><mi>2</mi></msub></math>, <math><msub><mi>e</mi><mi>3</mi></msub></math></p>
-          <p data-hide-1 data-show-2 class="slide-subtitle">We want <math><msub><mi>e</mi><mi>i</mi></msub></math><math><msub><mi>e</mi><mi>i</mi></msub></math> to be a multiplication <span class="highlight">scalar</span> (marked as <span class="highlight">1</span>) </p>
+          <p class="slide-subtitle">Add multiplication to a vector space \(e_1,e_2, e_3\)</p>
+          <p data-hide-1 data-show-2 class="slide-subtitle">We want \(e_ie_i\) to be a <span class="highlight">multiplication scalar</span> (marked as <span class="highlight">1</span>) </p>
           <p data-hide-1 data-show-3 class="slide-subtitle">So tha "scalar" symbol 1 becomes a member of the algebra</p>
           <p data-hide-1 data-show-4 class="slide-subtitle">We actually want any combination VV to ba a scalar</p>
-          <p data-hide-1 data-show-5 class="slide-subtitle">This leads to <math><msub><mi>e</mi><mi>1</mi></msub></math><math><msub><mi>e</mi><mi>2</mi></msub></math> = -<math><msub><mi>e</mi><mi>2</mi></msub></math><math><msub><mi>e</mi><mi>1</mi></msub></math> </p>
-          <p data-hide-1 data-show-6 class="slide-subtitle">But <math><msub><mi>e</mi><mi>1</mi></msub></math><math><msub><mi>e</mi><mi>2</mi></msub></math> is a new member of the algebra </p>
+          <p data-hide-1 data-show-5 class="slide-subtitle">This leads to \(e_1e_2=-e_2e_1\)</p>
+          <p data-hide-1 data-show-6 class="slide-subtitle">But \(e_1e_2\) is a new member of the algebra, and we define \(e_{12}=e_1e_2\)</p>
         </div>
         <div>
           <div data-remove-1 data-add-2>
@@ -174,10 +175,11 @@
       <div class="layout-2col" style="width:90%;">
 
         <div>
-          <p class="slide-subtitle">Let's practice some multiplications</p>
+          <p class="slide-subtitle">Let's practice some simple multiplications</p>
           <p class="slide-subtitle">\[e_{12}e_{23} = e_{13} = - e_{31}\]</p>
           <p class="slide-subtitle">\[e_{23}e_{13} = -e_{23}e_{31} = - e_{21} = e_{12}\]</p>
           <p class="slide-subtitle">\[e_{31}e_{123} = e_{3}e_{23} = - e_{2}\]</p>
+          <p class="slide-subtitle">And also complex multiplications</p>
           <p class="slide-subtitle">\[(\alpha e_{1} + \beta e_{12})(\gamma e_{3} + \delta e_{23}) =\]</p>
           <p class="slide-subtitle">\[= \alpha \gamma e_{1}e_{3} + \alpha \delta e_{1}e_{23} + \beta \gamma e_{12}e_{3} + \beta \delta e_{12}e_{23} = \]</p>
           <p class="slide-subtitle">\[= (\alpha \gamma + \beta \delta) e_{13} + (\alpha \delta + \beta \gamma) e_{123}\]</p>
@@ -207,12 +209,14 @@
     </div>
     <div class="layout-3col" style="width:80%;">
       <div>
-        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Blade 0 - Scalar</span><span data-hide-1 data-show-2 style="color:#989696;"></br>Pressure, density, Energy, Charge</span></div>
-        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Blade 1 - Vectors</span><span data-hide-1 data-show-3 style="color:#989696;"></br>Momentum, Velocity, Magnetic potential, Nabla</span></div>
-        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Blade 2 - Bivectors (pseudovectors)</span><span data-hide-1 data-show-4 style="color:#989696;"></br>Angular momentum, Magnetic field, Vorticity</span></div>
-        <div style="margin: 15px 0"><span style="font-size: 1.2em;">Blade 3 - Trivectors (pseudo-scalars)</span><span data-hide-1 data-show-5 style="color:#989696;"></br>Helicity</span></div>
+        <div style="margin: 45px 0"><span style="font-size: 1.2em;">Blade 0 - Scalar</span><span data-hide-1 data-show-2 style="color:#989696;"></br>Pressure, density, Energy, Charge</span></div>
+        <div style="margin: 25px 0"><span style="font-size: 1.2em;">Blade 1 - Vectors</span><span data-hide-1 data-show-3 style="color:#989696;"></br>Momentum, Velocity, Electric field, Magnetic potential, Nabla</span></div>
+        <div style="margin: 35px 0"><span style="font-size: 1.2em;">Blade 2 - Bivectors (pseudovectors)</span><span data-hide-1 data-show-4 style="color:#989696;"> 
+          </br>Angular momentum\((L=r\times p)\), Magnetic field\((B=\nabla\times A)\), Vorticity\((W=\nabla\times v)\)</span></div>
+        <div style="margin: 25px 0"><span style="font-size: 1.2em;">Blade 3 - Trivectors (pseudo-scalars)</span><span data-hide-1 data-show-5 style="color:#989696;">          
+          </br>Helicity\((H=v\cdot W=v \cdot (\nabla \times v))\)</span></div>
       </div>
-      <div>
+      <div style="font-size: 1.65em;">
         <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
           <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
             \[1\]
@@ -300,7 +304,7 @@
       <p class="slide-subtitle">Good for representing spacetime physics, including Maxwell's equations</p>
     </div>
     <div class="layout-2col" style="width:80%;">
-      <div>
+      <div style="font-size: 1.5em;">
         <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
           <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
             \[1\]
