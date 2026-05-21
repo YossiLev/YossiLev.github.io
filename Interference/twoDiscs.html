@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Light Field Simulation</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: white;
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+    }
+
+    #controls {
+        margin-bottom: 20px;
+    }
+
+    label {
+        margin: 0 10px;
+    }
+
+    input {
+        width: 90px;
+    }
+
+    canvas {
+        border: 1px solid white;
+        margin: 10px;
+        image-rendering: pixelated;
+    }
+
+    .canvas-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    h3 {
+        margin-bottom: 5px;
+        margin-top: 25px;
+    }
+</style>
+</head>
+
+<body>
+
+<h2>Circular Light Source Simulation</h2>
+
+<div id="controls">
+
+    <label>
+        Distance z:
+        <input id="zInput" type="number" value="1" step="0.1">
+    </label>
+
+    <label>
+        Source Radius r:
+        <input id="rInput" type="number" value="0.2" step="0.01">
+    </label>
+
+    <label>
+        Angular Frequency ω:
+        <input id="wInput" type="number" value="40" step="1">
+    </label>
+
+    <label>
+        Source Separation d:
+        <input id="dInput" type="number" value="0.8" step="0.01">
+    </label>
+
+    <button onclick="render()">Render</button>
+
+</div>
+
+<div class="canvas-container">
+
+    <div style="flex:1;">
+    <h3>Single Circular Source</h3>
+    <canvas id="canvas1" width="500" height="500"></canvas>
+    </div>
+
+    <div style="flex:1;">
+    <h3>Two Circular Sources Interference</h3>
+    <canvas id="canvas2" width="500" height="500"></canvas>
+    </div>
+
+</div>
+
+<script>
+
+const canvas1 = document.getElementById("canvas1");
+const ctx1 = canvas1.getContext("2d");
+
+const canvas2 = document.getElementById("canvas2");
+const ctx2 = canvas2.getContext("2d");
+
+function fieldFromRing(x, y, z, radius, k, centerX, centerY) {
+
+    const sourceSamples = 120;
+
+    let re = 0;
+    let im = 0;
+
+    for (let n = 0; n < sourceSamples; n++) {
+
+        const theta = 2 * Math.PI * n / sourceSamples;
+
+        const sx = centerX + radius * Math.cos(theta);
+        const sy = centerY + radius * Math.sin(theta);
+
+        const dx = x - sx;
+        const dy = y - sy;
+
+        const dist = Math.sqrt(dx*dx + dy*dy + z*z);
+
+        const phase = k * dist;
+
+        re += Math.cos(phase) / dist;
+        im += Math.sin(phase) / dist;
+    }
+
+    re /= sourceSamples;
+    im /= sourceSamples;
+
+    return { re, im };
+}
+
+function drawSingleSource(ctx, width, height, z, r0, k) {
+
+    const image = ctx.createImageData(width, height);
+
+    const screenSize = 4.0;
+
+    for (let py = 0; py < height; py++) {
+
+        for (let px = 0; px < width; px++) {
+
+            const x = (px / width - 0.5) * screenSize;
+            const y = (py / height - 0.5) * screenSize;
+
+            const field = fieldFromRing(x, y, z, r0, k, 0, 0);
+
+            const intensity =
+                field.re * field.re +
+                field.im * field.im;
+
+            const brightness = Math.min(
+                255,
+                Math.floor(255 * Math.log(1 + 10 * intensity))
+            );
+
+            const idx = 4 * (py * width + px);
+
+            image.data[idx + 0] = brightness;
+            image.data[idx + 1] = brightness;
+            image.data[idx + 2] = brightness;
+            image.data[idx + 3] = 255;
+        }
+    }
+
+    ctx.putImageData(image, 0, 0);
+}
+
+function drawDoubleSource(ctx, width, height, z, r0, k, d) {
+
+    const image = ctx.createImageData(width, height);
+
+    const screenSize = 4.0;
+
+    for (let py = 0; py < height; py++) {
+
+        for (let px = 0; px < width; px++) {
+
+            const x = (px / width - 0.5) * screenSize;
+            const y = (py / height - 0.5) * screenSize;
+
+            // Left source
+            const field1 = fieldFromRing(
+                x, y, z, r0, k,
+                -d/2, 0
+            );
+
+            // Right source
+            const field2 = fieldFromRing(
+                x, y, z, r0, k,
+                +d/2, 0
+            );
+
+            // Total field
+            const re = field1.re + field2.re;
+            const im = field1.im + field2.im;
+
+            const intensity = re*re + im*im;
+
+            const brightness = Math.min(
+                255,
+                Math.floor(255 * Math.log(1 + 10 * intensity))
+            );
+
+            const idx = 4 * (py * width + px);
+
+            image.data[idx + 0] = brightness;
+            image.data[idx + 1] = brightness;
+            image.data[idx + 2] = brightness;
+            image.data[idx + 3] = 255;
+        }
+    }
+
+    ctx.putImageData(image, 0, 0);
+}
+
+function render() {
+
+    const z = parseFloat(document.getElementById("zInput").value);
+    const r0 = parseFloat(document.getElementById("rInput").value);
+    const w = parseFloat(document.getElementById("wInput").value);
+    const d = parseFloat(document.getElementById("dInput").value);
+
+    const c = 1.0;
+    const k = w / c;
+
+    drawSingleSource(
+        ctx1,
+        canvas1.width,
+        canvas1.height,
+        z,
+        r0,
+        k
+    );
+
+    drawDoubleSource(
+        ctx2,
+        canvas2.width,
+        canvas2.height,
+        z,
+        r0,
+        k,
+        d
+    );
+}
+
+render();
+
+</script>
+
+</body>
+</html>

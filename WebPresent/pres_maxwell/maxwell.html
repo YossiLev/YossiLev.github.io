@@ -112,15 +112,15 @@
 
     <div class="layout-hero">
       <h1 class="slide-title">Space Algebra</h1>
-      <div class="layout-2col" style="width:80%;">
+      <div class="layout-2col" style="width:80%; align-items: start;">
 
         <div style="text-align: left;">
           <p class="slide-subtitle">Add multiplication to a vector space \(e_1,e_2, e_3\)</p>
-          <p data-hide-1 data-show-2 class="slide-subtitle">We want \(e_ie_i\) to be a <span class="highlight">multiplication scalar</span> (marked as <span class="highlight">1</span>) </p>
-          <p data-hide-1 data-show-3 class="slide-subtitle">So tha "scalar" symbol 1 becomes a member of the algebra</p>
-          <p data-hide-1 data-show-4 class="slide-subtitle">We actually want any combination VV to ba a scalar</p>
-          <p data-hide-1 data-show-5 class="slide-subtitle">This leads to \(e_1e_2=-e_2e_1\)</p>
-          <p data-hide-1 data-show-6 class="slide-subtitle">But \(e_1e_2\) is a new member of the algebra, and we define \(e_{12}=e_1e_2\)</p>
+          <p data-hide-1 data-show-2 class="slide-subtitle">We want \(e_ie_i\) to be a <span class="highlight">multiplication scalar</span>
+             (marked as <span class="highlight">1</span>), and a new member of the algebra</p>
+          <p data-hide-1 data-show-3 class="slide-subtitle">We actually want any combination VV to ba a scalar</p>
+          <p data-hide-1 data-show-4 class="slide-subtitle">This leads to \(e_1e_2=-e_2e_1\)</p>
+          <p data-hide-1 data-show-5 class="slide-subtitle">But \(e_1e_2\) is a new member of the algebra, and we define \(e_{12}=e_1e_2\)</p>
         </div>
         <div>
           <div data-remove-1 data-add-2>
@@ -141,7 +141,7 @@
               \[e_3\]
             </div>
           </div>
-          <div data-hide-1 data-show-6>
+          <div data-hide-1 data-show-5>
             <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
               <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
                 \[e_{23}\]
@@ -153,7 +153,7 @@
                 \[e_{12}\]
               </div>
             </div>
-          <div data-hide-1 data-show-7>
+          <div data-hide-1 data-show-5>
             <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
               <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
                 \[e_{123} = I\]
@@ -189,12 +189,12 @@
           <p class="slide-subtitle">\[AB =(A_1 e_1 + A_2 e_2 + A_3 e_3)(B_1 e_1 + B_2 e_2 + B_3 e_3) = \]</p>
           <p class="slide-subtitle">\[= (A_1 B_1 + A_2 B_2 + A_3 B_3) 1 + \]</p>
           <p class="slide-subtitle">\[+ (A_1 B_2 - A_2 B_1) e_{12} + (A_2 B_3 - A_3 B_2) e_{23} + (A_3 B_1 - A_1 B_3) e_{31} = \]</p>
-          <p class="slide-subtitle">Symmetric and antisymmetric parts</p>
-
-          <p class="slide-subtitle">\[=\overrightarrow{A} \cdot \overrightarrow{B} + \overrightarrow{A} \wedge \overrightarrow{B}\]</p>
-          <p class="slide-subtitle">\[(\overrightarrow{A} \times \overrightarrow{B} = I (\overrightarrow{A} \wedge \overrightarrow{B}))\]</p>
-          <p class="slide-subtitle">\[\overrightarrow{\nabla}= \partial_x e_1 + \partial_y e_2 + \partial_z e_3 \quad \overrightarrow{\nabla} \overrightarrow{A} = \overrightarrow{\nabla} \cdot \overrightarrow{A} + \overrightarrow{\nabla} \wedge \overrightarrow{A}\]</p>
-
+          <div data-hide-1 data-show-3>
+            <p class="slide-subtitle"><span class="highlight">Symmetric</span> and <span class="highlight">antisymmetric</span> parts</p>
+            <p class="slide-subtitle">\[=\overrightarrow{A} \cdot \overrightarrow{B} + \overrightarrow{A} \wedge \overrightarrow{B}\]</p>
+            <p class="slide-subtitle">\[(\overrightarrow{A} \times \overrightarrow{B} = I (\overrightarrow{A} \wedge \overrightarrow{B}))\]</p>
+            <p class="slide-subtitle">\[\overrightarrow{\nabla}= \partial_x e_1 + \partial_y e_2 + \partial_z e_3 \quad \overrightarrow{\nabla} \overrightarrow{A} = \overrightarrow{\nabla} \cdot \overrightarrow{A} + \overrightarrow{\nabla} \wedge \overrightarrow{A}\]</p>
+          </div>
         </div>
       </div>
     </div>  
