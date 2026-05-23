@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Presentation — DECK</title>
+  <title>Electromagnetism as Geometric Algebra</title>
   <link rel="stylesheet" href="../css/deck.css" />
   <style>
     .table-mat {
@@ -61,10 +61,45 @@
        SLIDE 2 — Content with State Steps
        Use → to reveal items one by one
        ════════════════════════════════════ -->
-  <section class="slide layout-2col">
+  <section class="slide layout-2col" style="align-items: start;">
     <div style="width: 100%; max-width: 700px;">
       <img data-remove-2 data-add-1 src="./img/maxwell1.png" alt="Maxwell's equations" style="border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-      <img data-remove-1 data-add-2 src="./img/maxwellcomparison.webp" alt="Maxwell's equations" style="border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+      <img data-remove-1 data-add-2 data-remove-6 src="./img/maxwellcomparison.webp" alt="Maxwell's equations" style="border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+      <div data-remove-1 data-add-6 style="opacity:0">
+        <p class="slide-subtitle" style="margin-bottom:20px;">Not so much taught at school, but there is a 4-dimensional version<p>
+        <p class="slide-body">The 4-vectors:</br><span class="highlight">Potential</span> \(A_\mu=(\phi, -\overrightarrow{A})\)
+        </br><span class="highlight">Charge</span> \(J^\mu=(\rho, \overrightarrow{J})\)
+        </br><span class="highlight">Differential</span> \(\partial_\mu=\frac{\partial}{\partial x^\nu}=(\frac{\partial}{\partial t}, \overrightarrow{\nabla})= (\frac{\partial}{\partial t}, \frac{\partial}{\partial x}, \frac{\partial}{\partial y}, \frac{\partial}{\partial z})\)</p>
+        <p data-hide-1 data-show-7 class="slide-body">Define the rank-2 4-form</br><span class="highlight">Faraday field</span> \(F_{\mu\nu}= \partial_\mu A_\nu - \partial_\nu A_\mu=\) 
+          \[=
+          \begin{bmatrix} 0 & \frac{\partial \phi}{\partial x} + \frac{\partial A_x}{\partial t} & 
+            \frac{\partial \phi}{\partial y} + \frac{\partial A_y}{\partial t} & 
+            \frac{\partial \phi}{\partial z} + \frac{\partial A_z}{\partial t} \\
+
+            -\frac{\partial \phi}{\partial x} - \frac{\partial A_x}{\partial t} & 
+            0 & 
+            -\frac{\partial A_x}{\partial y} + \frac{\partial A_y}{\partial x} &
+            -\frac{\partial A_z}{\partial x} + \frac{\partial A_x}{\partial z} \\
+
+            -\frac{\partial \phi}{\partial y} - \frac{\partial A_y}{\partial t} & 
+            \frac{\partial A_y}{\partial x} - \frac{\partial A_x}{\partial y} &
+            0 & 
+            -\frac{\partial A_z}{\partial y} + \frac{\partial A_y}{\partial z}\\
+
+            -\frac{\partial \phi}{\partial z} - \frac{\partial A_z}{\partial t} & 
+            \frac{\partial A_z}{\partial x} - \frac{\partial A_x}{\partial z} &
+            \frac{\partial A_z}{\partial y} - \frac{\partial A_y}{\partial z} &
+             0 
+           \end{bmatrix}=
+          \begin{bmatrix} 0 & -E_x & -E_y & -E_y \\
+            E_x & 0 & -B_z & B_y  \\
+            E_y & B_z & 0 &  =B_x\\
+            E_z & -B_y & B_x & 0 
+           \end{bmatrix}
+            \]</p>
+        <p data-hide-1 data-show-8 class="slide-body">And the <span class="highlight">Dual field</span> \(F^*_{\alpha\beta}=\frac{1}{2}\epsilon_{\alpha\beta\gamma\delta} F^{\gamma\delta}\)</p> 
+
+      </div>
     </div>
     <div style="width: 100%; max-width: 700px;">
       <div data-remove-2 data-add-1 style="opacity:0">
@@ -74,7 +109,7 @@
         </h3>
       </div>
       <div data-remove-1 data-add-2 style="opacity:0">
-        <p class="slide-body" style="margin-bottom:20px;">
+        <p class="slide-subtitle" style="margin-bottom:20px;">
           Compare with the equations that we currently teach in school. More modern formulations that are more compact and elegant.
         <p>
         <p class="slide-subtitle">\[\overrightarrow{\nabla} \cdot \overrightarrow{E} = \frac{\rho}{\epsilon_0}\]</p>
@@ -172,7 +207,7 @@
   <section class="slide slide-purple">
     <div class="layout-hero">
       <h1 class="slide-title">Mechanism of Space Algebra Multiplication</h1>
-      <div class="layout-2col" style="width:90%;">
+      <div class="layout-2col" style="width:90%; align-items: start;">
 
         <div>
           <p class="slide-subtitle">Let's practice some simple multiplications</p>
@@ -188,10 +223,10 @@
           <p class="slide-subtitle">The product of two vectors A and B</p>
           <p class="slide-subtitle">\[AB =(A_1 e_1 + A_2 e_2 + A_3 e_3)(B_1 e_1 + B_2 e_2 + B_3 e_3) = \]</p>
           <p class="slide-subtitle">\[= (A_1 B_1 + A_2 B_2 + A_3 B_3) 1 + \]</p>
-          <p class="slide-subtitle">\[+ (A_1 B_2 - A_2 B_1) e_{12} + (A_2 B_3 - A_3 B_2) e_{23} + (A_3 B_1 - A_1 B_3) e_{31} = \]</p>
+          <p class="slide-subtitle">\[+ (A_1 B_2 - A_2 B_1) e_{12} + (A_2 B_3 - A_3 B_2) e_{23} + (A_3 B_1 - A_1 B_3) e_{31}\]</p>
           <div data-hide-1 data-show-3>
             <p class="slide-subtitle"><span class="highlight">Symmetric</span> and <span class="highlight">antisymmetric</span> parts</p>
-            <p class="slide-subtitle">\[=\overrightarrow{A} \cdot \overrightarrow{B} + \overrightarrow{A} \wedge \overrightarrow{B}\]</p>
+            <p class="slide-subtitle">\[\overrightarrow{A} \overrightarrow{B}=\overrightarrow{A} \cdot \overrightarrow{B} + \overrightarrow{A} \wedge \overrightarrow{B}\]</p>
             <p class="slide-subtitle">\[(\overrightarrow{A} \times \overrightarrow{B} = I (\overrightarrow{A} \wedge \overrightarrow{B}))\]</p>
             <p class="slide-subtitle">\[\overrightarrow{\nabla}= \partial_x e_1 + \partial_y e_2 + \partial_z e_3 \quad \overrightarrow{\nabla} \overrightarrow{A} = \overrightarrow{\nabla} \cdot \overrightarrow{A} + \overrightarrow{\nabla} \wedge \overrightarrow{A}\]</p>
           </div>
