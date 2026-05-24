@@ -58,19 +58,18 @@
 
 
   <!-- ════════════════════════════════════
-       SLIDE 2 — Content with State Steps
-       Use → to reveal items one by one
+       SLIDE 2 — Different Formulations of Maxwell's Equations
        ════════════════════════════════════ -->
   <section class="slide layout-2col" style="align-items: start;">
     <div style="width: 100%; max-width: 700px;">
       <img data-remove-2 data-add-1 src="./img/maxwell1.png" alt="Maxwell's equations" style="border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-      <img data-remove-1 data-add-2 data-remove-6 src="./img/maxwellcomparison.webp" alt="Maxwell's equations" style="border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-      <div data-remove-1 data-add-6 style="opacity:0">
+      <img data-remove-1 data-add-2 data-remove-4 src="./img/maxwellcomparison.webp" alt="Maxwell's equations" style="border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+      <div data-remove-1 data-add-4 style="opacity:0">
         <p class="slide-subtitle" style="margin-bottom:20px;">Not so much taught at school, but there is a 4-dimensional version<p>
         <p class="slide-body">The 4-vectors:</br><span class="highlight">Potential</span> \(A_\mu=(\phi, -\overrightarrow{A})\)
         </br><span class="highlight">Charge</span> \(J^\mu=(\rho, \overrightarrow{J})\)
         </br><span class="highlight">Differential</span> \(\partial_\mu=\frac{\partial}{\partial x^\nu}=(\frac{\partial}{\partial t}, \overrightarrow{\nabla})= (\frac{\partial}{\partial t}, \frac{\partial}{\partial x}, \frac{\partial}{\partial y}, \frac{\partial}{\partial z})\)</p>
-        <p data-hide-1 data-show-7 class="slide-body">Define the rank-2 4-form</br><span class="highlight">Faraday field</span> \(F_{\mu\nu}= \partial_\mu A_\nu - \partial_\nu A_\mu=\) 
+        <p data-hide-1 data-show-5 class="slide-body">Define the rank-2 4-form</br><span class="highlight">Faraday field</span> \(F_{\mu\nu}= \partial_\mu A_\nu - \partial_\nu A_\mu=\) 
           \[=
           \begin{bmatrix} 0 & \frac{\partial \phi}{\partial x} + \frac{\partial A_x}{\partial t} & 
             \frac{\partial \phi}{\partial y} + \frac{\partial A_y}{\partial t} & 
@@ -97,7 +96,8 @@
             E_z & -B_y & B_x & 0 
            \end{bmatrix}
             \]</p>
-        <p data-hide-1 data-show-8 class="slide-body">And the <span class="highlight">Dual field</span> \(F^*_{\alpha\beta}=\frac{1}{2}\epsilon_{\alpha\beta\gamma\delta} F^{\gamma\delta}\)</p> 
+        <p data-hide-1 data-show-6 class="slide-body">And the <span class="highlight">Dual field</span> \(F^*_{\alpha\beta}=\frac{1}{2}\epsilon_{\alpha\beta\gamma\delta} F^{\gamma\delta}\)</p> 
+        <p data-hide-1 data-show-7 class="slide-body">The final 2 Maxwell's equations:</span> \[DF=J\]\[DF^*=0\]</p> 
 
       </div>
     </div>
@@ -122,8 +122,22 @@
           </p>
           <p class="slide-subtitle">\[\frac{\partial \rho}{\partial t} + \overrightarrow{\nabla} \cdot \overrightarrow{J} = 0\]</p>
           <p class="slide-subtitle">\[\overrightarrow{B} = \overrightarrow{\nabla} \times \overrightarrow{A} \qquad \overrightarrow{E} = -\overrightarrow{\nabla} \phi - \frac{\partial \overrightarrow{A}}{\partial t}\]</p>
-        </div>
-          <div data-hide-1 data-show-4 style="opacity:0">
+      </div>
+
+    </div>
+
+
+  </section>
+
+  <!-- ════════════════════════════════════
+       SLIDE 3 — Content with State Steps
+       Use → to reveal items one by one
+       ════════════════════════════════════ -->
+  <section class="slide layout-2col">
+    <div style="width: 70%; max-width: 500px;">
+      <div>
+        <p class="slide-body">The final 2 Maxwell's equations:</span> \[DF=J\]\[DF^*=0\]</p> 
+        <div data-hide-1 data-show-2 style="opacity:0">
             <p class="slide-body" style="margin-bottom:20px;">
               This is not just a mathematical trick. It reveals the underlying geometric structure of electromagnetism and spacetime.
             </p>
@@ -133,15 +147,23 @@
             </p>
         </div> 
       </div>
+    </div>
+    <div style="width: 70%; max-width: 500px;">
+      <div>
+        <p class="slide-subtitle">\[\overrightarrow{\nabla} \cdot \overrightarrow{E} = \frac{\rho}{\epsilon_0}\]</p>
+        <p class="slide-subtitle">\[\overrightarrow{\nabla} \times \overrightarrow{B} - \mu_0 \epsilon_0 \frac{\partial \overrightarrow{E}}{\partial t}= \mu_0 \overrightarrow{J}\]</p>
+        <p class="slide-subtitle">\[\overrightarrow{\nabla} \cdot \overrightarrow{B} = 0\]</p>
+        <p class="slide-subtitle">\[\overrightarrow{\nabla} \times \overrightarrow{E} + \frac{\partial \overrightarrow{B}}{\partial t} = 0\]</p>
+
+      </div>
 
     </div>
 
 
   </section>
 
-
   <!-- ════════════════════════════════════
-       SLIDE 3 — Space Algebra Formulation
+       SLIDE 4 — Space Algebra Formulation
        ════════════════════════════════════ -->
   <section class="slide">
 
@@ -202,7 +224,7 @@
 
   
   <!-- ════════════════════════════════════
-       SLIDE 4 — Space Algebra Multipication
+       SLIDE 5 — Space Algebra Multipication
        ════════════════════════════════════ -->
   <section class="slide slide-purple">
     <div class="layout-hero">
@@ -236,7 +258,7 @@
   </section>
 
   <!-- ════════════════════════════════════
-       SLIDE 5 — Space Algebra Representation
+       SLIDE 6 — Space Algebra Representation
        ════════════════════════════════════ -->
   <section class="slide slide-purple">
     <div class="layout-hero">
@@ -331,7 +353,7 @@
   </section>
 
   <!-- ════════════════════════════════════
-       SLIDE 6 — Spacetime Algebra Representation
+       SLIDE 7 — Spacetime Algebra Representation
        ════════════════════════════════════ -->
   <section class="slide slide-purple">
     <div class="layout-hero">
@@ -466,7 +488,7 @@
   </section>
 
   <!-- ════════════════════════════════════
-       SLIDE 7 — Electromagnetic Field Representation
+       SLIDE 8 — Electromagnetic Field Representation
        ════════════════════════════════════ -->
   <section class="slide slide-purple">
     <div class="layout-hero">
