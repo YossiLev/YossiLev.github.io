@@ -33,7 +33,17 @@
   </style>
   
   <!-- <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script> -->
-  <script type="text/javascript" src="../../js/tex/tex-mml-chtml.js"></script>
+  <!-- <script type="text/javascript" src="../../js/tex/tex-mml-chtml.js"></script> -->
+<script>
+window.MathJax = {
+  tex: {
+    packages: {'[+]': ['color']} 
+  }
+};
+</script>
+
+<!-- Points to your new local file -->
+<script async src="/js/tex/tex-chtml-full.js"></script>
 
 </head>
 <body>
@@ -488,34 +498,178 @@
   </section>
 
   <!-- ════════════════════════════════════
-       SLIDE 8 — Electromagnetic Field Representation
+       SLIDE 8 — Electromagnetic Field Equation
        ════════════════════════════════════ -->
   <section class="slide slide-purple">
     <div class="layout-hero">
-      <h1 class="slide-title">Electromagnetic Field Representation</h1>
-      <p class="slide-subtitle">The simplest spacetime theory - Start with a vector A and differentiate it</p>
-      <p class="slide-subtitle">\[F = \nabla A = \nabla\cdot A + \nabla\wedge A\]</p>
+      <h1 class="slide-title">Electromagnetic Field Equation</h1>
+      <p class="slide-subtitle">The simplest spacetime theory</p>
+      <p class="slide-subtitle">Start with a vector \(A\)</p>
+      <p class="slide-subtitle">Differenciate it \(\nabla A=F\) to get the electromagnetic field bivector</p>
+      <p class="slide-subtitle">Differentiate that \(\nabla F = J\) to get the source vector</p>
+      <p class="slide-subtitle">\(\nabla F = J\) is the one and only Maxwell's equation</p>
+    </div>
+  </section>
 
-      <p class="slide-subtitle">If we assume \(\nabla\cdot A = 0\) then F is a pure blade 2 bivector</p>
-      <p class="slide-subtitle">\[F = E_x e_{01} + E_y e_{02} + E_z e_{03} + B_x e_{23} + B_y e_{31} + B_z e_{12}\]</p>
-      <p class="slide-subtitle">\[\nabla F = J \quad \text{where } J = \nabla\cdot F \quad\text{since} \quad \nabla\wedge F = 0\]</p>
-      <p class="slide-subtitle">\[\nabla F = \nabla \nabla A = \nabla^2 A = \text{&#x25A1;} A \]</p>
-      
+  <!-- ════════════════════════════════════
+       SLIDE 9 — The Electromagnetic Field
+       ════════════════════════════════════ -->
+  <section class="slide slide-purple">
+    <h1 class="slide-title">The Electromagnetic Field</h1>
+    <div class="layout-hero">
+      <p class="slide-subtitle">\(A=(A_0, \overrightarrow{A}) = e_0 A_0 + e_1 A_1 + e_2 A_2 + e_3 A_3\)</p>
+      <p class="slide-subtitle">\(\nabla=(e_0 \frac{\partial}{\partial t}, \overrightarrow{\nabla}) = e_0 \frac{\partial}{\partial t} + e_1 \frac{\partial}{\partial x} + e_2 \frac{\partial}{\partial y} + e_3 \frac{\partial}{\partial z}\)</p>
 
+      <p data-hide-1 data-show-2 class="slide-subtitle" style="font-size: 0.9em;">\[
+        \definecolor{lRed}{RGB}{255, 120, 120}
+        \definecolor{lBlue}{RGB}{100, 180, 255}
+        F = \nabla A =
+        \begin{matrix}
+          \color{green} e_0 e_0 \frac{\partial A_0}{\partial t} & + \color{lRed} e_0 e_1 \frac{\partial A_1}{\partial t} & +  \color{lRed} e_0 e_2 \frac{\partial A_2}{\partial t} & +  \color{lRed} e_0 e_3 \frac{\partial A_3}{\partial t} \\
+          + \color{lBlue} e_1 e_0 \frac{\partial A_0}{\partial x} & + \color{green} e_1 e_1 \frac{\partial A_1}{\partial x} & +\color{lRed} e_1 e_2 \frac{\partial A_2}{\partial x} & + \color{lBlue} e_1 e_3 \frac{\partial A_3}{\partial x} \\
+          + \color{lBlue} e_2 e_0 \frac{\partial A_0}{\partial y} & + \color{lBlue} e_2 e_1 \frac{\partial A_1}{\partial y} & + \color{green} e_2 e_2 \frac{\partial A_2}{\partial y} & +  \color{lRed} e_2 e_3 \frac{\partial A_3}{\partial y} \\
+          + \color{lBlue} e_3 e_0 \frac{\partial A_0}{\partial z} & + \color{lRed}e_3 e_1 \frac{\partial A_1}{\partial z} & + \color{lBlue} e_3 e_2 \frac{\partial A_2}{\partial z} & + \color{green}  e_3 e_3 \frac{\partial A_3}{\partial z}
+        \end{matrix}\]</p>
+      <p data-hide-1 data-show-3 class="slide-subtitle" style="font-size: 1.0em;">\(
+        -{\color{green}\frac{\partial A_0}{\partial t}} + {\color{green}\frac{\partial A_1}{\partial x}} + {\color{green}\frac{\partial A_2}{\partial y}} + {\color{green}\frac{\partial A_3}{\partial z}} =
+        -\dot{A_0} + \nabla \cdot A = 0\) (Lorentz condition)</p>
+      <p data-hide-1 data-show-3 class="slide-subtitle" style="font-size: 0.8em;">\(
+        e_0 e_1 \left({\color{lRed}\frac{\partial A_1}{\partial t}} - \color{lBlue}\frac{\partial A_0}{\partial x}\right) +
+        e_0 e_2 \left({\color{lRed}\frac{\partial A_2}{\partial t}} - \color{lBlue}\frac{\partial A_0}{\partial y}\right) +
+        e_0 e_3 \left({\color{lRed}\frac{\partial A_3}{\partial t}} - \color{lBlue}\frac{\partial A_0}{\partial z}\right) +
+        e_1 e_2 \left({\color{lRed}\frac{\partial A_2}{\partial x}} - \color{lBlue}\frac{\partial A_1}{\partial y}\right) +
+        e_1 e_3 \left({\color{lRed}\frac{\partial A_3}{\partial x}} - \color{lBlue}\frac{\partial A_1}{\partial z}\right) +
+        e_2 e_3 \left({\color{lRed}\frac{\partial A_3}{\partial y}} - \color{lBlue}\frac{\partial A_2}{\partial z}\right)
+      \)</p>
+      <p data-hide-1 data-show-4 class="slide-subtitle highlight">
+        \[F = e_0 e_1 E_x + e_0 e_2 E_y + e_0 e_3 E_z + e_1 e_2 B_x + e_1 e_3 B_y + e_2 e_3 B_z\]
+      </p>
+      <p data-hide-1 data-show-5 class="slide-subtitle" style="font-size: 0.8em;">
+        \[\overrightarrow{E}= \frac{\partial \overrightarrow{A}}{\partial t} - \overrightarrow{\nabla}A_0\quad \overrightarrow{B} = \overrightarrow{\nabla} \times \overrightarrow{A}\]
+      </p>
     </div>
 
-    <div class="card card-accent-2" style="position: fixed; z-index: 10;" 
-      data-pos-1="-2000px, 0px"
-      data-pos-2="-400px, 0px"
-      >
-      <h3 style="color: var(--accent-2); font-size:1rem; margin-bottom:6px;">Maxwell's Equation</h3>
-      <p class="slide-body">\[\nabla F = J\]</p>
-    </div>
   </section>  
 
-  
+
   <!-- ════════════════════════════════════
-       SLIDE 8 — Thank You / Close
+       SLIDE 9 — The Electromagnetic Field
+       ════════════════════════════════════ -->
+  <section class="slide slide-purple">
+    <h1 class="slide-title">The Electromagnetic Field</h1>
+    <div class="layout-hero">
+      <p class="slide-subtitle">\(A=(A_0, \overrightarrow{A}) = e_0 A_0 + e_1 A_1 + e_2 A_2 + e_3 A_3\)</p>
+      <p class="slide-subtitle">\(\nabla=(e_0 \frac{\partial}{\partial t}, \overrightarrow{\nabla}) = e_0 \frac{\partial}{\partial t} + e_1 \frac{\partial}{\partial x} + e_2 \frac{\partial}{\partial y} + e_3 \frac{\partial}{\partial z}\)</p>
+
+      <p data-hide-1 data-show-2 class="slide-subtitle" style="font-size: 0.9em;">\[
+        \definecolor{lRed}{RGB}{255, 120, 120}
+        \definecolor{lBlue}{RGB}{100, 180, 255}
+        F = \nabla A =
+        \begin{matrix}
+          \color{green} e_0 e_0 \frac{\partial A_0}{\partial t} & + \color{lRed} e_0 e_1 \frac{\partial A_1}{\partial t} & +  \color{lRed} e_0 e_2 \frac{\partial A_2}{\partial t} & +  \color{lRed} e_0 e_3 \frac{\partial A_3}{\partial t} \\
+          + \color{lBlue} e_1 e_0 \frac{\partial A_0}{\partial x} & + \color{green} e_1 e_1 \frac{\partial A_1}{\partial x} & +\color{lRed} e_1 e_2 \frac{\partial A_2}{\partial x} & + \color{lBlue} e_1 e_3 \frac{\partial A_3}{\partial x} \\
+          + \color{lBlue} e_2 e_0 \frac{\partial A_0}{\partial y} & + \color{lBlue} e_2 e_1 \frac{\partial A_1}{\partial y} & + \color{green} e_2 e_2 \frac{\partial A_2}{\partial y} & +  \color{lRed} e_2 e_3 \frac{\partial A_3}{\partial y} \\
+          + \color{lBlue} e_3 e_0 \frac{\partial A_0}{\partial z} & + \color{lRed}e_3 e_1 \frac{\partial A_1}{\partial z} & + \color{lBlue} e_3 e_2 \frac{\partial A_2}{\partial z} & + \color{green}  e_3 e_3 \frac{\partial A_3}{\partial z}
+        \end{matrix}\]</p>
+      <p data-hide-1 data-show-3 class="slide-subtitle" style="font-size: 1.0em;">\(
+        -{\color{green}\frac{\partial A_0}{\partial t}} + {\color{green}\frac{\partial A_1}{\partial x}} + {\color{green}\frac{\partial A_2}{\partial y}} + {\color{green}\frac{\partial A_3}{\partial z}} =
+        -\dot{A_0} + \nabla \cdot A = 0\) (Lorentz condition)</p>
+      <p data-hide-1 data-show-3 class="slide-subtitle" style="font-size: 0.8em;">\(
+        e_0 e_1 \left({\color{lRed}\frac{\partial A_1}{\partial t}} - \color{lBlue}\frac{\partial A_0}{\partial x}\right) +
+        e_0 e_2 \left({\color{lRed}\frac{\partial A_2}{\partial t}} - \color{lBlue}\frac{\partial A_0}{\partial y}\right) +
+        e_0 e_3 \left({\color{lRed}\frac{\partial A_3}{\partial t}} - \color{lBlue}\frac{\partial A_0}{\partial z}\right) +
+        e_1 e_2 \left({\color{lRed}\frac{\partial A_2}{\partial x}} - \color{lBlue}\frac{\partial A_1}{\partial y}\right) +
+        e_1 e_3 \left({\color{lRed}\frac{\partial A_3}{\partial x}} - \color{lBlue}\frac{\partial A_1}{\partial z}\right) +
+        e_2 e_3 \left({\color{lRed}\frac{\partial A_3}{\partial y}} - \color{lBlue}\frac{\partial A_2}{\partial z}\right)
+      \)</p>
+      <p data-hide-1 data-show-4 class="slide-subtitle highlight">
+        \[F = e_0 e_1 E_x + e_0 e_2 E_y + e_0 e_3 E_z + e_1 e_2 B_x + e_1 e_3 B_y + e_2 e_3 B_z\]
+      </p>
+      <p data-hide-1 data-show-5 class="slide-subtitle" style="font-size: 0.8em;">
+        \[\overrightarrow{E}= \frac{\partial \overrightarrow{A}}{\partial t} - \overrightarrow{\nabla}A_0\quad \overrightarrow{B} = \overrightarrow{\nabla} \times \overrightarrow{A}\]
+      </p>
+    </div>
+
+  </section>  
+
+
+  <!-- ════════════════════════════════════
+       SLIDE 10 — The Field Equation
+       ════════════════════════════════════ -->
+  <section class="slide slide-purple">
+    <h1 class="slide-title">The Field Equation</h1>
+    <div class="layout-hero">
+      <p class="slide-subtitle highlight">
+        \[F = e_0 e_1 E_x + e_0 e_2 E_y + e_0 e_3 E_z + e_1 e_2 B_x + e_1 e_3 B_y + e_2 e_3 B_z\]
+      </p>
+
+      <p data-hide-1 data-show-2 class="slide-body" style="font-size: 0.9em;">\[
+        \definecolor{lRed}{RGB}{255, 120, 120}
+        \definecolor{lBlue}{RGB}{100, 180, 255}
+        \nabla F =
+        \begin{matrix}
+          e_0 e_0 e_1 \frac{\partial E_x}{\partial t} & e_0 e_0 e_2 \frac{\partial E_y}{\partial t} & e_0 e_0 e_3 \frac{\partial E_z}{\partial t} & 
+          e_0 e_2 e_3 \frac{\partial B_x}{\partial t} & e_0 e_3 e_1 \frac{\partial B_y}{\partial t} & e_0 e_1 e_2 \frac{\partial B_z}{\partial t} \\
+          \color{yellow} e_1 e_0 e_1 \frac{\partial E_x}{\partial x} &  e_1 e_0 e_2 \frac{\partial E_y}{\partial x} &  e_1 e_0 e_3 \frac{\partial E_z}{\partial x} & 
+          \color{red} e_1 e_2 e_3 \frac{\partial B_x}{\partial x} &  e_1 e_3 e_1 \frac{\partial B_y}{\partial x} &  e_1 e_1 e_2 \frac{\partial B_z}{\partial x} \\
+          e_2 e_0 e_1 \frac{\partial E_x}{\partial y} & \color{yellow} e_2 e_0 e_2 \frac{\partial E_y}{\partial y} &  e_2 e_0 e_3 \frac{\partial E_z}{\partial y} & 
+           e_2 e_2 e_3 \frac{\partial B_x}{\partial y} & \color{red} e_2 e_3 e_1 \frac{\partial B_y}{\partial y} &  e_2 e_1 e_2 \frac{\partial B_z}{\partial y} \\
+          e_3 e_0 e_1 \frac{\partial E_x}{\partial z} &  e_3 e_0 e_2 \frac{\partial E_y}{\partial z} & \color{yellow} e_3 e_0 e_3 \frac{\partial E_z}{\partial z} & 
+           e_3 e_2 e_3 \frac{\partial B_x}{\partial z} &  e_3 e_3 e_1 \frac{\partial B_y}{\partial z} & \color{red} e_3 e_1 e_2 \frac{\partial B_z}{\partial z} \\
+        \end{matrix}\]</p>
+      <p data-hide-1 data-show-3 class="slide-body" style="font-size: 0.8em;">\[
+        e_0\left(\color{yellow}\frac{\partial E_x}{\partial x} + \frac{\partial E_y}{\partial y} + \frac{\partial E_z}{\partial z}\color{black}\right) +
+        e_1\left(-\frac{\partial E_x}{\partial t} + \frac{\partial B_z}{\partial y} - \frac{\partial B_y}{\partial z}\right) +
+        e_2\left(-\frac{\partial E_y}{\partial t} + \frac{\partial B_x}{\partial z} - \frac{\partial B_z}{\partial x}\right) +
+        e_3\left(-\frac{\partial E_z}{\partial t} + \frac{\partial B_y}{\partial x} - \frac{\partial B_x}{\partial y}\right)
+        \]
+        \[\overrightarrow{\nabla}\cdot\overrightarrow{E} + \left(\overrightarrow{\nabla}\times\overrightarrow{B}- \frac{\partial \overrightarrow{E}}{\partial t}\right)= J = \left(\rho, \overrightarrow{J}\right)\]
+      </p>
+      <p data-hide-1 data-show-4 class="slide-body" style="font-size: 0.8em;">\[
+        e_{123}\left(\color{red}\frac{\partial B_x}{\partial x} + \frac{\partial B_y}{\partial y} + \frac{\partial B_z}{\partial z}\color{black}\right) +
+        e_{230}\left(-\frac{\partial B_x}{\partial t} + \frac{\partial E_y}{\partial z} - \frac{\partial E_z}{\partial y}\right) +
+        e_{301}\left(-\frac{\partial B_y}{\partial t} + \frac{\partial E_z}{\partial z} - \frac{\partial E_x}{\partial x}\right) +
+        e_{012}\left(-\frac{\partial B_z}{\partial t} + \frac{\partial E_x}{\partial x} - \frac{\partial E_y}{\partial y}\right)
+        \]
+        \[\overrightarrow{\nabla}\cdot\overrightarrow{B} + \left(\overrightarrow{\nabla}\times\overrightarrow{E}+ \frac{\partial \overrightarrow{B}}{\partial t}\right)= 0\]
+      </p>
+    </div>
+
+
+  </section>  
+
+
+  <!-- ════════════════════════════════════
+       SLIDE 11 — The Lorentz Condition
+       ════════════════════════════════════ -->
+  <section class="slide slide-purple">
+    <h1 class="slide-title">The Lorentz Condition</h1>
+    <div class="layout-hero">
+
+       <p class="slide-subtitle" style="font-size: 1.0em;">\(
+        \nabla A = \nabla \cdot A + \nabla \wedge A\)</p>
+       <p class="slide-subtitle" style="font-size: 1.2em;">\(
+        \nabla \cdot A = -{\color{green}\frac{\partial A_0}{\partial t}} + {\color{green}\frac{\partial A_1}{\partial x}} +
+         {\color{green}\frac{\partial A_2}{\partial y}} + {\color{green}\frac{\partial A_3}{\partial z}}\) </p>
+        <p class="slide-subtitle" style="font-size: 1.0em;">
+          Assume \(\nabla \cdot A = \theta \neq 0\).
+        </p> 
+        <p class="slide-subtitle" style="font-size: 1.0em;">
+          Solve \(\nabla^2 \chi = \theta\). Solution always exists.
+        </p>
+        <p class="slide-subtitle" style="font-size: 1.0em;">
+          A new potential \(A' = A - \nabla \chi\). This doesn't change \(F\) since \(\nabla \wedge \nabla \chi = 0\).
+        </p>
+        <p class="slide-subtitle" style="font-size: 1.0em;">
+          It does change the divergence: \(\nabla \cdot A' = \nabla \cdot A - \nabla^2 \chi = \theta - \theta = 0\).
+        </p>
+    </div>
+
+
+  </section>  
+    
+  <!-- ════════════════════════════════════
+       SLIDE 12 — Thank You / Close
        ════════════════════════════════════ -->
   <section class="slide">
 
