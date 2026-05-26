@@ -553,47 +553,6 @@ window.MathJax = {
 
 
   <!-- ════════════════════════════════════
-       SLIDE 9 — The Electromagnetic Field
-       ════════════════════════════════════ -->
-  <section class="slide slide-purple">
-    <h1 class="slide-title">The Electromagnetic Field</h1>
-    <div class="layout-hero">
-      <p class="slide-subtitle">\(A=(A_0, \overrightarrow{A}) = e_0 A_0 + e_1 A_1 + e_2 A_2 + e_3 A_3\)</p>
-      <p class="slide-subtitle">\(\nabla=(e_0 \frac{\partial}{\partial t}, \overrightarrow{\nabla}) = e_0 \frac{\partial}{\partial t} + e_1 \frac{\partial}{\partial x} + e_2 \frac{\partial}{\partial y} + e_3 \frac{\partial}{\partial z}\)</p>
-
-      <p data-hide-1 data-show-2 class="slide-subtitle" style="font-size: 0.9em;">\[
-        \definecolor{lRed}{RGB}{255, 120, 120}
-        \definecolor{lBlue}{RGB}{100, 180, 255}
-        F = \nabla A =
-        \begin{matrix}
-          \color{green} e_0 e_0 \frac{\partial A_0}{\partial t} & + \color{lRed} e_0 e_1 \frac{\partial A_1}{\partial t} & +  \color{lRed} e_0 e_2 \frac{\partial A_2}{\partial t} & +  \color{lRed} e_0 e_3 \frac{\partial A_3}{\partial t} \\
-          + \color{lBlue} e_1 e_0 \frac{\partial A_0}{\partial x} & + \color{green} e_1 e_1 \frac{\partial A_1}{\partial x} & +\color{lRed} e_1 e_2 \frac{\partial A_2}{\partial x} & + \color{lBlue} e_1 e_3 \frac{\partial A_3}{\partial x} \\
-          + \color{lBlue} e_2 e_0 \frac{\partial A_0}{\partial y} & + \color{lBlue} e_2 e_1 \frac{\partial A_1}{\partial y} & + \color{green} e_2 e_2 \frac{\partial A_2}{\partial y} & +  \color{lRed} e_2 e_3 \frac{\partial A_3}{\partial y} \\
-          + \color{lBlue} e_3 e_0 \frac{\partial A_0}{\partial z} & + \color{lRed}e_3 e_1 \frac{\partial A_1}{\partial z} & + \color{lBlue} e_3 e_2 \frac{\partial A_2}{\partial z} & + \color{green}  e_3 e_3 \frac{\partial A_3}{\partial z}
-        \end{matrix}\]</p>
-      <p data-hide-1 data-show-3 class="slide-subtitle" style="font-size: 1.0em;">\(
-        -{\color{green}\frac{\partial A_0}{\partial t}} + {\color{green}\frac{\partial A_1}{\partial x}} + {\color{green}\frac{\partial A_2}{\partial y}} + {\color{green}\frac{\partial A_3}{\partial z}} =
-        -\dot{A_0} + \nabla \cdot A = 0\) (Lorentz condition)</p>
-      <p data-hide-1 data-show-3 class="slide-subtitle" style="font-size: 0.8em;">\(
-        e_0 e_1 \left({\color{lRed}\frac{\partial A_1}{\partial t}} - \color{lBlue}\frac{\partial A_0}{\partial x}\right) +
-        e_0 e_2 \left({\color{lRed}\frac{\partial A_2}{\partial t}} - \color{lBlue}\frac{\partial A_0}{\partial y}\right) +
-        e_0 e_3 \left({\color{lRed}\frac{\partial A_3}{\partial t}} - \color{lBlue}\frac{\partial A_0}{\partial z}\right) +
-        e_1 e_2 \left({\color{lRed}\frac{\partial A_2}{\partial x}} - \color{lBlue}\frac{\partial A_1}{\partial y}\right) +
-        e_1 e_3 \left({\color{lRed}\frac{\partial A_3}{\partial x}} - \color{lBlue}\frac{\partial A_1}{\partial z}\right) +
-        e_2 e_3 \left({\color{lRed}\frac{\partial A_3}{\partial y}} - \color{lBlue}\frac{\partial A_2}{\partial z}\right)
-      \)</p>
-      <p data-hide-1 data-show-4 class="slide-subtitle highlight">
-        \[F = e_0 e_1 E_x + e_0 e_2 E_y + e_0 e_3 E_z + e_1 e_2 B_x + e_1 e_3 B_y + e_2 e_3 B_z\]
-      </p>
-      <p data-hide-1 data-show-5 class="slide-subtitle" style="font-size: 0.8em;">
-        \[\overrightarrow{E}= \frac{\partial \overrightarrow{A}}{\partial t} - \overrightarrow{\nabla}A_0\quad \overrightarrow{B} = \overrightarrow{\nabla} \times \overrightarrow{A}\]
-      </p>
-    </div>
-
-  </section>  
-
-
-  <!-- ════════════════════════════════════
        SLIDE 10 — The Field Equation
        ════════════════════════════════════ -->
   <section class="slide slide-purple">
