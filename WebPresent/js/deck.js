@@ -126,6 +126,11 @@ class DeckEngine {
         const n = parseInt(el.dataset.chartState);
         if (n > max - 1) max = n + 1;
       }
+      // Count typewriter-state as a state trigger
+      if (el.dataset.typewriterState) {
+        const n = parseInt(el.dataset.typewriterState);
+        if (n > max) max = n;
+      }
     });
     return max;
   }
@@ -215,6 +220,19 @@ class DeckEngine {
     const els = slide.querySelectorAll('[data-pos-1], [data-show-1], [data-hide-1], [data-class-1], [data-opacity-1], [data-add-1], [data-remove-1], [data-scale-1], [data-rotate-1]');
     els.forEach(el => this.applyState(el, stateIndex, instant));
 
+    // Trigger typewriter elements that are always visible (no data-show-N) at their target state
+    slide.querySelectorAll('[data-typewriter]').forEach(el => {
+      const hasShowAttr = Object.keys(el.dataset).some(k => k.match(/^show-\d+$/));
+      if (!hasShowAttr) {
+        const triggerState = parseInt(el.dataset.typewriterState || 1);
+        if (stateIndex + 1 === triggerState && !instant) {
+          this.playTypewriter(el);
+        } else if (stateIndex + 1 < triggerState) {
+          this.resetTypewriter(el);
+        }
+      }
+    });
+
     // Trigger chart reveal if any
     slide.querySelectorAll('[data-chart][data-chart-state]').forEach(el => {
       const triggerState = parseInt(el.dataset.chartState);
@@ -266,9 +284,15 @@ class DeckEngine {
     if (visible === true) {
       el.classList.remove('state-hidden');
       el.classList.add('state-visible');
+      if (el.dataset.typewriter !== undefined && !instant) {
+        this.playTypewriter(el);
+      }
     } else if (visible === false) {
       el.classList.remove('state-visible');
       el.classList.add('state-hidden');
+      if (el.dataset.typewriter !== undefined) {
+        this.resetTypewriter(el);
+      }
     }
 
     // ── Add/Remove ──
@@ -326,6 +350,69 @@ class DeckEngine {
     const clean = val.replace(/[\[\]]/g, '').trim();
     const parts = clean.split(/[\s,]+/);
     return [parts[0] || '0px', parts[1] || '0px'];
+  }
+
+  // ─── Typewriter (clip-path cover reveal) ─────────────────────────────────────
+  // Wraps the element in a clipper div and animates a sliding cover away,
+  // leaving the inner content (HTML, MathML, anything) completely untouched.
+
+  playTypewriter(el) {
+    const duration = parseInt(el.dataset.typewriterSpeed || 800); // total ms
+    const ease = el.dataset.typewriterEasing || 'cubic-bezier(0.4, 0, 0.2, 1)';
+
+    // Wrap once only
+    if (!el._twWrapper) {
+      // Position wrapper to match element
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'position:relative; display:inline-block; overflow:hidden; max-width:100%;';
+
+      // Insert wrapper before el, move el inside
+      el.parentNode.insertBefore(wrapper, el);
+      wrapper.appendChild(el);
+
+      // Create the cover overlay that slides away
+      const cover = document.createElement('div');
+      cover.style.cssText = `
+        position: absolute;
+        inset: 0;
+        background: var(--slide-bg, #0d1a2e);
+        transform: scaleX(1);
+        transform-origin: right center;
+        pointer-events: none;
+      `;
+      wrapper.appendChild(cover);
+
+      el._twWrapper = wrapper;
+      el._twCover   = cover;
+    }
+
+    // Don't replay if already revealed
+    if (el._twPlayed) return;
+    el._twPlayed = true;
+
+    // Make element visible before animating cover away
+    el.style.opacity = '1';
+    el.classList.remove('state-hidden');
+    el.classList.add('state-visible');
+
+    // Reset cover to fully hidden state, then animate it away
+    const cover = el._twCover;
+    cover.style.transition = 'none';
+    cover.style.transform = 'scaleX(1)';
+
+    // Force reflow so the reset takes effect before the transition starts
+    cover.getBoundingClientRect();
+
+    cover.style.transition = `transform ${duration}ms ${ease}`;
+    cover.style.transform = 'scaleX(0)';
+  }
+
+  resetTypewriter(el) {
+    if (!el._twCover) return;
+    el._twPlayed = false;
+    // Snap cover back instantly so it's ready to play again
+    el._twCover.style.transition = 'none';
+    el._twCover.style.transform = 'scaleX(1)';
   }
 
   // ─── Charts ──────────────────────────────────────────────────────────────────
@@ -673,13 +760,6 @@ class DeckEngine {
     }
   }
 }
-
-// Auto-init
-// window.addEventListener('DOMContentLoaded', () => {
-//   const slide = window.document.location.searchParams.get('slide') || "1";
-//   window.DECK_OPTIONS = { initialSlide: parseInt(slide) - 1 || 0 };
-//   window.deck = new DeckEngine(window.DECK_OPTIONS || {});
-// });
 
 // Auto-init
 window.addEventListener('DOMContentLoaded', () => {
