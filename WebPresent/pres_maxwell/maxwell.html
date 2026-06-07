@@ -259,10 +259,35 @@ window.MathJax = {
           <div data-hide-1 data-show-3 data-typewriter >
             <p class="slide-subtitle"><span class="highlight">Symmetric</span> and <span class="highlight">antisymmetric</span> parts</p>
             <p class="slide-subtitle">\[\overrightarrow{A} \overrightarrow{B}=\overrightarrow{A} \cdot \overrightarrow{B} + \overrightarrow{A} \wedge \overrightarrow{B}\]</p>
-            <p class="slide-subtitle">\[(\overrightarrow{A} \times \overrightarrow{B} = I (\overrightarrow{A} \wedge \overrightarrow{B}))\]</p>
-            <p class="slide-subtitle">\[\overrightarrow{\nabla}= \partial_x e_1 + \partial_y e_2 + \partial_z e_3 \quad \overrightarrow{\nabla} \overrightarrow{A} = \overrightarrow{\nabla} \cdot \overrightarrow{A} + \overrightarrow{\nabla} \wedge \overrightarrow{A}\]</p>
+            <p class="slide-subtitle">\[(\overrightarrow{A} \times \overrightarrow{B} = -I (\overrightarrow{A} \wedge \overrightarrow{B}))\]</p>
           </div>
         </div>
+      </div>
+    </div>  
+  </section>
+
+  <!-- ════════════════════════════════════
+       SLIDE 6 — What is multiplied here?
+       ════════════════════════════════════ -->
+  <section class="slide slide-purple">
+    <div class="layout-hero">
+      <h1 class="slide-title">What is multiplied here?</h1>
+
+        <div class="slide-body">Look again at a complex multiplication \((\alpha e_{1} + \beta e_{12})(\gamma e_{3} + \delta e_{23}) =\)</div>
+        <div class="slide-body">what can the coefficients \(\alpha, \beta, \gamma, \delta\) be?</div>
+        <div class="slide-body">what will \(\alpha \gamma e_{1}e_{3}\) be?</div>
+        <div data-hide-1 data-show-2 data-typewriter class="slide-body">If they are just <span class="highlight">numbers</span>, then the multiplication coefficient is just a number \(\alpha \gamma\).</div>
+        <div data-hide-1 data-show-3 data-typewriter class="slide-body">If they are <span class="highlight">functions</span> of some variables, then the multiplication is a function of those variables.</div>
+        <div data-hide-1 data-show-4 data-typewriter class="slide-body">If they are <span class="highlight">operators</span>, then they operate on the other element (like \(\partial_x sin(x)\)).</div>
+        <div data-hide-1 data-show-5 data-typewriter class="slide-body">
+          So... \((\partial_x e_1 + \partial_y e_2 + \partial_z e_3)(E_x e_1 + E_y e_2 + E_z e_3)\) is really...</div>
+        <div data-hide-1 data-show-6 data-typewriter class="slide-body">
+          \((\partial_x E_x + \partial_y E_y + \partial_z E_z)1\) which is a scalar! We can call it \(\overrightarrow{\nabla} \cdot \overrightarrow{E}\)! or \(Div(\overrightarrow{E})1\)</div>
+        <div data-hide-1 data-show-8 data-typewriter class="slide-body">But there is also the Anti-symmetric part...</div>
+        <div data-hide-1 data-show-9 data-typewriter class="slide-body">So \(\overrightarrow{\nabla} \overrightarrow{E} = \overrightarrow{\nabla} \cdot \overrightarrow{E} + \overrightarrow{\nabla} \wedge \overrightarrow{E} = Div(\overrightarrow{E})1 - Curl(\overrightarrow{E})I \)</div>
+
+
+
       </div>
     </div>  
   </section>
@@ -276,12 +301,12 @@ window.MathJax = {
     </div>
     <div class="layout-3col" style="width:80%;">
       <div>
-        <div style="margin: 45px 0"><span style="font-size: 1.2em;">Blade 0 - Scalar</span><span data-hide-1 data-show-2 style="color:#989696;"></br>Pressure, density, Energy, Charge</span></div>
-        <div style="margin: 25px 0"><span style="font-size: 1.2em;">Blade 1 - Vectors</span><span data-hide-1 data-show-3 style="color:#989696;"></br>Momentum, Velocity, Electric field, Magnetic potential, Nabla</span></div>
-        <div style="margin: 35px 0"><span style="font-size: 1.2em;">Blade 2 - Bivectors (pseudovectors)</span><span data-hide-1 data-show-4 style="color:#989696;"> 
-          </br>Angular momentum\((L=r\times p)\), Magnetic field\((B=\nabla\times A)\), Vorticity\((W=\nabla\times v)\)</span></div>
-        <div style="margin: 25px 0"><span style="font-size: 1.2em;">Blade 3 - Trivectors (pseudo-scalars)</span><span data-hide-1 data-show-5 style="color:#989696;">          
-          </br>Helicity\((H=v\cdot W=v \cdot (\nabla \times v))\)</span></div>
+        <div style="margin: 45px 0"><div style="font-size: 1.2em;">Blade 0 - Scalar</div><span data-hide-1 data-show-2  data-typewriter style="color:#989696;">Pressure, density, Energy, Charge</span></div>
+        <div style="margin: 25px 0"><div style="font-size: 1.2em;">Blade 1 - Vectors</div><span data-hide-1 data-show-3 data-typewriter style="color:#989696;">Momentum, Velocity, Electric field, Magnetic potential, Nabla</span></div>
+        <div style="margin: 35px 0"><div style="font-size: 1.2em;">Blade 2 - Bivectors (pseudovectors)</div><span data-hide-1 data-show-4 data-typewriter style="color:#989696;"> 
+          Angular momentum\((L=r\times p)\), Magnetic field\((B=\nabla\times A)\), Vorticity\((W=\nabla\times v)\)</span></div>
+        <div style="margin: 25px 0"><div style="font-size: 1.2em;">Blade 3 - Trivectors (pseudo-scalars)</div><span data-hide-1 data-show-5 data-typewriter style="color:#989696;">          
+          Helicity\((H=v\cdot W=v \cdot (\nabla \times v))\)</span></div>
       </div>
       <div style="font-size: 1.65em;">
         <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
