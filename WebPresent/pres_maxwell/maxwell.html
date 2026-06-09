@@ -178,26 +178,88 @@ window.MathJax = {
   <section class="slide">
 
     <div class="layout-hero">
+      <div data-pos-1="50px, -700px" data-pos-2="50px, 200px" data-pos-4="50px, -700px"  class="slide-subtitle popup" style="top: -100px; left: 50px;">
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="cardbox">\[M\]</div><div class="cardbox">\[e_1\]</div><div class="cardbox">\[e_2\]</div><div class="cardbox">\[e_3\]</div>
+          </div>
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="cardbox">\[e_1\]</div>
+            <div data-add-1 data-remove-3 class="cardbox">\[?\]</div><div data-remove-1 data-add-3 class="cardbox highlight">\[1\]</div><div class="cardbox">\[?\]</div><div class="cardbox">\[?\]</div>
+          </div>
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="cardbox">\[e_2\]</div>
+            <div class="cardbox">\[?\]</div>
+            <div data-add-1 data-remove-3 class="cardbox">\[?\]</div>
+            <div data-remove-1 data-add-3 class="cardbox highlight">\[1\]</div>
+            <div class="cardbox">\[?\]</div>
+          </div>
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="cardbox">\[e_3\]</div>
+            <div class="cardbox">\[?\]</div>
+            <div class="cardbox">\[?\]</div>
+            <div data-add-1 data-remove-3 class="cardbox">\[?\]</div>
+            <div data-remove-1 data-add-3 class="cardbox highlight">\[1\]</div>
+          </div>
+      </div> 
+      
+      <div data-pos-1="650px, -700px" data-pos-4="650px, 150px" data-pos-7="650px, -700px"  class="slide-subtitle popup" style="top: -100px; left: 650px;">
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="cardbox">\[M\]</div><div class="cardbox">\[1\]</div><div class="cardbox">\[e_1\]</div><div class="cardbox">\[e_2\]</div><div class="cardbox">\[e_3\]</div>
+          </div>
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="cardbox">\[1\]</div><div class="cardbox">\[1\]</div>
+            <div class="cardbox highlight">\[e_1\]</div><div class="cardbox highlight">\[e_2\]</div><div class="cardbox highlight">\[e_3\]</div>
+          </div>
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="cardbox">\[e_1\]</div><div class="cardbox highlight">\[e_1\]</div>
+            <div class="cardbox highlight">\[1\]</div>
+            <div data-add-1 data-remove-6 class="cardbox">\[?\]</div><div data-remove-1 data-add-6 class="cardbox highlight">\[e_{12}\]</div>
+            <div class="cardbox">\[?\]</div>
+          </div>
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="cardbox">\[e_2\]</div>
+            <div class="cardbox highlight">\[e_2\]</div>
+            <div data-add-1 data-remove-6 class="cardbox">\[?\]</div><div data-remove-1 data-add-6 class="cardbox highlight">\[-e_{12}\]</div>
+            <div class="cardbox highlight">\[1\]</div>
+            <div class="cardbox">\[?\]</div>
+          </div>
+          <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+            <div class="cardbox">\[e_3\]</div>
+            <div class="cardbox highlight">\[e_3\]</div>
+            <div class="cardbox">\[?\]</div>
+            <div class="cardbox">\[?\]</div>
+            <div data-add-1 data-remove-3 class="cardbox">\[?\]</div>
+            <div data-remove-1 data-add-3 class="cardbox highlight">\[1\]</div>
+          </div>
+      </div>  
+
+      <div data-pos-1="50px, -100px" data-pos-5="50px, 300px" data-pos-6="50px, -100px"  class="slide-subtitle popup" style="top: -100px; left: 50px;">
+        \[\alpha 1=(e1+e2)(e_1+e_2) =\]\[e_1e_1 + e_1e_2 + e_2e_1 + e_2e_2 = \]\[2 + e_1e_2 + e_2e_1\]
+      </div>
+
+      <p class="slide-eyebrow">Geometric Algebra</p>
       <h1 class="slide-title">Space Algebra</h1>
+      <p class="slide-subtitle">An algebra is a <span class="highlight">vector space</span> with a <span class="highlight">multiplication</span> \(W=VU\)</p>
       <div class="layout-2col" style="width:80%; align-items: start;">
 
         <div style="text-align: left;">
-          <p class="slide-subtitle">Add multiplication to a vector space \(e_1,e_2, e_3\)</p>
-          <p data-hide-1 data-show-2 class="slide-subtitle">We want \(e_ie_i\) to be a <span class="highlight">multiplication scalar</span>
+          <p data-hide-1 data-show-2 class="slide-subtitle">Add multiplication to a vector space \(e_1,e_2, e_3\)</p>
+          <p data-hide-1 data-show-3 class="slide-subtitle">We want \(e_ie_i\) to be a <span class="highlight">multiplication scalar</span>
              (marked as <span class="highlight">1</span>), and a new member of the algebra</p>
-          <p data-hide-1 data-show-3 class="slide-subtitle">We actually want any combination VV to ba a scalar</p>
-          <p data-hide-1 data-show-4 class="slide-subtitle">This leads to \(e_1e_2=-e_2e_1\)</p>
-          <p data-hide-1 data-show-5 class="slide-subtitle">But \(e_1e_2\) is a new member of the algebra, and we define \(e_{12}=e_1e_2\)</p>
+          <p data-hide-1 data-show-4 class="slide-subtitle">We actually want any combination VV to ba a scalar</p>
+          <p data-hide-1 data-show-5 class="slide-subtitle">This leads to \(e_1e_2=-e_2e_1\)</p>
+          <p data-hide-1 data-show-6 class="slide-subtitle">But \(e_1e_2\) is a new member of the algebra,</br>and we can define \(e_{12}=e_1e_2\)</p>
+          <p data-hide-1 data-show-7 class="slide-subtitle">Also from \(e_1 e_{23}\) we get  \(e_{123}\)</p>
         </div>
         <div>
-          <div data-remove-1 data-add-2>
+          <div data-remove-1 data-add-3>
             <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
               <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
                 \[1\]
               </div>
             </div>
           </div>
-          <div data-show-1 style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
+          <div data-hide-1 data-show-2 style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
             <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
               \[e_1\]
             </div>
@@ -208,7 +270,7 @@ window.MathJax = {
               \[e_3\]
             </div>
           </div>
-          <div data-hide-1 data-show-5>
+          <div data-hide-1 data-show-6>
             <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
               <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; ">
                 \[e_{23}\]
@@ -220,7 +282,7 @@ window.MathJax = {
                 \[e_{12}\]
               </div>
             </div>
-          <div data-hide-1 data-show-5>
+          <div data-hide-1 data-show-7>
             <div style="display:flex; gap:5px; margin-top:10px; justify-content:center;">
               <div class="card" style="padding:0px 16px; border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); margin: auto; flex: 0 0 auto; ">
                 \[e_{123} = I\]
@@ -239,7 +301,7 @@ window.MathJax = {
   <section class="slide slide-purple">
     <div class="layout-hero">
       <h1 class="slide-title">Mechanism of Space Algebra Multiplication</h1>
-      <div class="layout-2col" style="width:90%; align-items: start;">
+      <div class="layout-2col" style="width:100%; align-items: start;">
 
         <div>
           <p class="slide-subtitle">Let's practice some simple multiplications</p>
@@ -259,7 +321,7 @@ window.MathJax = {
           <div data-hide-1 data-show-3 data-typewriter >
             <p class="slide-subtitle"><span class="highlight">Symmetric</span> and <span class="highlight">antisymmetric</span> parts</p>
             <p class="slide-subtitle">\[\overrightarrow{A} \overrightarrow{B}=\overrightarrow{A} \cdot \overrightarrow{B} + \overrightarrow{A} \wedge \overrightarrow{B}\]</p>
-            <p class="slide-subtitle">\[(\overrightarrow{A} \times \overrightarrow{B} = -I (\overrightarrow{A} \wedge \overrightarrow{B}))\]</p>
+            <p class="slide-subtitle">\[(\overrightarrow{A} \times \overrightarrow{B} = - I (\overrightarrow{A} \wedge \overrightarrow{B}))\]</p>
           </div>
         </div>
       </div>
@@ -267,7 +329,7 @@ window.MathJax = {
   </section>
 
   <!-- ════════════════════════════════════
-       SLIDE 6 — What is multiplied here?
+       SLIDE 6 — What is Multiplied Anyways?
        ════════════════════════════════════ -->
   <section class="slide slide-purple">
     <div class="layout-hero">
@@ -285,8 +347,6 @@ window.MathJax = {
           \((\partial_x E_x + \partial_y E_y + \partial_z E_z)1\) which is a scalar! We can call it \(\overrightarrow{\nabla} \cdot \overrightarrow{E}\)! or \(Div(\overrightarrow{E})1\)</div>
         <div data-hide-1 data-show-8 data-typewriter class="slide-body">But there is also the Anti-symmetric part...</div>
         <div data-hide-1 data-show-9 data-typewriter class="slide-body">So \(\overrightarrow{\nabla} \overrightarrow{E} = \overrightarrow{\nabla} \cdot \overrightarrow{E} + \overrightarrow{\nabla} \wedge \overrightarrow{E} = Div(\overrightarrow{E})1 - Curl(\overrightarrow{E})I \)</div>
-
-
 
       </div>
     </div>  

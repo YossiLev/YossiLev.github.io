@@ -307,11 +307,22 @@ code, .mono {
   background: rgba(124,111,255,0.1);
   padding: 2px 6px;
   border-radius: 4px;
+;
 }
 
+.cardbox {
+  border-radius:3px; border:1px solid var(--border); background:rgba(255,255,255,0.02); flex-grow: 0; 
+    width:60px;
+  height: 60px
+}
 .highlight {
   color: var(--accent-1);
-} 
+}
+
+.popup {
+  position: fixed; background: rgba(39, 39, 39, 0.7); border: 1px solid var(--border); color: var(--text-primary); width: max-content;
+  border-radius: 8px; padding: 2px 12px; font-size: 1.2em; 
+}
 
 /* ═══════════════════════════════════════════════════
    COMPONENTS
