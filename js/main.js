@@ -88,7 +88,7 @@ addPager = () => {
         const index = pages.concat(appendixes).findIndex(p => p.page === pageName);
         const header = document.createElement("div");
         header.innerHTML =
-            `<span onclick="displayContent(${index})" style="cursor: pointer;"><i class="material-icons" style="vertical-align: bottom;">list</i>Content list</span>` +
+            `<span onclick="displayContent(${index})" style="cursor: pointer;"><i class="material-icons" style="vertical-align: bottom;">list</i></span>` +
             (index > 0
                 ? `<span onclick="goToPage(${index - 1})" style="cursor: pointer; float:left;"><i class="material-icons" style="vertical-align: bottom;">navigate_before</i>${index - 1 < pages.length ? pages[index - 1].display : appendixes[index - pages.length - 1].display}</span>`
                 : '') +
