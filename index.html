@@ -6,38 +6,51 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="./css/main.css">
     <script src="./js/main.js"></script>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+
+    </style>
 </head>
 <body>
-    <div class="headLine">
-        My Research Lab
-    </div>
-    <div style="display: flex; align-items: start; gap: 16px; margin-bottom: 16px;">
-    <div>
-        <div class="headLine2">Physics</div>
-        <div class="list"><a href="./Theory/abstract.html">A new look on Physics</a> <span style="font-size: 6px;">(Yet Another Theory Of Everything)</span></div>
-        <div class="list"><a href="./Dirac/gammaMat.html">Dirac Gamma Matrices</a></div>
-        <div class="list"><a href="./Dirac/spinor.html">Dirac Spinor</a></div>
-        <div class="list"><a href="./Dirac/electronPhoton.html">Dirac QED Interaction</a></div>
-        <div class="list"><a href="./Lw/lw.html">Liénard–Wiechert potential</a>
-        </div><div class="list"><a href="./Knots/knots.html">Playing with Knots</a></div>
-        <div class="list"><a href="./Sr/sr.html">Spacetime in Absolute Special Relativity</a></div>
-        <div class="list"><a href="./3b1b/gravityCurvature.html">Seeing the Curvature of Gravity</a></div>
-        <div class="list"><a href="./WebPresent/pres_maxwell/maxwell.html">Geometric Electromagnetism</a></div>
-        <div class="list"><a href="./Interference/twoDiscs.html">Two round slits</a></div>
-    </div><div>
-        <div class="headLine2">Laser lab</div>
-        <div class="list"><a href="./Bloch/bloch.html">Diode Gain/Absorber Dynamics</a></div>
-        <div class="list"><a href="./Oc/oc.html">Laser Output Coupler angles</a></div>
-        <div class="list"><a href="./Sp/spectrum.html">Laser spectrum analysis</a></div>
-        <div class="list"><a href="./Iris/Ell.html">Iris control</a></div>
-        <div class="list"><a href="./Phase/phase.html">Phase Retrieval</a></div>
-        <div class="list"><a href="./M2/m2.html">M-Square Calculation</a></div>
-        <div class="list"><a href="./RR/rr.html">Layers Reflection/Refraction</a></div>
-        <div class="list"><a href="./Esp/camcenter.html">Get beam center</a></div>
-    </div><div>
-        <div class="headLine2">Lab Team</div>
-        <div class="list"><a href="./NY/Gaussian_Solver.html">Gaussian Solver</a></div>
-    </div>
+    <div class="headLine">My Research Lab</div>
+    <div class="container">
+        <div>
+            <div class="headLine2">Physics</div>
+            <div class="list"><a href="./Theory/abstract.html">A new look on Physics</a> <span style="font-size: 6px;">(Yet Another Theory Of Everything)</span></div>
+            <div class="list"><a href="./Dirac/gammaMat.html">Dirac Gamma Matrices</a></div>
+            <div class="list"><a href="./Dirac/spinor.html">Dirac Spinor</a></div>
+            <div class="list"><a href="./Dirac/electronPhoton.html">Dirac QED Interaction</a></div>
+            <div class="list"><a href="./Lw/lw.html">Liénard–Wiechert potential</a>
+            </div><div class="list"><a href="./Knots/knots.html">Playing with Knots</a></div>
+            <div class="list"><a href="./Sr/sr.html">Spacetime in Absolute Special Relativity</a></div>
+            <div class="list"><a href="./3b1b/gravityCurvature.html">Seeing the Curvature of Gravity</a></div>
+            <div class="list"><a href="./WebPresent/pres_maxwell/maxwell.html">Geometric Electromagnetism</a></div>
+            <div class="list"><a href="./Interference/twoDiscs.html">Two round slits</a></div>
+        </div>
+        <div>
+            <div class="headLine2">Laser lab</div>
+            <div class="list"><a href="./Bloch/bloch.html">Diode Gain/Absorber Dynamics</a></div>
+            <div class="list"><a href="./Oc/oc.html">Laser Output Coupler angles</a></div>
+            <div class="list"><a href="./Sp/spectrum.html">Laser spectrum analysis</a></div>
+            <div class="list"><a href="./Iris/Ell.html">Iris control</a></div>
+            <div class="list"><a href="./Phase/phase.html">Phase Retrieval</a></div>
+            <div class="list"><a href="./M2/m2.html">M-Square Calculation</a></div>
+            <div class="list"><a href="./RR/rr.html">Layers Reflection/Refraction</a></div>
+            <div class="list"><a href="./Esp/camcenter.html">Get beam center</a></div>
+        </div><div>
+            <div class="headLine2">Lab Team</div>
+            <div class="list"><a href="./NY/Gaussian_Solver.html">Gaussian Solver</a></div>
+        </div>
     </div>  
     <div class="headLine2">Research</div>
     <div class="list"><a href="./Talks/index.html">My chats with LLMs</a></div>
