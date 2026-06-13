@@ -8,8 +8,6 @@
 
     <style>
         .miniKnot1 {
-            width: 150px;
-            height: 150px;
             margin: 2px;
             background-color: #ffffff;
             display: inline-block;
@@ -76,10 +74,22 @@
         }
 
         function tPoint (p, t) {
-            return [(p[0] - t.w / 2) * t.z + t.w / 2 + t.sx, (p[1] - t.h / 2) * t.z + t.h / 2 + t.sy];
+            const w2 = t.w / 2;
+            const h2 = t.h / 2;
+            return [(p[0] - w2) * t.z + w2 + t.sx, 
+                    (p[1] - h2) * t.z + h2 + t.sy];
+        }
+        function tPointInvX (p, t) {
+            const w2 = t.w / 2;
+            const h2 = t.h / 2;
+            return [(p[0] - w2) / t.z + w2 - t.sx,
+                    (p[1] - h2) / t.z + h2 - t.sy];
         }
         function tPointInv (p, t) {
-            return [(p[0] - t.w / 2) / t.z + t.w / 2 - t.sx, (p[1] - t.h / 2) / t.z + t.h / 2 - t.sy];
+            const w2 = t.w / 2;
+            const h2 = t.h / 2;
+            return [(p[0] - w2 - t.sx) / t.z + w2,
+                    (p[1] - h2 - t.sy) / t.z + h2];
         }
         function butOpt(o) {
             let val = options.get(`opt${o}`);
@@ -156,9 +166,10 @@
 
         function refreshMain() {
             const ctx = document.getElementById('canvas').getContext('2d');
-
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, 1000, 500);
+            const width = ctx.canvas.width;
+            const height = ctx.canvas.height;
+            ctx.fillStyle = '#fdfdfd';
+            ctx.fillRect(0, 0, width, height);
 
             mainKnot.drawKnot(ctx, gblTrans, {})
         }
@@ -186,8 +197,18 @@
             refreshMain();
         }
 
-        function miniKnotDiv(str, nLoops, k) {
-            return `<div class="miniKnot1"><canvas class="smallCanvas" id="cn_${str}" width="140" height="120">`
+        function toggleZoom(id) {
+            const el = document.getElementById(id);
+            if (parseFloat(el.style.zoom) < 0.99) {
+                el.style.zoom = '1.0';
+            } else {
+                el.style.zoom = '0.5';
+            }
+        }
+
+        function miniKnotDiv(str, nLoops, k, width, height) {
+            return `<div class="miniKnot1" >`
+                + `<canvas class="smallCanvas" id="cn_${str}" width="${width}" height="${height}" style="width: ${width}px; height: ${height}px; zoom: 0.5;" onclick="toggleZoom(this.id);">`
                 + `</canvas><div>${str} R${nLoops.toString()} K${k}</div></div>`
         }
         function calcComplexes(k, nv, jp) {
@@ -209,7 +230,7 @@
                 const nLoops = mainKnot.getLoopsCount(str);
                 const k = [...str].filter(c => c === 'B').length;
                 jonesPolynomial.add(Polynomial.buildPower(nLoops).shift(nPos - 2 * nNeg + k), ((k + nNeg) % 2) === 1 ? - 1: 1);
-                return miniKnotDiv(str, nLoops, k);
+                return miniKnotDiv(str, nLoops, k, 280, 240);
             }).join('') + `<div>${jonesPolynomial.toHtml()}</div>`;
 
             jp.add(jonesPolynomial);
@@ -228,8 +249,8 @@
                 + `Normalized: ${jonesPolynomial.jNorm().toHtml()}</br> `
                 + `Final:     ${jonesPolynomial.jNorm().shrink().toHtml("t")}` ;
 
-            const width = 140;
-            const height = 120;
+            const width = 280;
+            const height = 240;
             const zoom = 0.9 * Math.min(width / (mainKnot.maxX - mainKnot.minX), height / (mainKnot.maxY - mainKnot.minY));
             const sx = (- 0.5 * (mainKnot.maxX + mainKnot.minX) + width / 2) * zoom;
             const sy = (- 0.5 * (mainKnot.maxY + mainKnot.minY) + height / 2) * zoom;
@@ -364,10 +385,10 @@
             storageKnots.map((k, ik) => {
                 let canvas = document.getElementById(`canvasStorage${ik.toString()}`);
                 const ctx = canvas.getContext('2d');
+                const width = canvas.width;
+                const height = canvas.height;
                 ctx.fillStyle = '#f0f0f0';
-                ctx.fillRect(0, 0, 140, 120);
-                const width = 140;
-                const height = 120;
+                ctx.fillRect(0, 0, width, height);
                 const zoom = 0.9 * Math.min(width / (k.maxX - k.minX), height / (k.maxY - k.minY));
                 const sx = (-0.5 * (k.maxX + k.minX) + width / 2) * zoom;
                 const sy = (-0.5 * (k.maxY + k.minY) + height / 2) * zoom;

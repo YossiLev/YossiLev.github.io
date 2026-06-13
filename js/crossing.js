@@ -69,7 +69,9 @@ class Crossing {
         ctx.arc(...tPoint([this.x, this.y], tr), rad * tr.z, 0, 2 * Math.PI);
         ctx.fill();
         if (!butOpt('HideCircles')) {
+            ctx.lineWidth = 2;
             ctx.stroke();
+            ctx.lineWidth = 1;
         }
 
         if (this.pc?.length === 4) {
@@ -81,9 +83,12 @@ class Crossing {
 
             if (!butOpt('HideCircles')) {
                 ctx.strokeStyle = colorCross;
+                ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.arc(...tPoint([this.x, this.y], tr), rad * tr.z, 0, 2 * Math.PI);
                 ctx.stroke();
+                ctx.lineWidth = 1;
+
             }
         }
     }

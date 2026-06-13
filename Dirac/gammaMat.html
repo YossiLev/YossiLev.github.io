@@ -717,6 +717,8 @@ body {
 <div style="padding:10px;">
 	<input type="text" id="gvar1" placeholder="c(1)0g1" value="">
 	<input type="text" id="gvar2" placeholder="c(1)0g1" value="">
+</div>
+<div style="padding:10px;">
 	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(multGVars);">$$x*y$$</div>
 	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(addGVars);">$$x+y$$</div>
 	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(subGVars);">$$x-y$$</div>
@@ -727,10 +729,15 @@ body {
 	<input type="text" id="gvarResult" placeholder="result of operation" value="" style="display:block;width:700px; margin-left:10px;">
 	<div id="latexResult" style="padding:10px; font-size:32px;"></div>
 	<div id="resultMat" ></div>
-
+</div>
+<div style="padding:10px;">
 	<input type="text" id="varExpression" placeholder="5 * 3 exp(12) + 1" value="" style="width:400px; margin-left:10px;"/>
+</div>
+<div style="padding:10px;">
 	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(getExpression);">Calculate</div>
 	<div class="mini-but" style="height:20px; position:relative;" onclick="tryFunc(getDistributedExpression);">Distribute</div>
+</div>
+<div style="padding:10px;">
 	<input type="text" id="dictExpression" placeholder="a=3.2,b=40" value="" style="width:400px; margin-left:10px;"/>
 	<div id="latexResultExpression" ></div>
 	<div id="expressionValue" ></div>
@@ -765,19 +772,17 @@ body {
 		<div id='tab3'></div>
 	</div>
 
-	<div id='tab4' style='padding-left:60px;'></div>
-	<div style="display: flex">
-		<div style="display:flex; flex-direction: column;">
-
-			<div id="DIRAC" class="mdop mini-but but-on" onclick="buildMatMultiTable2('DIRAC');">DIRAC</div>
-			<div id="WEYL" class="mdop mini-but" onclick="buildMatMultiTable2('WEYL');">WEYL</div>
-			<div id="AntiCom" class="op mini-but but-on" onclick="buildMatMultiTable2('AntiCom');">AntiCommute</div>
-			<div id="Com" class="op mini-but" onclick="buildMatMultiTable2('Com');">Commute</div>
-			<div id="Mult" class="op mini-but" onclick="buildMatMultiTable2('Mult');">Multiply</div>
-		</div>
-		<div>
-			<div id='tabMulti' style='padding-left:60px;'></div>
-		</div>
+	<div id='tab4'></div>
+	<div style="padding:10px;">
+		<div id="DIRAC" class="mdop mini-but but-on" onclick="buildMatMultiTable2('DIRAC');">DIRAC</div>
+		<div id="WEYL" class="mdop mini-but" onclick="buildMatMultiTable2('WEYL');">WEYL</div>
+		<div style="width:100px; display:inline-block;"></div>
+		<div id="AntiCom" class="op mini-but but-on" onclick="buildMatMultiTable2('AntiCom');">AntiCommute</div>
+		<div id="Com" class="op mini-but" onclick="buildMatMultiTable2('Com');">Commute</div>
+		<div id="Mult" class="op mini-but" onclick="buildMatMultiTable2('Mult');">Multiply</div>
+	</div>
+	<div>
+		<div id='tabMulti' style='padding-left:60px;'></div>
 	</div>
 	<div class="mini-but" style="height:20px; position:relative;" onclick="buildGeometricAlgebra();">Geo</div>
 
