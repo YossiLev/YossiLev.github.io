@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Relativistic Spacetime</title>
 <style>
 body {
@@ -11,6 +12,20 @@ body {
   color: #eee;
   font-family: "Segoe UI", sans-serif;
 }
+#layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+    #layout {
+      display: flex;
+      flex-direction: column;
+      width: 100%;      
+    }
+}
+
 #left {
   flex: 1;
   display: flex;
@@ -23,7 +38,7 @@ canvas {
   border: 1px solid #444;
 }
 #right {
-  width: 360px;
+  width: 260px;
   background: #1e1e1e;
   padding: 15px;
   overflow-y: auto;
@@ -77,29 +92,30 @@ th, td {
 </style>
 </head>
 <body>
-<div id="left">
-  <canvas id="canvas" width="800" height="600"></canvas>
-</div>
+<div id="layout">
+  <div id="left">
+    <canvas id="canvas" width="800" height="600" style="width: 100%; height: auto;"></canvas>
+  </div>
 
-<div id="right">
-  <h2>Settings</h2>
-    <label>Width: <input type="range" id="widthSlider" min="0.1" max="2" step="0.1" value="1"></label></br>
-    <label>Ether: <input type="range" id="etherSpeed" min="-10" max="10" step="0.5" value="0"></label></br>
-    <label>Observer: <input type="range" id="observerSpeed" min="-10" max="10" step="0.5" value="0"></label></br>
-</br>
-  <h2>Scenes</h2>
-  <button id="scene-1" style="background-color: black;"><img src="./static/sr-twin.png" height="30"/></button>
-  <button id="scene-2" style="background-color: white;"><img src="./static/s2.png" width="30"/></button>
-</br></br>
-  <h2>Particles</h2>
-  <button id="addParticleBtn">Add Particle</button>
-  <table id="particleTable">
-    <thead><tr><th>Color</th><th>x₀</th><th>Segments</th><th>Actions</th></tr></thead>
-    <tbody></tbody>
-  </table>
-  <div id="infoBox">Click canvas for coordinates.</div>
+  <div id="right">
+    <h2>Settings</h2>
+      <label>Width: <input type="range" id="widthSlider" min="0.1" max="2" step="0.1" value="1"></label></br>
+      <label>Ether: <input type="range" id="etherSpeed" min="-10" max="10" step="0.5" value="0"></label></br>
+      <label>Observer: <input type="range" id="observerSpeed" min="-10" max="10" step="0.5" value="0"></label></br>
+      </br>
+    <h2>Scenes</h2>
+      <button id="scene-1" style="background-color: black;"><img src="./static/sr-twin.png" height="30"/></button>
+      <button id="scene-2" style="background-color: white;"><img src="./static/s2.png" width="30"/></button>
+      </br></br>
+    <h2>Particles</h2>
+      <button id="addParticleBtn">Add Particle</button>
+      <table id="particleTable">
+        <thead><tr><th>Color</th><th>x₀</th><th>Segs</th><th>Actions</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div id="infoBox">Click canvas for coordinates.</div>
+  </div>
 </div>
-
 <!-- Particle Modal -->
 <div id="particleModal">
   <h3 id="modalTitle">Add Particle</h3>
@@ -122,17 +138,24 @@ th, td {
 
 <script>
 const canvas = document.getElementById('canvas');
+
+new ResizeObserver(() => {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    drawAll();
+}).observe(canvas);
 const ctx = canvas.getContext('2d');
 let particles = [];
 let editIndex = null;
 let particleWidth = 1;
 
 // coordinate system
-let view = { xMin: -8, xMax: 8, tMin: 0, tMax: 10 };
+let view = { xMin: -8, xMax: 8, tMin: 0, tMax: 50 };
 function scale() {
   const sx = canvas.width / (view.xMax - view.xMin);
   const st = canvas.height / (view.tMax - view.tMin);
-  const s = Math.min(sx, st);
+  const s = sx;//Math.min(sx, st);
+
   return { sx: s, st: s };
 }
 function toCanvasX(x) { const s=scale(); return (x - view.xMin)*s.sx; }
