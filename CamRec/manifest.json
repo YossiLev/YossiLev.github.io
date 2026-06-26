@@ -1,7 +1,7 @@
 {
   "name": "My Camera Reporter",
   "short_name": "Reporter",
-  "start_url": "/mobile/",
+  "start_url": "/CamRec/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
