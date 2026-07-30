@@ -105,7 +105,7 @@ button{
   pointer-events: none;
 }
 .station-btn .station-label{
-  font-size: clamp(16px, 4vw, 22px);
+  font-size: clamp(16px, 5vw, 48px);
   font-weight: 700;
   text-align: center;
   color: var(--text);
