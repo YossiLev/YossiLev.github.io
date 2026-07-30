@@ -7,10 +7,10 @@
    screen lets you pick 4 favorites from this list).
    ========================================================= */
 const STATIONS = [
-  { id: 's1',  name: 'גלי צהל',   logo: 'logos/station1.png',  stream: 'https://glzwizzlv.bynetcdn.com/glz_mp3' },
-  { id: 's2',  name: 'כאן ב',     logo: 'logos/station2.png',  stream: 'https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_BET.mp3' },
-  { id: 's3',  name: 'Indie Pop',      logo: 'logos/station3.png',  stream: 'https://ice1.somafm.com/indiepop-128-mp3' },
-  { id: 's4',  name: 'Lush',           logo: 'logos/station4.png',  stream: 'https://ice1.somafm.com/lush-128-mp3' },
+  { id: 's1',  name: 'גלי צהל',        logo: 'logos/station1.png',  stream: 'https://glzwizzlv.bynetcdn.com/glz_mp3' },
+  { id: 's2',  name: 'כאן ב',          logo: 'logos/station2.png',  stream: 'https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_BET.mp3' },
+  { id: 's3',  name: 'רשת ג',          logo: 'logos/station3.png',  stream: 'https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_GIMMEL.mp3' },
+  { id: 's4',  name: 'גלי ישראל',      logo: 'logos/station4.png',  stream: 'https://cdn.cybercdn.live/Galei_Israel/Live/icecast.audio' },
   { id: 's5',  name: 'Beat Blender',   logo: 'logos/station5.png',  stream: 'https://ice1.somafm.com/beatblender-128-mp3' },
   { id: 's6',  name: '70s Gold',       logo: 'logos/station6.png',  stream: 'https://ice1.somafm.com/seventies-128-mp3' },
   { id: 's7',  name: 'Secret Agent',   logo: 'logos/station7.png',  stream: 'https://ice1.somafm.com/secretagent-128-mp3' },
@@ -19,7 +19,7 @@ const STATIONS = [
   { id: 's10', name: 'Suburbs of Goa', logo: 'logos/station10.png', stream: 'https://ice1.somafm.com/suburbsofgoa-128-mp3' },
 ];
 
-const DEFAULT_FAVORITES = ['s1', 's2', 's6', 's8'];
+const DEFAULT_FAVORITES = ['s1', 's2', 's3', 's4'];
 const STORAGE_FAVORITES = 'radio.favorites';
 const STORAGE_VOLUME = 'radio.volume';
 
