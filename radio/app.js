@@ -7,8 +7,8 @@
    screen lets you pick 4 favorites from this list).
    ========================================================= */
 const STATIONS = [
-  { id: 's1',  name: 'Groove Salad',   logo: 'logos/station1.png',  stream: 'https://ice1.somafm.com/groovesalad-256-mp3' },
-  { id: 's2',  name: 'Drone Zone',     logo: 'logos/station2.png',  stream: 'https://ice1.somafm.com/dronezone-256-mp3' },
+  { id: 's1',  name: 'גלי צהל',   logo: 'logos/station1.png',  stream: 'https://glzwizzlv.bynetcdn.com/glz_mp3' },
+  { id: 's2',  name: 'כאן ב',     logo: 'logos/station2.png',  stream: 'https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_BET.mp3' },
   { id: 's3',  name: 'Indie Pop',      logo: 'logos/station3.png',  stream: 'https://ice1.somafm.com/indiepop-128-mp3' },
   { id: 's4',  name: 'Lush',           logo: 'logos/station4.png',  stream: 'https://ice1.somafm.com/lush-128-mp3' },
   { id: 's5',  name: 'Beat Blender',   logo: 'logos/station5.png',  stream: 'https://ice1.somafm.com/beatblender-128-mp3' },
