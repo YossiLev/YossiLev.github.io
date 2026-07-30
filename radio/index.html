@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Radio</title>
+<meta name="theme-color" content="#12141a">
+<meta name="description" content="Simple radio player">
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Radio">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== MAIN SCREEN ===================== -->
+<section id="main-screen" class="screen" aria-label="Choose a radio station">
+  <button id="open-settings" class="settings-btn" aria-label="Settings" title="Settings">
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"></path>
+    </svg>
+  </button>
+
+  <h1 class="app-title">Radio</h1>
+
+  <div id="station-grid" class="station-grid">
+    <!-- 4 station buttons injected by app.js -->
+  </div>
+</section>
+
+<!-- ===================== PLAYER SCREEN ===================== -->
+<section id="player-screen" class="screen hidden" aria-label="Now playing">
+  <button id="exit-player" class="exit-btn" aria-label="Stop and go back" title="Stop and go back">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4">
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+    </svg>
+    <span>Exit</span>
+  </button>
+
+  <div class="player-body">
+    <img id="player-logo" class="player-logo" src="" alt="">
+    <div id="player-status" class="player-status">
+      <span id="status-dot" class="status-dot"></span>
+      <span id="status-text">Connecting…</span>
+    </div>
+    <h2 id="player-station-name" class="player-station-name">Station name</h2>
+    <div id="player-clock" class="player-clock">00:00</div>
+  </div>
+
+  <div class="volume-block">
+    <svg class="vol-icon vol-icon-low" viewBox="0 0 24 24" width="30" height="30" fill="currentColor">
+      <path d="M4 9v6h4l5 5V4L8 9H4z"></path>
+    </svg>
+    <input id="volume-slider" class="volume-slider" type="range" min="0" max="100" value="70"
+           aria-label="Volume" orient="horizontal">
+    <svg class="vol-icon vol-icon-high" viewBox="0 0 24 24" width="34" height="34" fill="currentColor">
+      <path d="M4 9v6h4l5 5V4L8 9H4z"></path>
+      <path d="M16.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path>
+      <path d="M19 6a9 9 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path>
+    </svg>
+  </div>
+</section>
+
+<!-- ===================== SETTINGS SCREEN ===================== -->
+<section id="settings-screen" class="screen hidden" aria-label="Choose your 4 favorite stations">
+  <div class="settings-panel">
+    <div class="settings-header">
+      <h2>Favorite stations</h2>
+      <button id="close-settings" class="small-btn" aria-label="Close settings">Close</button>
+    </div>
+    <p class="settings-hint">Pick exactly 4 stations to show on the main screen.</p>
+    <ul id="settings-list" class="settings-list"><!-- injected --></ul>
+    <div class="settings-footer">
+      <span id="settings-count" class="settings-count">0 / 4 selected</span>
+      <button id="save-settings" class="save-btn" disabled>Save</button>
+    </div>
+  </div>
+</section>
+
+<audio id="audio-player" preload="none"></audio>
+
+<script src="app.js"></script>
+</body>
+</html>
