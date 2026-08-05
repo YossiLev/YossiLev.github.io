@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Light Propagation Demo</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#202020;
+    color:white;
+}
+
+#controls{
+    padding:10px;
+    background:#303030;
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    align-items:center;
+}
+
+label{
+    display:flex;
+    flex-direction:column;
+    font-size:13px;
+}
+
+canvas{
+    border:1px solid black;
+    background:black;
+}
+
+#container{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    padding:15px;
+}
+
+.title{
+    text-align:center;
+    margin-bottom:5px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="controls">
+
+<label>
+Half source length d (pixels)
+<input id="d" type="number" value="120">
+</label>
+
+<label>
+ω
+<input id="omega" type="number" value="0.10" step="0.01">
+</label>
+
+<label>
+C (pixels/sec)
+<input id="c" type="number" value="40" step="1">
+</label>
+
+<label>
+Source samples
+<input id="samples" type="number" value="300">
+</label>
+
+<label>
+Canvas size
+<input id="size" type="number" value="500">
+</label>
+
+<label>
+<input id="decay" type="checkbox">
+Use 1/r amplitude
+</label>
+
+<button onclick="render()">Render</button>
+
+</div>
+
+
+<div id="container">
+
+<div>
+<div class="title">Intensity</div>
+<canvas id="intensity"></canvas>
+</div>
+
+<div>
+<div class="title">Phase</div>
+<canvas id="phase"></canvas>
+</div>
+
+</div>
+
+
+<script>
+
+function hsv2rgb(h,s,v){
+
+    let c=v*s;
+    let hp=h*6;
+    let x=c*(1-Math.abs(hp%2-1));
+
+    let r=0,g=0,b=0;
+
+    if(hp<1){r=c;g=x;}
+    else if(hp<2){r=x;g=c;}
+    else if(hp<3){g=c;b=x;}
+    else if(hp<4){g=x;b=c;}
+    else if(hp<5){r=x;b=c;}
+    else {r=c;b=x;}
+
+    let m=v-c;
+
+    return [
+        Math.round((r+m)*255),
+        Math.round((g+m)*255),
+        Math.round((b+m)*255)
+    ];
+}
+
+
+function render(){
+
+    let size=parseInt(document.getElementById("size").value);
+    let d=parseFloat(document.getElementById("d").value);
+    let omega=parseFloat(document.getElementById("omega").value);
+    let C=parseFloat(document.getElementById("c").value);
+    let Ns=parseInt(document.getElementById("samples").value);
+    let decay=document.getElementById("decay").checked;
+
+    let k=omega/C;
+
+    let intCanvas=document.getElementById("intensity");
+    let phaseCanvas=document.getElementById("phase");
+
+    intCanvas.width=size;
+    intCanvas.height=size;
+
+    phaseCanvas.width=size;
+    phaseCanvas.height=size;
+
+    let ictx=intCanvas.getContext("2d");
+    let pctx=phaseCanvas.getContext("2d");
+
+    let imgI=ictx.createImageData(size,size);
+    let imgP=pctx.createImageData(size,size);
+
+    let intensity=new Float64Array(size*size);
+    let phase=new Float64Array(size*size);
+
+    let maxI=0;
+
+    //---------------------------------------------------
+    // compute field
+    //---------------------------------------------------
+
+    for(let py=0;py<size;py++){
+
+        let X=py-size/2;
+
+        for(let pz=0;pz<size;pz++){
+
+            let Z=pz-size/2;
+
+            let Re=0;
+            let Im=0;
+
+            for(let i=0;i<Ns;i++){
+
+                let xs=-d + 2*d*i/(Ns-1);
+
+                let dx=X-xs;
+
+                let r=Math.sqrt(Z*Z+dx*dx);
+
+                let amp=1;
+
+                if(decay)
+                    amp=1/Math.max(r,1);
+
+                let ph=-k*r;
+
+                Re+=amp*Math.cos(ph);
+                Im+=amp*Math.sin(ph);
+
+            }
+
+            let I=Re*Re+Im*Im;
+
+            if(I>maxI) maxI=I;
+
+            intensity[py*size+pz]=I;
+            phase[py*size+pz]=Math.atan2(Im,Re);
+
+        }
+
+    }
+
+    //---------------------------------------------------
+    // draw
+    //---------------------------------------------------
+
+    for(let py=0;py<size;py++){
+
+        for(let pz=0;pz<size;pz++){
+
+            let idx=py*size+pz;
+
+            //--------------------------------
+            // intensity
+            //--------------------------------
+
+            let I=intensity[idx]/maxI;
+
+            let g=Math.round(255*I);
+
+            let off=idx*4;
+
+            imgI.data[off]=g;
+            imgI.data[off+1]=g;
+            imgI.data[off+2]=g;
+            imgI.data[off+3]=255;
+
+            //--------------------------------
+            // phase
+            //--------------------------------
+
+            let hue=(phase[idx]+Math.PI)/(2*Math.PI);
+
+            let rgb=hsv2rgb(hue,1,1);
+
+            imgP.data[off]=rgb[0];
+            imgP.data[off+1]=rgb[1];
+            imgP.data[off+2]=rgb[2];
+            imgP.data[off+3]=255;
+
+        }
+
+    }
+
+    ictx.putImageData(imgI,0,0);
+    pctx.putImageData(imgP,0,0);
+
+    //---------------------------------------------------
+    // draw source line
+    //---------------------------------------------------
+
+    let cx=size/2;
+    let y1=size/2-d;
+    let y2=size/2+d;
+
+    function drawSource(ctx){
+
+        ctx.strokeStyle="#00ff00";
+        ctx.lineWidth=2;
+
+        ctx.beginPath();
+        ctx.moveTo(cx,y1);
+        ctx.lineTo(cx,y2);
+        ctx.stroke();
+
+    }
+
+    drawSource(ictx);
+    drawSource(pctx);
+
+}
+
+render();
+
+</script>
+
+</body>
+</html>
