@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/menus.css">
+    <link rel="stylesheet" href="theory.css">
     <script src="../js/main.js"></script>
     <script type="text/javascript" src="../js/linesGeo.js"></script>
     <script type="text/javascript" src="../js/glWorld.js"></script>
@@ -349,19 +350,23 @@
     </script>
 </head>
 <body>
-<div class="headLine">
-    <div class="appendHead"> - Ether Flow Around a Torus</div>
+<a class="homeLink" href="../index.html"><span class="material-icons">home</span>Home</a>
+<div class="hero">
+    <span class="material-icons">3d_rotation</span>
+    <div class="headLine">
+        <div class="appendHead"> - Ether Flow Around a Torus</div>
+    </div>
 </div>
-<div class="normal">
+<div class="card cardAccent">
     We are looking for steady state ether flow around the torus. The element that creates the flow is a ring of radius
     \(a\). This means that the whole situation has a toroidal symmetry.
 </div>
-<div class="normal">
+<div class="card cardAccent">
     We will assume that this is a potential flow, and look for the potential \(\phi(x, y, z)\).
     This will be the potential for the ether flow \(\rho\overline{\nu}=\triangledown\phi\).
     Due to the toroidal symmetry, we solve the equation using toroidal coordinates,
 </div>
-<div class="normal">
+<div class="card cardAccent">
     Note that our solutions for \(\phi\) describe a flow around the torus,
     so \(\phi\) is has some discontinuity as we go around the torus.
     However, the flow \(\rho\overline{\nu}=\triangledown\phi\) is continuous and also rotation free outside the torus,
@@ -370,14 +375,14 @@
 <div class="containerRight" style="width: 450px;">
     <canvas style="border:1px solid lightgray;" width="450" height="400" id="torus_2d" tabindex="0"></canvas>
 </div>
-<div class="normal">
+<div class="card cardAccent">
     From Moon & Spencer [5] we take the Toroidal coordinates
     \[0\leq\eta<+\infty,\quad-\pi<\theta\leq+\pi,\quad0\leq\psi<2\pi\]
     \[x=\frac{a\sinh\eta\cos\psi}{\cosh\eta-\cos\theta}\]
     \[y=\frac{a\sinh\eta\sin\psi}{\cosh\eta-\cos\theta}\]
     \[z=\frac{a\sin\theta}{\cosh\eta-\cos\theta}\]
 </div>
-<div class="normal">
+<div class="card cardAccent">
     The inverse coordinates calculation is
     \[\eta=\frac{1}{2}\ln\frac{\left(\sqrt{x^2+y^2}+a\right)^2+z^2}{\left(\sqrt{x^2+y^2}-a\right)^2+z^2}\]
     \[\theta=sign(z)\arccos\frac{\left(\sqrt{x^2+y^2}+a\right)^2+z^2+\left(\sqrt{x^2+y^2}-a\right)^2+z^2-4a^2}
@@ -389,13 +394,13 @@
     \]
     \[\psi=\arctan\frac{y}{x}\]
 </div>
-<div class="normal">
+<div class="card cardAccent">
     A section of these toroidal coordinates is shown here. This coordinate system is quite confusing.
 </div>
 <div class="headLine2">
     Solving the Laplace equation
 </div>
-<div class="normal">
+<div class="card cardAccent">
     In these coordinates the laplacian becomes
     \[\triangledown^2\phi=\frac{(\cosh\eta-\cos\theta)^3}{a^2\sinh\eta}\left\{\frac{\partial}{\partial\eta}
     \left(\frac{\sinh\eta}{\cosh\eta-\cos\theta}\right)+
@@ -407,7 +412,7 @@
     \[\frac{\partial^2H}{\partial\eta^2}+\coth\eta\frac{\partial H}{\partial\eta}+\left(\frac{1}{4}-\alpha_2-\frac{\alpha_3}{sinh^2\eta}\right)H=0\]
     \[\frac{\partial^2\Theta}{\partial\theta^2}+\alpha_2\Theta=0\] \[\frac{\partial^2\Psi}{\partial\psi^2}+\alpha_3\Psi=0\]
 </div>
-<div class="normal">
+<div class="card cardAccent">
     The equations for \(\Theta\) and \(\Psi\) lead us to define \[\alpha_2=p^2\quad\alpha_3=q^2\] with \(p\) and \(q\)
     as integer numbers, so we end with the following solutions
     \[\frac{\partial^2\Theta}{\partial\theta^2}+p^2\Theta=0\quad\Rightarrow\quad\Theta=A_2\sin p\theta+B_2\cos p\theta\]
@@ -425,7 +430,7 @@
     \[P^{q}_{p-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\Gamma\left(\frac{1}{2}-q\right)}{\pi^{1/2}\left(1-e^{-2\eta}\right)^{q}e^{(p+(1/2))\eta}}\mathbf{F}\left(\tfrac{1}{2}-q,\tfrac{1}{2}+p-q;1-2q;1-e^{-2\eta}\right)\]
     \[Q^{q}_{p-\frac{1}{2}}\left(\cosh\eta\right)=\frac{\pi^{1/2}\left(1-e^{-2\eta}\right)^{q}}{e^{(p+(1/2))\eta}}\mathbf{F}\left(q+\tfrac{1}{2},p+q+\tfrac{1}{2};p+1;e^{-2\eta}\right)\]
 </div>
-<div class="normal">
+<div class="card cardAccent">
     We will examine first the solution in the case \(p=q=0\) where we get
     \[\left(\xi^2-1\right)\frac{d^2H}{d\xi^2}+2\xi\frac{dH}{d\xi}+\frac{1}{4}H=0\]
     with the general solution
@@ -441,7 +446,7 @@
 <div class="containerRight" style="width: 450px;">
     <canvas style="border:1px solid lightgray;" width="450" height="400" id="tor_pot" tabindex="0"></canvas>
 </div>
-<div class="normal">
+<div class="card cardAccent">
     We recall that the total potential has the form of  \[\phi=(\cosh\eta-\cos\theta)^{\frac{1}{2}}H(\eta)\Theta(\theta)\Psi(\psi)\]
 </div>
 <div class="container">
