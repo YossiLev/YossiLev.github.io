@@ -40,7 +40,8 @@ a {
 }
 
 .headLine2,
-.headLine3 {
+.headLine3,
+.headLine4 {
     color: #202020;
     text-align: left;
     border-bottom: 2px solid #1976d2;
@@ -53,6 +54,14 @@ a {
 }
 .headLine3 {
     font-size: 18px;
+}
+.headLine4 {
+    font-size: 15px;
+    font-weight: bold;
+    border-bottom: none;
+    border-left: 3px solid #1976d2;
+    padding: 0 0 0 8px;
+    margin: 20px 8px 10px;
 }
 
 .card {
@@ -176,6 +185,16 @@ a {
 .rightImage {
     float: right;
     width: 180px;
+    padding: 8px;
+    margin: 0 0 8px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.rightImageLarge {
+    float: right;
+    width: 360px;
     padding: 8px;
     margin: 0 0 8px 16px;
     border: 1px solid #e0e0e0;
