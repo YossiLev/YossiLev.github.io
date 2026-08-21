@@ -3,8 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$','$$'], ['\\[','\\]']]
+  }
+};
+</script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-<title>Dirac Spinor and QED Vertex Explorer</title>
+
+<title>QED Vertex Explorer</title>
 <style>
   body { font-family: system-ui, sans-serif; margin: 24px; max-width: 1200px; }
   h1,h2 { margin-bottom: 8px; }
@@ -13,28 +22,40 @@
   label { display:inline-block; width:180px; margin:5px 0; }
   input { width:100px; }
   .row { margin:4px 0; }
-  .result { background:#f5f5f5; padding:10px; border-radius:7px; font-family:monospace; white-space:pre-wrap; }
+  .result { background:#f5f5f5; padding:10px; border-radius:7px; font-family:monospace; white-space:pre-wrap; display: inline-block; font-size: x-small;}
   table { border-collapse:collapse; }
   td,th { border:1px solid #ccc; padding:5px 9px; }
   button { padding:8px 18px; margin:12px 0; }
+  .mbut { display: inline-block; margin-left: 3px; border: 1px solid #e9f6a7; border-radius: 4px; padding: 2px 6px; background: #e1eeb6; cursor: pointer; }
   .wide { grid-column:1 / -1; }
+  .active { background: #3cf00e; }
 </style>
 </head>
 <body>
 
 <h1>Dirac Spinor + QED Interaction</h1>
 <p>
-Natural units: <b>c = ħ = 1</b>. Electron mass is set to <b>m = 1</b>.
-The momentum magnitude is specified by <b>β = |p|/E</b>, so
-E = m/sqrt(1-β²), p = βE.
-Angles are in degrees.
+Natural units: $\mathbf{c = \hbar = 1}$. Electron mass is set to $\mathbf{m = 1}$.
+The momentum magnitude is specified by $\mathbf{\beta = |p|/E}$, so $\mathrm{E} = m/\sqrt{1-\beta^2}, p = \beta E$.
+Angles are in degrees
 </p>
 
 <div class="grid">
 
 <div class="panel">
+<div id="charge1_N" class="mbut radio" onclick="setCharge(0, -1);">e-</div>
+<div id="charge1_P" class="mbut radio" onclick="setCharge(0, 1);">e+</div>
+<div id="helicity1_0" class="mbut radio" onclick="setHelicity(0, 0);">Hx</div>
+<div id="helicity1_P" class="mbut radio" onclick="setHelicity(0, 1);">H+</div>
+<div id="helicity1_N" class="mbut radio" onclick="setHelicity(0, -1);">H-</div>
+<div id="mass1_M" class="mbut radio" onclick="setMass(0, 1);">Massive</div>
+<div id="mass1_L" class="mbut radio" onclick="setMass(0, 0);">Massless</div>
+<div id="transfer1_L" class="mbut" onclick="setTransfer('ltr');">-&gt;</div>
+<div id="transfer1_R" class="mbut" onclick="setTransfer('rtl');">&lt;-</div>
+<div id="transfer1_B" class="mbut" onclick="setTransfer('both');">&lt;=&gt;</div>
 <h2>Spinor 1</h2>
 <div class="row"><label>β₁:</label><input id="b1" type="number" value="0.6" step="0.01" min="0" max="0.999999"></div>
+<div class="row"><label>E₁:</label><input id="e1" type="number" value="1" step="0.1" min="0"></div>
 <div class="row"><label>Momentum θₚ₁:</label><input id="pt1" type="number" value="0" step="1"> °</div>
 <div class="row"><label>Momentum φₚ₁:</label><input id="pp1" type="number" value="0" step="1"> °</div>
 <div class="row"><label>Spin θₙ₁:</label><input id="st1" type="number" value="0" step="1"> °</div>
@@ -43,8 +64,19 @@ Angles are in degrees.
 </div>
 
 <div class="panel">
+<div id="charge2_N" class="mbut radio" onclick="setCharge(1, -1);">e-</div>
+<div id="charge2_P" class="mbut radio" onclick="setCharge(1, 1);">e+</div>  
+<div id="helicity2_0" class="mbut radio" onclick="setHelicity(1, 0);">Hx</div>
+<div id="helicity2_P" class="mbut radio" onclick="setHelicity(1, 1);">H+</div>
+<div id="helicity2_N" class="mbut radio" onclick="setHelicity(1, -1);">H-</div>
+<div id="mass2_M" class="mbut radio" onclick="setMass(1, 1);">Massive</div>
+<div id="mass2_L" class="mbut radio" onclick="setMass(1, 0);">Massless</div>
+<div id="transfer2_L" class="mbut" onclick="setTransfer('ltr');">-&gt;</div>
+<div id="transfer2_R" class="mbut" onclick="setTransfer('rtl');">&lt;-</div>
+<div id="transfer2_B" class="mbut" onclick="setTransfer('both');">&lt;=&gt;</div>
 <h2>Spinor 2</h2>
 <div class="row"><label>β₂:</label><input id="b2" type="number" value="0.6" step="0.01" min="0" max="0.999999"></div>
+<div class="row"><label>E₂:</label><input id="e2" type="number" value="1" step="0.1" min="0"></div>
 <div class="row"><label>Momentum θₚ₂:</label><input id="pt2" type="number" value="40" step="1"> °</div>
 <div class="row"><label>Momentum φₚ₂:</label><input id="pp2" type="number" value="0" step="1"> °</div>
 <div class="row"><label>Spin θₙ₂:</label><input id="st2" type="number" value="40" step="1"> °</div>
@@ -52,7 +84,7 @@ Angles are in degrees.
 <div id="out2" class="result"></div>
 </div>
 
-<div class="panel wide">
+<div class="panel">
 <h2>Electromagnetic wave A</h2>
 <div class="row"><label>|K|:</label><input id="kmag" type="number" value="1" step="0.1"></div>
 <div class="row"><label>K θ:</label><input id="kt" type="number" value="90" step="1"> °</div>
@@ -60,21 +92,17 @@ Angles are in degrees.
 <div class="row">
 <label>Polarization angle χ:</label><input id="chi" type="number" value="0" step="1"> °
 <br><small>
-χ=0 gives e₁ = θ-hat; χ=90° gives e₂ = φ-hat.
-The vector potential is Aμ=(0, A·ε) at x=t=0, with amplitude |A|=1.
+$\chi=0$ gives $e_₁ = \hat{\theta}$; $\chi=90^\circ$ gives $e₂ = \hat{\phi}$.
+The vector potential is $A_\mu=(0, A\cdot\epsilon)$ at $x=t=0$, with amplitude $|A|=1$.
 </small>
 </div>
 <div id="outA" class="result"></div>
 </div>
 
-<div class="panel wide">
+<div class="panel">
 <h2>QED coupling at x = t = 0</h2>
 <p>
-We calculate
-<code>J^μ = ū₂ γ^μ u₁</code> and
-<code>M = e A_μ J^μ</code>, with e=1 and metric (+---).
-This is the local bilinear corresponding to the interaction term
-<code>e A_μ ψ̄ γ^μ ψ</code>.
+We calculate $J^\mu = \bar{u}_2 \gamma^\mu u_1$ and $M = e A_\mu J^\mu$, with $e=1$ and metric $(+---)$. This is the local bilinear corresponding to the interaction term $e A_\mu \bar{\psi} \gamma^\mu \psi$.
 </p>
 <div id="outM" class="result"></div>
 </div>
@@ -139,16 +167,26 @@ function sigmaDot(v,chi){
 }
 
 function getSpinor(prefix){
-  let beta=parseFloat(document.getElementById("b"+prefix).value);
+  let strBeta=document.getElementById("b"+prefix).value;
+  let strEnergy=document.getElementById("e"+prefix).value;
+  let strPt=document.getElementById("pt"+prefix).value;
+  let strPp=document.getElementById("pp"+prefix).value;
+  let strSt=document.getElementById("st"+prefix).value;
+  let strSp=document.getElementById("sp"+prefix).value;
+  const index = prefix === "1" ? 0 : 1;
+  let beta=parseFloat(strBeta);
+  let energy=parseFloat(strEnergy);
   beta=Math.min(Math.max(beta,0),0.999999999);
-  let pt=parseFloat(document.getElementById("pt"+prefix).value);
-  let pp=parseFloat(document.getElementById("pp"+prefix).value);
-  let st=parseFloat(document.getElementById("st"+prefix).value);
-  let sp=parseFloat(document.getElementById("sp"+prefix).value);
+  energy=Math.max(energy,0.0000001);
 
-  const m=1;
-  let E=m/Math.sqrt(1-beta*beta);
-  let p=beta*E;
+  let pt=parseFloat(strPt);
+  let pp=parseFloat(strPp);
+  let st=parseFloat(strSt);
+  let sp=parseFloat(strSp);
+
+  const m=states[index].massive ? 1 : 0;
+  let E=m > 0 ? m/Math.sqrt(1-beta*beta) : energy;
+  let p=m > 0 ? m*beta*E : E;
   let phat=vec3(pt,pp);
   let nhat=vec3(st,sp);
   let chi=pauliSpinor(st,sp);
@@ -159,26 +197,35 @@ function getSpinor(prefix){
   let lower=sigp.map(z=>scale(z,p/N));
   let u=[...upper,...lower];
 
-  return {beta,E,p,phat,nhat,chi,N,u};
+  return {beta,E,p,m,phat,nhat,chi,N,u,energy,pt,pp,st,sp,strEnergy,strBeta,strPt,strPp,strSt,strSp};
+}
+function setSpinor(prefix,s){
+  document.getElementById("b"+prefix).value=s.strBeta;
+  document.getElementById("e"+prefix).value=s.strEnergy;
+  document.getElementById("pt"+prefix).value=s.strPt;
+  document.getElementById("pp"+prefix).value=s.strPp;
+  document.getElementById("st"+prefix).value=s.strSt;
+  document.getElementById("sp"+prefix).value=s.strSp;
 }
 
 function formatSpinor(s){
-  return `β = ${s.beta.toFixed(8)}
-E = ${s.E.toFixed(8)}
-|p| = ${s.p.toFixed(8)}
-sqrt(E+m) = ${s.N.toFixed(8)}
+return `$$\\begin{aligned}&\\beta = ${s.beta.toFixed(8)}\\\\
+&E = ${s.E.toFixed(8)}\\\\
+&|p| = ${s.p.toFixed(8)}\\\\
+&\\sqrt{E+m} = ${s.N.toFixed(8)}\\\\
 
-χ_n =
+&\\chi_n =
 [ ${fmt(s.chi[0])} ]
 [ ${fmt(s.chi[1])} ]
+\\\\
 
-u =
+&u =
 [ ${fmt(s.u[0])} ]
 [ ${fmt(s.u[1])} ]
 [ ${fmt(s.u[2])} ]
 [ ${fmt(s.u[3])} ]
-
-u†u = ${(s.u.reduce((q,z)=>q+abs2(z),0)).toFixed(8)}`;
+\\\\
+&u^\\dagger u = ${(s.u.reduce((q,z)=>q+abs2(z),0)).toFixed(8)}\\end{aligned}$$`;
 }
 
 function makeEM(){
@@ -217,8 +264,9 @@ function gamma0Vec(v){
   return [v[0],v[1],scale(v[2],-1),scale(v[3],-1)];
 }
 function gammaiVec(v,i){
-  let upper=mat2Vec(sigma[i],[v[2],v[3]]);
-  let lower=mat2Vec(sigma[i],[v[0],v[1]]);
+  const upper = mat2Vec(sigma[i], [v[2],v[3]]);
+  const lower = mat2Vec(sigma[i], [v[0],v[1]])
+                    .map(z => scale(z,-1));
   return [...upper,...lower];
 }
 function bar(u){return gamma0Vec(u).map(conj);}
@@ -228,8 +276,90 @@ function dot4(a,b){ // simple componentwise sum
   for(let i=0;i<4;i++) r=add(r,mul(a[i],b[i]));
   return r;
 }
-
+let states = [
+  {charge:-1, massive:true, helicity:0},
+  {charge:-1, massive:true, helicity:0}
+];
+function setCharge(spinorIndex, charge){
+  states[spinorIndex].charge = charge;
+  calculate();
+}
+function setHelicity(spinorIndex, helicity){
+  states[spinorIndex].helicity = helicity;
+  if (helicity !== 0) {
+    const prefix = spinorIndex === 0 ? "1" : "2";
+    let s = getSpinor(prefix);
+    if (helicity > 0) {
+      s.st = s.pt;
+      s.sp = s.pp;
+    } else {
+      s.st = 180 - s.pt;
+      s.sp = (180 + s.pp) % 360;
+    }
+    s.strSt = s.st.toString();
+    s.strSp = s.sp.toString();
+    setSpinor(prefix, s);
+  }
+  calculate();
+}
+function setMass(spinorIndex, massive){
+  states[spinorIndex].massive = massive;
+  calculate();
+}
+function setTransfer(direction){
+  if(direction==='ltr'){
+    setSpinor("2", getSpinor("1"));
+    states[1].charge = states[0].charge;
+    states[1].massive = states[0].massive;
+    states[1].helicity = states[0].helicity;
+  } else if(direction==='rtl'){
+    setSpinor("1", getSpinor("2"));
+    states[0].charge = states[1].charge;
+    states[0].massive = states[1].massive;
+    states[0].helicity = states[1].helicity;
+  } else if(direction==='both'){ 
+    let s0=getSpinor("1"), s1=getSpinor("2");
+    setSpinor("1", s1);
+    setSpinor("2", s0);
+    states.unshift(states.pop());
+  }
+  calculate();
+}
+// function setHelicity(spinorIndex, helicity){
+//   states[spinorIndex].helicity = helicity;
+//   const prefix = spinorIndex === 0 ? "1" : "2";
+//   document.getElementById("sp"+prefix).disabled = helicity !== 0;
+//   document.getElementById("st"+prefix).disabled = helicity !== 0;
+//   calculate();
+// }
+// function setMass(spinorIndex, massive){
+//   states[spinorIndex].massive = massive;
+//   calculate();
+// }
 function calculate(){
+  Array.from(document.getElementsByClassName("radio")).forEach(el=>el.classList.remove("active"));
+  if (states[0].charge<0) document.getElementById("charge1_N").classList.add("active");
+  if (states[0].charge>0) document.getElementById("charge1_P").classList.add("active");
+  if (states[1].charge<0) document.getElementById("charge2_N").classList.add("active");
+  if (states[1].charge>0) document.getElementById("charge2_P").classList.add("active");
+  if(states[0].helicity==0) document.getElementById("helicity1_0").classList.add("active");
+  if(states[0].helicity>0) document.getElementById("helicity1_P").classList.add("active");
+  if(states[0].helicity<0) document.getElementById("helicity1_N").classList.add("active");
+  if(states[0].massive) document.getElementById("mass1_M").classList.add("active");
+  if(!states[0].massive) document.getElementById("mass1_L").classList.add("active");
+  if(states[1].helicity==0) document.getElementById("helicity2_0").classList.add("active");
+  if(states[1].helicity>0) document.getElementById("helicity2_P").classList.add("active");
+  if(states[1].helicity<0) document.getElementById("helicity2_N").classList.add("active");
+  if(states[1].massive) document.getElementById("mass2_M").classList.add("active");
+  if(!states[1].massive) document.getElementById("mass2_L").classList.add("active");
+  for (let i=0;i<2;i++){
+    const prefix = i === 0 ? "1" : "2";
+    const helicity = states[i].helicity;
+    document.getElementById("sp"+prefix).disabled = helicity !== 0;
+    document.getElementById("st"+prefix).disabled = helicity !== 0;     
+  }
+
+
   let s1=getSpinor("1"), s2=getSpinor("2"), A=makeEM();
   document.getElementById("out1").textContent=formatSpinor(s1);
   document.getElementById("out2").textContent=formatSpinor(s2);
@@ -239,7 +369,7 @@ function calculate(){
   // J^mu = ubar2 gamma^mu u1
   let ub=bar(s2.u);
   let J=[];
-  J.push(dot4(ub,s1.u));
+  J.push(dot4(ub,gamma0Vec(s1.u)));
   for(let i=0;i<3;i++) J.push(dot4(ub,gammaiVec(s1.u,i)));
 
   // A_mu J^mu = A^0 J^0 - A^i J^i
@@ -250,25 +380,24 @@ function calculate(){
   }
 
   document.getElementById("outA").textContent =
-`K vector = (${A.K*A.khat[0].toFixed(6)}, ${A.K*A.khat[1].toFixed(6)}, ${A.K*A.khat[2].toFixed(6)})
-polarization ε = (${A.eps[0].toFixed(6)}, ${A.eps[1].toFixed(6)}, ${A.eps[2].toFixed(6)})
-A^μ = (0, ${A.eps[0].toFixed(6)}, ${A.eps[1].toFixed(6)}, ${A.eps[2].toFixed(6)})
-A·K = 0 (transverse gauge)`;
+`$$\\begin{aligned}&\\text{K vector } = (${A.K*A.khat[0].toFixed(6)}, ${A.K*A.khat[1].toFixed(6)}, ${A.K*A.khat[2].toFixed(6)})\\\\
+&\\text{polarization } ε = (${A.eps[0].toFixed(6)}, ${A.eps[1].toFixed(6)}, ${A.eps[2].toFixed(6)})\\\\
+&A^μ = (0, ${A.eps[0].toFixed(6)}, ${A.eps[1].toFixed(6)}, ${A.eps[2].toFixed(6)})\\\\
+&A·K = 0 \\text{ (transverse gauge)}\\end{aligned}$$`;
 
   document.getElementById("outM").textContent =
-`J^μ = ū₂ γ^μ u₁
+`$$\\begin{aligned}&J^μ = ū₂ γ^μ u₁\\\\
+&J^0 = ${fmt(J[0])}\\\\
+&J^1 = ${fmt(J[1])}\\\\
+&J^2 = ${fmt(J[2])}\\\\
+&J^3 = ${fmt(J[3])}\\\\
 
-J^0 = ${fmt(J[0])}
-J^1 = ${fmt(J[1])}
-J^2 = ${fmt(J[2])}
-J^3 = ${fmt(J[3])}
+&A_μ J^μ = ${fmt(contraction)}\\\\
+&\\text{For } e = 1:\\\\
+&M = e A_μ ū₂ γ^μ u₁ = ${fmt(contraction)}\\\\
+&|M|² = ${abs2(contraction).toFixed(10)}\\end{aligned}$$`;
 
-A_μ J^μ = ${fmt(contraction)}
-
-For e = 1:
-M = e A_μ ū₂ γ^μ u₁ = ${fmt(contraction)}
-
-|M|² = ${abs2(contraction).toFixed(10)}`;
+if (MathJax.typesetPromise)MathJax.typesetPromise();
 }
 
 calculate();
