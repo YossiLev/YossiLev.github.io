@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gaussian Circularly Polarized Beam — E, B, P</title>
+<style>
+  :root { font-family: system-ui, -apple-system, Segoe UI, sans-serif; }
+  body { margin:0; background:#111; color:#eee; }
+  .wrap { display:flex; flex-direction:column; height:100vh; }
+  .controls {
+    display:flex; flex-wrap:wrap; gap:14px 20px; align-items:end;
+    padding:12px 16px; background:#202020; border-bottom:1px solid #444;
+  }
+  .control { display:flex; flex-direction:column; gap:4px; }
+  label { font-size:13px; color:#bbb; }
+  input[type=number], select {
+    width:110px; box-sizing:border-box; padding:6px 7px;
+    background:#303030; color:#fff; border:1px solid #555; border-radius:4px;
+  }
+  .checks { display:flex; gap:12px; align-items:center; padding-bottom:6px; }
+  .checks label { color:#eee; }
+  button { padding:7px 12px; background:#3b3b3b; color:#fff; border:1px solid #666; border-radius:4px; cursor:pointer; }
+  button:hover { background:#4b4b4b; }
+  #status { margin-left:auto; font-size:12px; color:#aaa; padding-bottom:7px; }
+  .main { flex:1; min-height:0; position:relative; }
+  canvas { width:100%; height:100%; display:block; }
+  .legend {
+    position:absolute; left:12px; top:12px; background:rgba(20,20,20,.82);
+    border:1px solid #444; border-radius:6px; padding:9px 11px;
+    font-size:12px; line-height:1.6; pointer-events:none;
+  }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; }
+  .info {
+    position:absolute; right:12px; bottom:12px; background:rgba(20,20,20,.82);
+    border:1px solid #444; border-radius:6px; padding:8px 10px;
+    font-size:11px; color:#bbb; pointer-events:none; max-width:420px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="controls">
+    <div class="control">
+      <label>z (µm)</label>
+      <input id="z" type="number" value="0" step="10">
+    </div>
+    <div class="control">
+      <label>waist w₀ (µm)</label>
+      <input id="w0" type="number" value="10" min="0.1" step="1">
+    </div>
+    <div class="control">
+      <label>Rayleigh zR (µm)</label>
+      <input id="zr" type="number" value="314" min="0.1" step="1">
+    </div>
+    <div class="control">
+      <label>wavelength λ (nm)</label>
+      <input id="lambda" type="number" value="1064" min="1" step="1">
+    </div>
+    <div class="control">
+      <label>polarization</label>
+      <select id="pol">
+        <option value="1">Right circular (σ = +1)</option>
+        <option value="-1">Left circular (σ = −1)</option>
+      </select>
+    </div>
+    <div class="control">
+      <label>view size (µm)</label>
+      <input id="view" type="number" value="40" min="1" step="5">
+    </div>
+    <div class="checks">
+      <label><input id="showE" type="checkbox" checked> E</label>
+      <label><input id="showB" type="checkbox" checked> B</label>
+      <label><input id="showP" type="checkbox" checked> P</label>
+    </div>
+    <button id="phaseBtn">Animate phase</button>
+    <span id="status"></span>
+  </div>
+
+  <div class="main">
+    <canvas id="c"></canvas>
+    <div class="legend">
+      <div><span class="dot" style="background:#58a6ff"></span>E transverse field</div>
+      <div><span class="dot" style="background:#ff6b6b"></span>B transverse field</div>
+      <div><span class="dot" style="background:#65d47a"></span>Poynting vector (time averaged)</div>
+      <div style="color:#aaa;margin-top:4px">Arrow lengths are independently normalized.</div>
+    </div>
+    <div class="info">
+      E and B are instantaneous transverse fields at the selected optical phase.
+      P is the time-averaged Poynting vector. The P arrows include both Gaussian
+      wavefront curvature and the circular-polarization azimuthal term.
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+const ids = ["z","w0","zr","lambda","pol","view","showE","showB","showP"];
+let phase = 0;
+let animate = false;
+
+function val(id) { return document.getElementById(id).value; }
+
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  const r = canvas.getBoundingClientRect();
+  canvas.width = Math.round(r.width*dpr);
+  canvas.height = Math.round(r.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  draw();
+}
+window.addEventListener("resize", resize);
+ids.forEach(id => document.getElementById(id).addEventListener("input", draw));
+document.getElementById("phaseBtn").onclick = () => {
+  animate = !animate;
+  document.getElementById("phaseBtn").textContent = animate ? "Stop phase" : "Animate phase";
+  if (animate) requestAnimationFrame(loop);
+};
+
+function loop(t) {
+  if (!animate) return;
+  phase = 2*Math.PI*(t/4000);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function arrow(x1,y1,x2,y2,color,width=1.7,head=5) {
+  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy);
+  if (L < 0.5) return;
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=width;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  const a=Math.atan2(dy,dx);
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-head*Math.cos(a-0.45), y2-head*Math.sin(a-0.45));
+  ctx.lineTo(x2-head*Math.cos(a+0.45), y2-head*Math.sin(a+0.45));
+  ctx.closePath(); ctx.fill();
+}
+
+function draw() {
+  const z = Number(val("z"));
+  const w0 = Number(val("w0"));
+  const zR = Number(val("zr"));
+  const lambda = Number(val("lambda")) * 1e-3; // µm
+  const sigma = Number(val("pol"));
+  const view = Number(val("view"));
+
+  if (!(w0>0 && zR>0 && lambda>0 && view>0)) return;
+
+  const w = w0*Math.sqrt(1+(z/zR)**2);
+  const R = Math.abs(z)<1e-12 ? Infinity : z*(1+(zR/z)**2);
+  const k = 2*Math.PI/lambda;
+
+  const rect = canvas.getBoundingClientRect();
+  const W=rect.width, H=rect.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Mapping: x right, y up.
+  const scale = Math.min(W,H)*0.82/view;
+  const cx=W/2, cy=H/2;
+  const toX = x => cx+x*scale;
+  const toY = y => cy-y*scale;
+
+  // background and grid
+  ctx.fillStyle="#111"; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle="#292929"; ctx.lineWidth=1;
+  for(let x=-view/2; x<=view/2; x+=view/10) {
+    ctx.beginPath(); ctx.moveTo(toX(x),toY(-view/2)); ctx.lineTo(toX(x),toY(view/2)); ctx.stroke();
+  }
+  for(let y=-view/2; y<=view/2; y+=view/10) {
+    ctx.beginPath(); ctx.moveTo(toX(-view/2),toY(y)); ctx.lineTo(toX(view/2),toY(y)); ctx.stroke();
+  }
+  ctx.strokeStyle="#555";
+  ctx.beginPath(); ctx.moveTo(toX(-view/2),cy); ctx.lineTo(toX(view/2),cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,toY(-view/2)); ctx.lineTo(cx,toY(view/2)); ctx.stroke();
+
+  // Gaussian outline at exp(-2r²/w²) = exp(-1), i.e. r=w/sqrt(2)
+  ctx.strokeStyle="#444"; ctx.setLineDash([5,5]);
+  ctx.beginPath();
+  ctx.arc(cx,cy,w/Math.sqrt(2)*scale,0,2*Math.PI); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Sample grid
+  const N=17;
+  const step=view/(N-1);
+  const pts=[];
+  let maxE=0,maxB=0,maxP=0;
+
+  for(let j=0;j<N;j++) {
+    const y=-view/2+j*step;
+    for(let i=0;i<N;i++) {
+      const x=-view/2+i*step;
+      const r2=x*x+y*y;
+      const amp=Math.exp(-r2/(w*w));
+
+      // Optical phase of the Gaussian beam at this point.
+      // We use the real part at the selected phase.
+      const phi = k*z + (isFinite(R)? k*r2/(2*R):0) - Math.atan(z/zR) - phase;
+
+      // E = u/sqrt(2) (xhat + i sigma yhat)
+      // with u = amp*exp(i phi).
+      const Ex = amp*Math.cos(phi)/Math.sqrt(2);
+      const Ey = -sigma*amp*Math.sin(phi)/Math.sqrt(2);
+
+      // B = (1/c) zhat x E for the transverse plane wave part.
+      // Bx = -Ey/c, By = Ex/c. c is omitted because arrows are normalized.
+      const Bx = -Ey;
+      const By = Ex;
+
+      // Time-averaged Poynting vector, transverse + longitudinal magnitude.
+      // P_perp/Pz = (x/R - 2 sigma y/(k w²), y/R + 2 sigma x/(k w²)).
+      const Pz = amp*amp;
+      const Px = Pz*((isFinite(R)?x/R:0) - 2*sigma*y/(k*w*w));
+      const Py = Pz*((isFinite(R)?y/R:0) + 2*sigma*x/(k*w*w));
+
+      const em=Math.hypot(Ex,Ey), bm=Math.hypot(Bx,By), pm=Math.hypot(Px,Py);
+      maxE=Math.max(maxE,em); maxB=Math.max(maxB,bm); maxP=Math.max(maxP,pm);
+      pts.push({x,y,Ex,Ey,Bx,By,Px,Py,em,bm,pm});
+    }
+  }
+
+  // Separate visual scales. E/B show transverse field directions clearly.
+  const arrowPix = Math.max(8, Math.min(22, step*scale*0.38));
+  const drawScale = (m,max) => max>0 ? arrowPix*m/max : 0;
+
+  for(const p of pts) {
+    const X=toX(p.x), Y=toY(p.y);
+
+    if(document.getElementById("showP").checked) {
+      const L=drawScale(p.pm,maxP);
+      if(L>0.3) {
+        const a=Math.atan2(-p.Py,p.Px);
+        arrow(X,Y,X+L*Math.cos(a),Y+L*Math.sin(a),"#65d47a",2.2,5);
+      }
+    }
+
+    if(document.getElementById("showE").checked) {
+      const L=drawScale(p.em,maxE);
+      if(L>0.3) {
+        arrow(X,Y,X+L*p.Ex/p.em,Y-L*p.Ey/p.em,"#58a6ff",1.6,4);
+      }
+    }
+
+    if(document.getElementById("showB").checked) {
+      const L=drawScale(p.bm,maxB);
+      if(L>0.3) {
+        arrow(X,Y,X+L*p.Bx/p.bm,Y-L*p.By/p.bm,"#ff6b6b",1.6,4);
+      }
+    }
+  }
+
+  // labels
+  ctx.fillStyle="#aaa"; ctx.font="12px system-ui";
+  ctx.fillText("x (µm)",W-55,cy-7);
+  ctx.save(); ctx.translate(cx+7,18); ctx.rotate(-Math.PI/2); ctx.fillText("y (µm)",0,0); ctx.restore();
+
+  const Rtext = isFinite(R) ? R.toFixed(1) : "∞";
+  document.getElementById("status").textContent =
+    `w(z) = ${w.toFixed(3)} µm   R(z) = ${Rtext} µm   zR = ${zR.toFixed(1)} µm`;
+}
+
+resize();
+</script>
+</body>
+</html>
