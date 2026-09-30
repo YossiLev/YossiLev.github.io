@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>2D Keplerian Orbit Simulator</title>
+    <style>
+        body { margin: 0; padding: 20px; background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
+        h2 { color: #58a6ff; }
+        .container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1000px; width: 100%; }
+        canvas { background-color: #070a0e; border: 1px solid #30363d; border-radius: 6px; }
+        .controls { background-color: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 20px; width: 320px; display: flex; flex-direction: column; gap: 15px; }
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 14px; font-weight: 600; display: flex; justify-content: space-between; }
+        input[type="range"] { width: 100%; accent-color: #58a6ff; }
+        .data-panel { margin-top: 10px; padding-top: 15px; border-top: 1px solid #30363d; font-family: monospace; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+        .data-item { display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+    <h2>2D Keplerian Orbit Simulator</h2>
+    <div class="container">
+        <canvas id="orbitCanvas" width="600" height="500"></canvas>
+        <div class="controls">
+            <div class="control-group">
+                <label>Semi-Major Axis (a) <span id="val-a">150</span></label>
+                <input type="range" id="param-a" min="50" max="220" value="150">
+            </div>
+            <div class="control-group">
+                <label>Eccentricity (e) <span id="val-e">0.50</span></label>
+                <input type="range" id="param-e" min="0" max="0.95" step="0.01" value="0.50">
+            </div>
+            <div class="control-group">
+                <label>Animation Speed <span id="val-speed">1.0x</span></label>
+                <input type="range" id="param-speed" min="0" max="3" step="0.1" value="1">
+            </div>
+            <div class="data-panel">
+                <div class="data-item"><span>Focus (x,y):</span> <span>(0.00, 0.00)</span></div>
+                <div class="data-item"><span>Mean Motion (n):</span> <span id="data-n">0.00</span></div>
+                <div class="data-item"><span>Mean Anom (M):</span> <span id="data-M">0.00°</span></div>
+                <div class="data-item"><span>Ecc. Anom (E):</span> <span id="data-E">0.00°</span></div>
+                <div class="data-item"><span>True Anom (&theta;):</span> <span id="data-theta">0.00°</span></div>
+                <div class="data-item"><span>Radius (r):</span> <span id="data-r">0.00</span></div>
+                <div class="data-item"><span>Ang. Velocity (d&theta;/dt):</span> <span id="data-omega">0.00</span></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('orbitCanvas');
+        const ctx = canvas.getContext('2d');
+        const MU = 200000; 
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        let a = parseFloat(document.getElementById('param-a').value);
+        let e = parseFloat(document.getElementById('param-e').value);
+        let speedMultiplier = parseFloat(document.getElementById('param-speed').value);
+        let M = 0; 
+
+        document.getElementById('param-a').addEventListener('input', (ev) => { a = parseFloat(ev.target.value); document.getElementById('val-a').innerText = a; });
+        document.getElementById('param-e').addEventListener('input', (ev) => { e = parseFloat(ev.target.value); document.getElementById('val-e').innerText = e.toFixed(2); });
+        document.getElementById('param-speed').addEventListener('input', (ev) => { speedMultiplier = parseFloat(ev.target.value); document.getElementById('val-speed').innerText = speedMultiplier.toFixed(1) + 'x'; });
+
+        function toDegStr(rad) {
+            let deg = (rad * 180 / Math.PI) % 360;
+            return (deg < 0 ? deg + 360 : deg).toFixed(1) + '°';
+        }
+
+        let lastTime = performance.now();
+        function animate(currentTime) {
+            requestAnimationFrame(animate);
+            let dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+            lastTime = currentTime;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const n = Math.sqrt(MU / Math.pow(a, 3));
+            M = (M + n * dt * speedMultiplier) % (2 * Math.PI);
+
+            let E = M;
+            for (let i = 0; i < 8; i++) {
+                E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+            }
+
+            let theta = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+            if (theta < 0) theta += 2 * Math.PI;
+
+            let r = (a * (1 - e * e)) / (1 + e * Math.cos(theta));
+            let h = Math.sqrt(MU * a * (1 - e * e));
+            let omega = h / (r * r);
+
+            let currentX = centerX + r * Math.cos(theta);
+            let currentY = centerY - r * Math.sin(theta);
+
+            document.getElementById('data-n').innerText = n.toFixed(4);
+            document.getElementById('data-M').innerText = toDegStr(M);
+            document.getElementById('data-E').innerText = toDegStr(E);
+            document.getElementById('data-theta').innerText = toDegStr(theta);
+            document.getElementById('data-r').innerText = r.toFixed(1);
+            document.getElementById('data-omega').innerText = (omega * speedMultiplier).toFixed(4);
+
+            ctx.strokeStyle = '#1f242c';
+            ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(canvas.width, centerY); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, canvas.height); ctx.stroke();
+
+            ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1.5; ctx.beginPath();
+            for (let ang = 0; ang <= 2 * Math.PI; ang += 0.02) {
+                let orbitR = (a * (1 - e * e)) / (1 + e * Math.cos(ang));
+                ctx.lineTo(centerX + orbitR * Math.cos(ang), centerY - orbitR * Math.sin(ang));
+            }
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffd700'; ctx.beginPath(); ctx.arc(centerX, centerY, 9, 0, 2 * Math.PI); ctx.fill();
+            ctx.fillStyle = '#58a6ff'; ctx.beginPath(); ctx.arc(currentX, currentY, 5, 0, 2 * Math.PI); ctx.fill();
+
+            let vr = (MU / h) * e * Math.sin(theta), vt = h / r;
+            let vx = (vr * Math.cos(theta) - vt * Math.sin(theta)) * 0.3;
+            let vy = -(vr * Math.sin(theta) + vt * Math.cos(theta)) * 0.3;
+            ctx.strokeStyle = '#238636'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(currentX, currentY); ctx.lineTo(currentX + vx, currentY + vy); ctx.stroke();
+        }
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
